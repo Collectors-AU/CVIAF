@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "cviaf"
+version = "2.0.0"
+description = "Computer Vision Integrity Assurance Framework - Trustworthy CV pipeline assessment for multi-contributor environments"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "CVIAF Team"}]
+keywords = ["computer-vision", "integrity", "assurance", "backdoor-detection", "model-security", "provenance"]
+
+dependencies = [
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+]
+
+[project.optional-dependencies]
+full = [
+    "torch>=2.0",
+    "onnxruntime>=1.15",
+    "onnx>=1.14",
+    "cryptography>=41.0",
+    "Pillow>=10.0",
+    "scipy>=1.11",
+    "PyYAML>=6.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[project.scripts]
+cviaf = "cviaf.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cviaf*"]

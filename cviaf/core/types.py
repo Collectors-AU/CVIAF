@@ -1,0 +1,220 @@
+"""
+Core type definitions, base classes, and shared data structures.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import uuid
+from dataclasses import dataclass, field, asdict
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+
+class Severity(str, Enum):
+    """Risk severity levels."""
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    INFO = "INFO"
+
+
+class Disposition(str, Enum):
+    """Recommended actions for flagged items."""
+    QUARANTINE = "quarantine"
+    REVIEW = "review"
+    ACCEPT = "accept"
+
+
+class AccessLevel(str, Enum):
+    """Model access level."""
+    WHITE_BOX = "white-box"
+    BLACK_BOX = "black-box"
+    GRAY_BOX = "gray-box"
+
+
+class AttackClass(str, Enum):
+    """Supported attack class taxonomy."""
+    TRIGGER_INJECTION = "trigger_injection"
+    LABEL_FLIPPING = "label_flipping"
+    SYSTEMATIC_MISLABEL = "systematic_mislabeling"
+    DUPLICATE_FLOODING = "near_duplicate_flooding"
+    OOD_INSERTION = "ood_insertion"
+    MODEL_SUBSTITUTION = "model_substitution"
+    MODEL_BACKDOOR = "model_backdoor"
+    WEIGHT_MODIFICATION = "weight_modification"
+    INFERENCE_REPLAY = "inference_replay"
+    INFERENCE_TAMPERING = "inference_tampering"
+    OUTPUT_SUBSTITUTION = "output_substitution"
+    COVARIATE_SHIFT = "covariate_shift"
+    CONCEPT_DRIFT = "concept_drift"
+    ADVERSARIAL_DISTRIBUTION_SHIFT = "adversarial_distribution_shift"
+
+
+@dataclass
+class Finding:
+    """A single finding from any assessment module."""
+    finding_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
+    module: str = ""
+    attack_class: str = ""
+    severity: str = Severity.INFO.value
+    confidence: float = 0.0
+    title: str = ""
+    description: str = ""
+    evidence: Dict[str, Any] = field(default_factory=dict)
+    affected_assets: List[str] = field(default_factory=list)
+    disposition: str = Disposition.ACCEPT.value
+    remediation: str = ""
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass 
+class SampleMetadata:
+    """Metadata for a single dataset sample."""
+    sample_id: str = ""
+    file_path: str = ""
+    contributor: str = "unknown"
+    batch_id: str = ""
+    source: str = ""
+    label: str = ""
+    label_id: int = -1
+    timestamp: str = ""
+    annotations: Dict[str, Any] = field(default_factory=dict)
+    extra: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class AuditEntry:
+    """A single tamper-evident audit trail entry."""
+    entry_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    sequence_number: int = 0
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    action: str = ""
+    module: str = ""
+    details: Dict[str, Any] = field(default_factory=dict)
+    input_hash: str = ""
+    output_hash: str = ""
+    previous_entry_hash: str = ""
+    entry_hash: str = ""
+
+    def compute_hash(self) -> str:
+        """Compute hash of this entry for chain integrity."""
+        content = json.dumps({
+            "entry_id": self.entry_id,
+            "sequence_number": self.sequence_number,
+            "timestamp": self.timestamp,
+            "action": self.action,
+            "module": self.module,
+            "details": self.details,
+            "input_hash": self.input_hash,
+            "output_hash": self.output_hash,
+            "previous_entry_hash": self.previous_entry_hash,
+        }, sort_keys=True)
+        self.entry_hash = hashlib.sha256(content.encode()).hexdigest()
+        return self.entry_hash
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+class AuditTrail:
+    """
+    Tamper-evident audit trail using hash chains.
+    Each entry's hash depends on the previous entry, forming
+    a blockchain-like structure where any modification breaks
+    the chain verification.
+    """
+
+    def __init__(self):
+        self.entries: List[AuditEntry] = []
+        self._sequence = 0
+
+    def append(self, action: str, module: str, details: Dict[str, Any] = None,
+               input_hash: str = "", output_hash: str = "") -> AuditEntry:
+        prev_hash = self.entries[-1].entry_hash if self.entries else "GENESIS"
+        entry = AuditEntry(
+            sequence_number=self._sequence,
+            action=action,
+            module=module,
+            details=details or {},
+            input_hash=input_hash,
+            output_hash=output_hash,
+            previous_entry_hash=prev_hash,
+        )
+        entry.compute_hash()
+        self.entries.append(entry)
+        self._sequence += 1
+        return entry
+
+    def verify_chain(self) -> tuple[bool, Optional[int]]:
+        """
+        Verify the entire chain. Returns (valid, first_broken_index).
+        If valid, first_broken_index is None.
+        """
+        for i, entry in enumerate(self.entries):
+            # Check previous hash linkage
+            expected_prev = self.entries[i - 1].entry_hash if i > 0 else "GENESIS"
+            if entry.previous_entry_hash != expected_prev:
+                return False, i
+
+            # Recompute and check entry hash
+            saved_hash = entry.entry_hash
+            entry.compute_hash()
+            if entry.entry_hash != saved_hash:
+                return False, i
+
+        return True, None
+
+    def to_dict(self) -> List[Dict[str, Any]]:
+        return [e.to_dict() for e in self.entries]
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), indent=2)
+
+
+@dataclass
+class AssuranceReport:
+    """Top-level assurance report combining all module assessments."""
+    report_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    framework_version: str = "2.0.0"
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    pipeline_id: str = ""
+    assessments: Dict[str, Any] = field(default_factory=dict)
+    findings: List[Dict[str, Any]] = field(default_factory=list)
+    overall_risk: str = Severity.LOW.value
+    overall_disposition: str = Disposition.ACCEPT.value
+    audit_trail: List[Dict[str, Any]] = field(default_factory=list)
+    coverage_statement: Dict[str, Any] = field(default_factory=dict)
+    limitations: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    def to_json(self, indent: int = 2) -> str:
+        return json.dumps(self.to_dict(), indent=indent)
+
+
+def hash_file(filepath: str) -> str:
+    """SHA-256 hash of a file's contents."""
+    h = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def hash_bytes(data: bytes) -> str:
+    """SHA-256 hash of raw bytes."""
+    return hashlib.sha256(data).hexdigest()
+
+
+def hash_dict(d: Dict[str, Any]) -> str:
+    """SHA-256 hash of a dictionary (JSON-serialized, sorted keys)."""
+    return hashlib.sha256(json.dumps(d, sort_keys=True).encode()).hexdigest()
