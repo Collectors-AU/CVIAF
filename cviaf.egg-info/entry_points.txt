@@ -1,0 +1,2 @@
+[console_scripts]
+cviaf = cviaf.cli:main

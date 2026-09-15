@@ -54,6 +54,59 @@ class AttackClass(str, Enum):
     ADVERSARIAL_DISTRIBUTION_SHIFT = "adversarial_distribution_shift"
 
 
+def sanitize_json(obj: Any) -> Any:
+    """Recursively convert numpy types and non-serializable objects to Python native types."""
+    if obj is None:
+        return None
+    if isinstance(obj, bool):
+        return obj
+    if isinstance(obj, (int, float, str)):
+        return obj
+    if hasattr(obj, "item") and callable(obj.item):
+        try:
+            val = obj.item()
+            if isinstance(val, (bool, int, float, str)):
+                return val
+        except (ValueError, TypeError):
+            pass
+    if hasattr(obj, "tolist") and callable(obj.tolist):
+        try:
+            return sanitize_json(obj.tolist())
+        except (ValueError, TypeError):
+            pass
+    if isinstance(obj, dict):
+        return {str(k): sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [sanitize_json(v) for v in obj]
+    if isinstance(obj, (datetime, timezone)):
+        return obj.isoformat()
+    if isinstance(obj, Enum):
+        return obj.value
+    return str(obj)
+
+
+class CVIAFJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder handling numpy types, datetimes, and custom objects."""
+    def default(self, o):
+        if hasattr(o, "item") and callable(o.item):
+            try:
+                return o.item()
+            except (ValueError, TypeError):
+                pass
+        if hasattr(o, "tolist") and callable(o.tolist):
+            try:
+                return o.tolist()
+            except (ValueError, TypeError):
+                pass
+        if isinstance(o, (datetime, timezone)):
+            return o.isoformat()
+        if isinstance(o, set):
+            return list(o)
+        if isinstance(o, Enum):
+            return o.value
+        return str(o)
+
+
 @dataclass
 class Finding:
     """A single finding from any assessment module."""
@@ -71,7 +124,7 @@ class Finding:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return sanitize_json(asdict(self))
 
 
 @dataclass 
@@ -105,7 +158,7 @@ class AuditEntry:
 
     def compute_hash(self) -> str:
         """Compute hash of this entry for chain integrity."""
-        content = json.dumps({
+        content = json.dumps(sanitize_json({
             "entry_id": self.entry_id,
             "sequence_number": self.sequence_number,
             "timestamp": self.timestamp,
@@ -115,12 +168,12 @@ class AuditEntry:
             "input_hash": self.input_hash,
             "output_hash": self.output_hash,
             "previous_entry_hash": self.previous_entry_hash,
-        }, sort_keys=True)
+        }), sort_keys=True, cls=CVIAFJSONEncoder)
         self.entry_hash = hashlib.sha256(content.encode()).hexdigest()
         return self.entry_hash
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return sanitize_json(asdict(self))
 
 
 class AuditTrail:
@@ -172,10 +225,10 @@ class AuditTrail:
         return True, None
 
     def to_dict(self) -> List[Dict[str, Any]]:
-        return [e.to_dict() for e in self.entries]
+        return sanitize_json([e.to_dict() for e in self.entries])
 
     def to_json(self) -> str:
-        return json.dumps(self.to_dict(), indent=2)
+        return json.dumps(self.to_dict(), indent=2, cls=CVIAFJSONEncoder)
 
 
 @dataclass
@@ -195,10 +248,10 @@ class AssuranceReport:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return sanitize_json(asdict(self))
 
     def to_json(self, indent: int = 2) -> str:
-        return json.dumps(self.to_dict(), indent=indent)
+        return json.dumps(self.to_dict(), indent=indent, cls=CVIAFJSONEncoder)
 
 
 def hash_file(filepath: str) -> str:
@@ -217,4 +270,5 @@ def hash_bytes(data: bytes) -> str:
 
 def hash_dict(d: Dict[str, Any]) -> str:
     """SHA-256 hash of a dictionary (JSON-serialized, sorted keys)."""
-    return hashlib.sha256(json.dumps(d, sort_keys=True).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(sanitize_json(d), sort_keys=True, cls=CVIAFJSONEncoder).encode()).hexdigest()
+
