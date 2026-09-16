@@ -21,39 +21,184 @@ Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0; extra == "dev"
 
-# Trustworthy CV Integrity Assurance Framework (SIH 26228)
+# CVIAF: Computer Vision Integrity Assurance Framework
 
-An extensible, air-gapped computer-vision assurance engine designed to evaluate data, model, and inference integrity across multi-contributor pipelines.
+An air-gapped assurance engine that evaluates training data, model, and inference integrity across multi-contributor computer vision pipelines. Built for SIH problem statement 26228.
+
+Current version: 2.0.0.
+
+## Status
+
+Working and verified in this environment:
+
+- `cviaf demo` runs end to end on synthetic data, injects four attack scenarios, and writes a complete assurance report. A clean run finishes in about 1.5 seconds and returns `CRITICAL` / `QUARANTINE` with 23 findings across all four assessment modules.
+- All four assessment modules have real implementations with no stub returns.
+- The CLI implements `demo`, `assess`, `verify-audit`, `verify-seal`, and `schema`.
+- The governance layer emits a coverage declaration with 14 supported attack classes, 8 declared out-of-scope conditions, and 5 stated assumptions.
+
+Not done yet:
+
+- `tests/` is empty. `pytest` collects nothing, so there is no regression protection.
+- `scripts/`, `configs/`, and `docs/` are empty.
+- `assess` has not been run against a real dataset or a real model. Against synthetic inputs it only exercises the data integrity path.
 
 ## Architecture
 
-The framework consists of four disjoint but chronologically dependent offline verification nodes:
+Four offline verification modules feed a governance layer through `cviaf/orchestrator.py`.
 
-1. **`data_integrity.py` (Training Data Integrity)**
-   - Utilizes **Spectral Signatures (Activation Clustering)**. Deep features from YOLO/COCO bounding boxes are iteratively clustered using PCA and k-Means. High silhouette scores on isolated point clouds signify poisoned "trigger" patches injected by untrusted contributors.
+1. Training data integrity (`cviaf/data_integrity/`). Covers five classes of training data attack: trigger and backdoor injection with BadNets and blended triggers, label flipping, near-duplicate flooding, out-of-distribution insertion, and a combined assessment. Detection uses spectral signatures, confident learning for label noise, duplicate clustering, and covariance or isolation-forest outlier scoring. Depends on numpy and scikit-learn only.
 
-2. **`model_integrity.py` (Model Integrity)**
-   - **White-box**: Implements **Neural Cleanse** logics—attempting to build minimal universal perturbations that trigger false positives in PyTorch/ONNX models. L1 norm anomalies flag backdoors.
-   - **Black-box**: Entropy probing. Uses Randomized Smoothing and query-based boundary checks. Tightly bound confidence curves over pure noise inputs indicate subversion. Graces backward cleanly when weights are hidden.
+2. Model integrity (`cviaf/model_integrity/`). Runs Neural Cleanse style trigger reverse engineering, activation and weight statistics, behavioural fingerprinting, and output entropy analysis. Supports white-box and black-box access, and degrades cleanly when weights are unavailable.
 
-3. **`provenance.py` (Inference Provenance)**
-   - Because of air-gap constraints, we cannot use cloud KMS (Key Management Services). 
-   - A localized Ed25519 HMAC root generates a Merkle-leaf or hash block tying together: `SHA3(image_file) + ONNX_digest + Preprocessing_config + Output_Tensor + Offline_Nonce`. Modifying single logging bits breaks the tamper-evident signature natively without network time protocols.
+3. Inference provenance (`cviaf/provenance/`). Binds the image hash, model digest, preprocessing config, output tensor, nonce, and sequence number into a signed seal, with a hash-chain audit trail and a Merkle tree for batch checks. Designed for air-gapped use, so there is no cloud key management dependency.
 
-4. **`drift.py` (Distribution Shift & Anomaly Assessment)**
-   - Runs offline **Mahalanobis Feature Distance** mapping against pre-configured benign distributions (using Inverse Covariance matrices).
-   - Fuses with **Maximum Softmax Probability (MSP)** from classification heads. Disentangles standard operational drift (moderate covariance delta) from adversarial anomalies (high anomaly delta, extreme softmax suppression).
+4. Distribution shift (`cviaf/drift/`). Mahalanobis distance against a reference distribution, maximum mean discrepancy, per-feature Kolmogorov-Smirnov tests, and maximum softmax probability. Separates ordinary operational drift from adversarial manipulation.
 
-5. **`assessor.py` (Analyst-Facing Governance)**
-   - Combines modules into a final, human-readable JSON schema dictating severity (LOW/MEDIUM/HIGH/CRITICAL), confidence scores, and action verdicts (`accept`, `review`, `quarantine`).
+The governance layer (`cviaf/governance/`) merges module output into one report carrying severity, confidence, evidence, affected assets, remediation text, and a disposition of `accept`, `review`, or `quarantine`.
 
-## Setup Notes
+## Requirements
+
+Python 3.10 or newer.
+
+Core dependencies, installed in the checked-in `.venv` on Python 3.11:
+
+- numpy
+- scikit-learn
+
+The demo also uses scipy for KS tests when it is present.
+
+Optional dependencies, needed to assess real data:
+
+- `cryptography` for Ed25519 signing
+- `torch`, `onnx`, `onnxruntime` for model loading
+- `Pillow` for reading image files
+- `PyYAML` for YOLO `data.yaml` class names
+
+The optional set is defined as the `full` extra in `pyproject.toml`.
+
+## Setup
+
+With uv, which is what `uv.lock` is for:
 
 ```bash
-# Environment (Requires python 3.10+, numpy, scikit-learn)
-pip install numpy scikit-learn
-
-# Run the assessor test
-export PYTHONPATH=.
-python3 engine/assessor.py
+uv venv
+uv pip install -e ".[dev]"
+uv pip install -e ".[full]"    # optional, for real datasets and models
 ```
+
+With plain pip:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e ".[dev]"
+```
+
+To skip installation entirely, set the import path when you run commands:
+
+```bash
+PYTHONPATH=. python -m cviaf demo
+```
+
+## Running the demo
+
+The demo needs no dataset, no model, and no network access.
+
+```bash
+python -m cviaf demo
+```
+
+With the package installed in editable mode, the console script is equivalent:
+
+```bash
+cviaf demo
+```
+
+Send output somewhere other than the default `cviaf_demo_output`:
+
+```bash
+python -m cviaf demo --output /tmp/cviaf_run
+```
+
+### What the demo does
+
+1. Generates 300 synthetic samples across 5 classes from 3 contributors.
+2. Injects four attacks: BadNets patch triggers at a 10 percent poison rate, label flipping in `contributor_1`, 40 near-duplicates from a malicious vendor, and 20 out-of-distribution samples.
+3. Recomputes features and hashes over the poisoned set.
+4. Creates 10 provenance seals, tampers with seal 3, and forges seal 7.
+5. Runs the full pipeline and writes the report.
+
+A healthy run prints an overall risk of `CRITICAL`, a disposition of `quarantine`, 23 findings, and an intact audit trail. The provenance section reports every seal as invalid rather than only the 2 tampered ones. That is the key bug described under Known issues, not a sign that the run failed.
+
+## Assessing real data
+
+```bash
+python -m cviaf assess \
+  --dataset ./data/instances.json \
+  --model ./models/detector.onnx \
+  --format coco \
+  --access-level white-box \
+  --output ./out
+```
+
+Options:
+
+- `--dataset`, `-d` path to a COCO JSON file or a YOLO directory
+- `--model`, `-m` path to an `.onnx`, `.pt`, or `.pth` file
+- `--format`, `-f` one of `coco`, `yolo`, `auto`
+- `--access-level`, `-a` one of `white-box`, `black-box`
+- `--skip` comma separated modules to skip, from `data`, `model`, `provenance`, `drift`
+- `--pipeline-id` identifier recorded in the report
+- `--contributor` dataset contributor name
+
+This command needs the `full` extra to be useful. Without Pillow the dataset loader substitutes random placeholder images, and without torch or onnxruntime the model fails to load. Both cases only print a warning, so check the report for which modules actually ran. Running `assess` with no arguments at all still exits 0 with an empty `LOW` / `accept` report.
+
+## Verifying artifacts
+
+```bash
+python -m cviaf verify-audit ./cviaf_demo_output/audit_trail.json
+python -m cviaf verify-seal ./seals.json --key-dir ./cviaf_demo_output/keys
+python -m cviaf schema > assurance_schema.json
+```
+
+`verify-audit` recomputes the hash chain and exits non-zero if any entry breaks. Against the demo output it reports 10 entries and an intact chain.
+
+## Output artifacts
+
+The `cviaf_demo_output/` and `demo-output/` directories hold reports from earlier runs.
+
+- `assurance_report.json` is the full report: findings, per-module assessments, the coverage statement, limitations, and the audit trail.
+- `audit_trail.json` is the standalone hash-chained action log.
+- `keys/` holds the signing keypairs used for that run.
+
+## Repository layout
+
+```
+cviaf/
+  cli.py              command line entry point and demo driver
+  orchestrator.py     runs the four modules and calls the governance layer
+  core/types.py       shared enums, dataclasses, and hashing helpers
+  data_integrity/     training data assessment
+  model_integrity/    model assessment and backdoor detection
+  provenance/         seals, key management, and the audit chain
+  drift/              distribution shift assessment
+  governance/         report assembly and the coverage statement
+  formats/            COCO and YOLO dataset loaders, ONNX and PyTorch model loaders
+  attacks/            attack generators used by the demo
+  utils/              feature extraction and hashing helpers
+```
+
+## Known issues
+
+- Provenance keys are regenerated on every engine construction. `InferenceProvenanceEngine.__init__` calls `generate_keypair()` unconditionally instead of loading an existing keypair from `key_dir`, so two engines pointed at the same directory get different keys. Any seal verified by an engine other than the one that signed it fails, which is why the demo flags all 10 seals. Audit trail verification is unaffected.
+- Without the `cryptography` package, signing silently falls back to HMAC-SHA256 with a shared secret. That is symmetric, so it provides no non-repudiation, and the fallback is not surfaced anywhere in the report. The current `.venv` is in this state because `cryptography` is not installed. Treat any seal as a tamper check, not as proof of origin, until `cryptography` is installed and the fallback is made explicit.
+- Private keys are committed. `.gitignore` is empty and the `*.priv` files under `cviaf_demo_output/keys/` and `demo-output/keys/` are tracked in git. They are demo keys for synthetic data, but `.gitignore` should exclude `.venv/`, `__pycache__/`, `cviaf.egg-info/`, and `keys/*.priv` before this repository is published anywhere.
+- `assess` degrades silently. A missing imaging or model library produces a warning rather than an error, and the pipeline continues with whichever modules could run.
+
+## Reference documents
+
+- `PRD_SIH26228_CVIAF.md` product requirements
+- `CV_INTEGRITY_ASSURANCE_2026.md` domain research
+- `RESEARCH_CHECKPOINT_26228.md` research checkpoint
+- `Assurance_Framework_Technical_Report.md` technical report
+- `cv_integrity_assurance_research_report.md`, `cv-pipeline-integrity-reference.md` supporting research
+- `schemas/sample-assurance-report.json` example report shape

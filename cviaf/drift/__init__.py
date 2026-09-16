@@ -389,7 +389,10 @@ class DistributionShiftAssessor:
 
         # Reduce dimensionality if too high (MMD is O(n^2) in features too)
         if ref_sub.shape[1] > 50:
-            pca = PCA(n_components=50)
+            # Cap components at min(n_samples, n_features); PCA with more
+            # components than samples raises on svd_solver='full'.
+            n_comp = min(50, ref_sub.shape[0], ref_sub.shape[1])
+            pca = PCA(n_components=n_comp)
             ref_sub = pca.fit_transform(ref_sub)
             op_sub = pca.transform(op_sub)
 
@@ -402,7 +405,8 @@ class DistributionShiftAssessor:
             ks_sub_ref = reference_features[:1000]
             ks_sub_op = operational_features[:1000]
             if ks_sub_ref.shape[1] > 100:
-                pca2 = PCA(n_components=100)
+                n_comp = min(100, ks_sub_ref.shape[0], ks_sub_ref.shape[1])
+                pca2 = PCA(n_components=n_comp)
                 ks_sub_ref = pca2.fit_transform(ks_sub_ref)
                 ks_sub_op = pca2.transform(ks_sub_op)
             ks_result = ks_runner.test(ks_sub_ref, ks_sub_op)

@@ -238,8 +238,11 @@ def cmd_assess(args):
             args.dataset,
             format=args.format or "auto",
             contributor=args.contributor or "unknown",
+            images_dir=args.images_dir or "",
         )
         print(f"  Loaded {len(samples)} samples")
+        if samples:
+            print(f"  Sample image path e.g.: {samples[0].image_path}")
 
         # Load images and extract features
         images = []
@@ -488,6 +491,7 @@ def main():
     assess_parser.add_argument("--output", "-o", default="cviaf_output", help="Output directory")
     assess_parser.add_argument("--pipeline-id", default="", help="Pipeline identifier")
     assess_parser.add_argument("--contributor", default="unknown", help="Dataset contributor name")
+    assess_parser.add_argument("--images-dir", default="", help="Directory containing dataset images (optional; auto-inferred from the annotation file otherwise)")
     assess_parser.add_argument("--skip", default="", help="Comma-separated modules to skip (data,model,provenance,drift)")
 
     # Verify audit trail

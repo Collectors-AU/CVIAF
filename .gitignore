@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Data & models (large files)
+data/
+models/
+*.pt
+*.onnx
+
+# Output directories
+out_*/
+cviaf_output/
+cviaf_demo_output/
+*.log
+
+# Keys / secrets
+.cviaf_keys/
+*.pem
+*.key
+
+# Temporary files
+*.ses
+:memory:*
+
+# Local config
+*.local.yaml
+*.local.yml
+
+# Jupyter
+.ipynb_checkpoints/

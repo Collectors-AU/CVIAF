@@ -269,6 +269,98 @@ class YOLODatasetLoader:
         return list(self.iter_samples())
 
 
+def _infer_coco_images_dir(annotation_file: str) -> str:
+    """
+    Infer the directory that contains a COCO dataset's images.
+
+    Standard COCO layouts put the annotation JSON in an ``annotations/``
+    folder with the image folders as *siblings* (``val2017/``, ``train2017/``
+    next to ``annotations/``), but some datasets embed an ``images/`` folder
+    next to the JSON. The previous code only looked inside the annotation
+    parent, so sibling layouts fell back to the annotations dir itself and
+    every image path pointed at a non-existent file.
+
+    Strategy (most specific match wins):
+      1. Collect candidate dirs from inside the annotation parent and from
+         the parent's parent (sibling folders), using standard COCO image
+         folder names plus any directory that actually holds image files.
+      2. When the annotation JSON is readable, count how many referenced
+         ``file_name`` values truly exist under each candidate.
+      3. Return the candidate with the most real hits; fall back to a
+         candidate that merely contains image files; last resort is the
+         annotation parent (previous behavior).
+    """
+    parent = os.path.dirname(os.path.abspath(annotation_file))
+    grandparent = os.path.dirname(parent)
+    image_exts = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff")
+
+    # Candidate directories: known names inside parent and as siblings.
+    candidates: List[str] = []
+    known_names = ["images", "image", "train2017", "val2017", "test2017",
+                   "train", "val", "test"]
+    for base in (parent, grandparent):
+        for name in known_names:
+            p = os.path.join(base, name)
+            if os.path.isdir(p) and p not in candidates:
+                candidates.append(p)
+
+    # Loose match: any subdirectory (of parent or grandparent) that directly
+    # contains image files.
+    for root in (parent, grandparent):
+        try:
+            entries = sorted(os.listdir(root))
+        except OSError:
+            continue
+        for entry in entries:
+            p = os.path.join(root, entry)
+            if os.path.isdir(p) and p not in candidates and p != parent:
+                try:
+                    has_images = any(
+                        f.lower().endswith(image_exts)
+                        for f in os.listdir(p)[:200]
+                    )
+                except OSError:
+                    has_images = False
+                if has_images:
+                    candidates.append(p)
+
+    # Referenced file names from the annotation JSON, if readable.
+    referenced: List[str] = []
+    try:
+        with open(annotation_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        referenced = [
+            img.get("file_name", "")
+            for img in data.get("images", [])
+            if img.get("file_name")
+        ]
+    except (OSError, ValueError, json.JSONDecodeError):
+        pass
+
+    # Best match: the candidate that contains the most referenced files.
+    if candidates and referenced:
+        best_dir, best_hits = candidates[0], -1
+        for cand in candidates:
+            hits = sum(
+                1 for fn in referenced
+                if os.path.exists(os.path.join(cand, fn))
+            )
+            if hits > best_hits:
+                best_hits, best_dir = hits, cand
+        if best_hits > 0:
+            return best_dir
+
+    # No JSON hits: prefer a candidate that really holds image files.
+    for cand in candidates:
+        try:
+            if any(f.lower().endswith(image_exts) for f in os.listdir(cand)[:200]):
+                return cand
+        except OSError:
+            continue
+
+    return parent
+
+
 def load_dataset(path: str, format: str = "auto", **kwargs) -> List[DatasetSample]:
     """
     Unified dataset loader. 
@@ -306,15 +398,10 @@ def load_dataset(path: str, format: str = "auto", **kwargs) -> List[DatasetSampl
         ann_file = kwargs.get("annotation_file", path)
         imgs_dir = kwargs.get("images_dir", "")
         if not imgs_dir:
-            # Try to infer images dir
-            parent = os.path.dirname(ann_file)
-            for candidate in ["images", "train2017", "val2017", "train", "val"]:
-                p = os.path.join(parent, candidate)
-                if os.path.isdir(p):
-                    imgs_dir = p
-                    break
-            if not imgs_dir:
-                imgs_dir = parent
+            # Infer images dir: check inside the annotation parent AND sibling
+            # dirs (standard COCO layout has annotations/ and val2017/ side by
+            # side), validating candidates against the JSON file names.
+            imgs_dir = _infer_coco_images_dir(ann_file)
 
         loader = COCODatasetLoader(
             annotation_file=ann_file,
