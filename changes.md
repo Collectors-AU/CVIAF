@@ -4,6 +4,55 @@
 
 ---
 
+## Data & assets reference (what's in repo vs. what needs downloading)
+
+| Asset | In repo? | Size | How to get |
+|-------|----------|------|------------|
+| `data/coco/val2017/` (80 images) | ✅ `git pull` | 13 MB | Already in repo |
+| `data/coco/annotations/instances_val2017_subset80.json` | ✅ `git pull` | 368 KB | Already in repo |
+| `data/coco/annotations/instances_val2017.json` (full 5,000-image annotations) | ✅ `git pull` | 19.9 MB | Already in repo |
+| `models/yolov8n.onnx` | ✅ `git pull` | 12 MB | Already in repo |
+| `yolov8n.pt` | ✅ `git pull` | 6.3 MB | Already in repo |
+| **`annotations_trainval2017.zip`** (full train+val annotations archive) | ❌ too large for GitHub | 252 MB | See below ↓ |
+| **`val2017.zip`** (full 5,000 val images) | ❌ too large for GitHub | 5 GB | See below ↓ |
+| **`train2017.zip`** (~118K train images, H200 phase only) | ❌ too large for GitHub | 19 GB | See below ↓ |
+
+### Large file downloads (needed when scaling beyond the 80-image laptop subset)
+
+**Full annotations archive (252 MB)** — `annotations_trainval2017.zip` contains both `instances_train2017.json` and `instances_val2017.json` for all 5,000 val + 118K train images. You already have `instances_val2017.json` in the repo, so this is only needed if you want `instances_train2017.json` or the raw source archives.
+
+```bash
+# Full annotations (train + val)
+wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
+# Extract into data/coco/
+unzip annotations_trainval2017.zip -d data/coco/
+```
+
+**Full val images (5 GB)** — needed for Things 7–8 (label flip / dup flooding calibration at 200–500 images).
+
+```bash
+# All 5,000 val images
+wget http://images.cocodataset.org/zips/val2017.zip
+unzip val2017.zip -d data/coco/
+```
+
+**Train images (19 GB)** — only needed for the H200 phase (full detector training corpus).
+
+```bash
+# All ~118K train images (H200 only)
+wget http://images.cocodataset.org/zips/train2017.zip
+unzip train2017.zip -d data/coco/
+```
+
+**Individual images (what we used for the 80-image subset)** — you can also download specific images by ID:
+
+```bash
+# Example: download a single COCO val image (300KB)
+wget http://images.cocodataset.org/val2017/000000397133.jpg -P data/coco/val2017/
+```
+
+---
+
 ## 2026-09-16 — Thing 1: Fix COCO loader image-dir inference (Bug #1)
 
 ### Problem
