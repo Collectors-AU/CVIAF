@@ -226,6 +226,7 @@ def cmd_assess(args):
     from cviaf.orchestrator import CVIAFOrchestrator
     from cviaf.formats import load_dataset
     from cviaf.formats.model_loader import load_model
+    from cviaf.core.types import normalize_metadata
     from cviaf.utils import extract_features_from_images, compute_image_hashes
 
     print("CVIAF Assessment Pipeline")
@@ -268,6 +269,7 @@ def cmd_assess(args):
         labels = np.array(labels) if labels else None
         features = extract_features_from_images(images) if images is not None else None
         image_hashes = compute_image_hashes(images) if images is not None else None
+        metadata = normalize_metadata(metadata)
     else:
         images = features = labels = metadata = image_hashes = None
 

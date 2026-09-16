@@ -152,6 +152,68 @@ module_error: (none)
 
 ---
 
+## 2026-09-17 — Thing 2: Fix metadata plumbing (Bug #3): dict ↔ SampleMetadata normalization
+
+### Problem
+`_compute_source_risks()` and every downstream `.contributor` / `.source` access expect `SampleMetadata` objects, but metadata can arrive as plain **dicts** (JSON-style) from the orchestrator API / CLI. When it did, capability (a) died silently: the report contained `training_data_integrity: {"error": "'dict' object has no attribute 'contributor'", "findings": []}` — no crash, no source_risks, just a dead module.
+
+**Before (repro):**
+```python
+orch.run_full_assessment(images=..., labels=..., metadata=[{"contributor": "acme_lab"}, ...])
+# → training_data_integrity: {"error": "'dict' object has no attribute 'contributor'", "findings": []}
+```
+
+### Changes
+
+#### 1. `cviaf/core/types.py` — Added `SampleMetadata.from_dict()` + `normalize_metadata()`
+```python
+@classmethod
+def from_dict(cls, d):  # known keys mapped, unknown keys preserved in `extra`
+    ...
+
+def normalize_metadata(metadata):  # List[SampleMetadata | dict] -> List[SampleMetadata]
+    # SampleMetadata passes through; dicts → from_dict(); non-mappable dropped
+```
+Single normalization helper (per work plan): one definition, reused everywhere.
+
+#### 2. `cviaf/data_integrity/__init__.py` — Normalize at `assess()` entry (choke point)
+```python
+metadata = normalize_metadata(metadata)   # before any detector runs
+```
+One line at the engine boundary covers **every** caller — CLI, orchestrator API, loaders — so no downstream `.contributor` access can ever hit a raw dict again.
+
+#### 3. `cviaf/cli.py` — Normalize in `cmd_assess`
+```python
+metadata = normalize_metadata(metadata)   # after building metadata list from samples
+```
+Explicit per work plan ("use it in CLI `cmd_assess`"); belt-and-braces on top of the engine boundary.
+
+### Verification
+```bash
+# 1) Bug #3 reproduction path — orchestrator API with DICT metadata
+python -c "orch.run_full_assessment(images=..., labels=..., metadata=[{'sample_id': str(i), 'contributor': 'acme_lab', 'source': 'cam_A'} ...])"
+# 2) CLI real data with --contributor
+python -m cviaf assess \
+  --dataset data/coco/annotations/instances_val2017_subset80.json \
+  --model models/yolov8n.onnx --format coco --access-level white-box \
+  --contributor acme_lab --output out_thing2
+```
+
+**Result — both pass:**
+```
+API dict metadata:  error: NONE
+  source_risks: {"acme_lab": {"type": "contributor", "total_samples": 10, "finding_count": 0, ...},
+                 "source:cam_A": {"type": "source", ...}}
+
+CLI --contributor: Overall Risk: HIGH ✓
+  source_risks: {"acme_lab": {"type": "contributor", "total_samples": 80,
+                 "finding_count": 167, "risk_score": 7.0537, "risk_level": "CRITICAL",
+                 "attack_classes": ["near_duplicate_flooding", "ood_insertion"]}}
+```
+**DONE =:** ✅ `assess` with `--contributor` produces `source_risks` without crashing (dict and SampleMetadata both work).
+
+---
+
 ## Upcoming — Thing 4: Model input preprocessing adapter (letterbox 640, RGB, 0-1 normalize)
 
 **Goal:** Add `preprocess()` to `ModelWrapper` (letterbox + normalize + RGB) and use it consistently in CLI + orchestrator for images AND probes.

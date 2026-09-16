@@ -141,6 +141,39 @@ class SampleMetadata:
     annotations: Dict[str, Any] = field(default_factory=dict)
     extra: Dict[str, Any] = field(default_factory=dict)
 
+    _KNOWN_FIELDS = ("sample_id", "file_path", "contributor", "batch_id",
+                     "source", "label", "label_id", "timestamp",
+                     "annotations", "extra")
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "SampleMetadata":
+        """Build a SampleMetadata from a plain dict (JSON-style metadata).
+
+        Unknown keys are preserved in ``extra`` instead of being dropped.
+        """
+        known = {k: d[k] for k in cls._KNOWN_FIELDS if k in d}
+        extra = {k: v for k, v in d.items() if k not in cls._KNOWN_FIELDS}
+        if extra:
+            known.setdefault("extra", {}).update(extra)
+        return cls(**known)
+
+
+def normalize_metadata(metadata: Optional[List[Any]]) -> List[SampleMetadata]:
+    """Coerce a metadata list to List[SampleMetadata].
+
+    Accepts SampleMetadata objects, plain dicts, or a mix of both.
+    Non-mappable entries are dropped (never crash the pipeline on metadata).
+    """
+    if not metadata:
+        return []
+    out: List[SampleMetadata] = []
+    for m in metadata:
+        if isinstance(m, SampleMetadata):
+            out.append(m)
+        elif isinstance(m, dict):
+            out.append(SampleMetadata.from_dict(m))
+    return out
+
 
 @dataclass
 class AuditEntry:

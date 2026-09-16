@@ -18,10 +18,10 @@
   - Model integrity: 26 false positives from static kurtosis > 10 threshold (Bug #2 — **T11**); Neural Cleanse skipped due to shape mismatch (CLI passes 224×224 images but YOLOv8n needs 640×640 letterbox — **Thing 4**).
   - Drift PCA fixed: capped `n_components` at `min(n_samples, n_features)` to avoid crash on small datasets.
 
-### Thing 2 — Fix metadata plumbing (Bug #3): dict ↔ SampleMetadata normalization
-- **WHY:** `_compute_source_risks()` crashes on CLI-passed dict metadata → any real run with contributor metadata dies inside capability (a).
-- **WORK:** single normalization helper in `core/types.py` (dict → SampleMetadata); use it in CLI `cmd_assess` and loader paths.
-- **DONE =:** `assess` with `--contributor` produces `source_risks` without crashing.
+### Thing 2 — Fix metadata plumbing (Bug #3): dict ↔ SampleMetadata normalization ✅ **DONE**
+- **WHY:** `_compute_source_risks()` crashes on CLI-passed dict metadata → any real run with contributor metadata dies inside capability (a). Previously it degraded silently: report carried `{"error": "'dict' object has no attribute 'contributor'", "findings": []}`.
+- **WORK (done):** (a) `SampleMetadata.from_dict()` + `normalize_metadata()` helper added in `cviaf/core/types.py` (known keys mapped, unknown preserved in `extra`); (b) normalized at `DataIntegrityAssessor.assess()` entry (engine choke point covering CLI/API/loaders) and in CLI `cmd_assess`; (c) verified dict-metadata API path + real-data CLI with `--contributor`.
+- **DONE =:** ✅ `assess` with `--contributor` produces `source_risks` (per-contributor + per-source) without crashing; dict and SampleMetadata both work.
 
 ### Thing 3 — Fix provenance key regeneration + surface silent degradation (README known issues)
 - **WHY:** `InferenceProvenanceEngine.__init__` regenerates keys every time → every seal verifies as invalid (demo flags all 10). Also `assess` silently runs partial modules without telling the user.

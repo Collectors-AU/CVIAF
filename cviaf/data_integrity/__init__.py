@@ -33,6 +33,7 @@ from cviaf.core.types import (
     Finding,
     SampleMetadata,
     Severity,
+    normalize_metadata,
 )
 
 __all__ = [
@@ -1089,6 +1090,10 @@ class DataIntegrityAssessor:
         """
         all_findings: List[Finding] = []
         module_summaries: Dict[str, Dict[str, Any]] = {}
+
+        # Normalize metadata (accept dicts / SampleMetadata / mixed) so every
+        # downstream .contributor / .source access cannot hit plain dicts.
+        metadata = normalize_metadata(metadata)
 
         # -- Trigger detection --
         if images is not None and images.size > 0:
