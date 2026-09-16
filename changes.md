@@ -1,0 +1,112 @@
+# CVIAF — Change Log
+
+**Rule:** Every code change, fix, or update is recorded here with: what changed, why, and verification.
+
+---
+
+## 2026-09-16 — Thing 1: Fix COCO loader image-dir inference (Bug #1)
+
+### Problem
+The COCO loader in `cviaf/formats/__init__.py` inferred the images directory by looking **only inside** the annotation file's parent folder (`data/coco/annotations/`). Standard COCO layout puts `annotations/` and `val2017/` as **siblings** under `data/coco/`. Nothing matched → fell back to `imgs_dir = parent` → every `image_path` became `data/coco/annotations/XXXX.jpg` (non-existent) → `os.path.exists()` failed for all samples → `images=None` → `data_integrity` and `drift` silently skipped; only `model_integrity` ran.
+
+### Changes
+
+#### 1. `cviaf/formats/__init__.py` — Added `_infer_coco_images_dir()` helper
+```python
+def _infer_coco_images_dir(annotation_file: str) -> str:
+    # Strategy (most specific match wins):
+    # 1. Collect candidates from inside parent AND grandparent (sibling dirs)
+    #    using standard COCO names + any dir containing image files.
+    # 2. If annotation JSON readable, count how many referenced file_name
+    #    values actually exist under each candidate.
+    # 3. Return candidate with most real hits; fall back to dir with images;
+    #    last resort = annotation parent (old behavior).
+```
+- Checks `parent` (annotation dir) AND `grandparent` (data root) for known COCO names: `images`, `train2017`, `val2017`, `test2017`, `train`, `val`, `test`
+- Also scans for any subdirectory that directly contains image files (`.jpg`, `.png`, etc.)
+- Validates candidates against actual `file_name` entries in the JSON — the candidate with the most existing files wins
+- Fallback chain: JSON-validated → directory-with-images → annotation parent
+
+#### 2. `cviaf/formats/__init__.py` — Simplified COCO branch in `load_dataset()`
+**Before:**
+```python
+if not imgs_dir:
+    parent = os.path.dirname(ann_file)
+    for candidate in ["images", "train2017", "val2017", "train", "val"]:
+        p = os.path.join(parent, candidate)
+        if os.path.isdir(p):
+            imgs_dir = p
+            break
+    if not imgs_dir:
+        imgs_dir = parent
+```
+
+**After:**
+```python
+if not imgs_dir:
+    imgs_dir = _infer_coco_images_dir(ann_file)
+```
+
+#### 3. `cviaf/cli.py` — Added `--images-dir` CLI flag
+```python
+assess_parser.add_argument("--images-dir", default="",
+    help="Directory containing dataset images (optional; auto-inferred from the annotation file otherwise)")
+```
+Passed through to `load_dataset(images_dir=args.images_dir or "")` so users can override auto-inference.
+
+#### 4. `cviaf/drift/__init__.py` — Fixed PCA `n_components` crash on small datasets
+**Two locations fixed:**
+- Line ~392 (MMD subsample): `PCA(n_components=50)` → `PCA(n_components=min(50, n_samples, n_features))`
+- Line ~405 (KS test): `PCA(n_components=100)` → `PCA(n_components=min(100, n_samples, n_features))`
+
+**Why:** With only 80 samples, `n_components=100` raised `ValueError: n_components=100 must be between 0 and min(n_samples, n_features)=80`. This bug was **hidden** because `drift` was silently skipped before Thing 1.
+
+---
+
+### Verification
+```bash
+python -m cviaf assess \
+  --dataset data/coco/annotations/instances_val2017_subset80.json \
+  --model models/yolov8n.onnx \
+  --format coco \
+  --access-level white-box \
+  --output out_real_fixed2
+```
+
+**Audit trail — all expected modules fired:**
+```
+module_started: data_integrity      ✅
+module_started: model_integrity     ✅
+module_started: distribution_shift  ✅
+module_completed: data_integrity    ✅
+module_completed: model_integrity   ✅
+module_completed: distribution_shift ✅
+module_error: (none)
+```
+
+**Report assessments:**
+| Module | Findings | Status |
+|--------|----------|--------|
+| `training_data_integrity` | 3 | All false positives on clean COCO (near-dup ×2, OOD ×1) → **Thing 5 calibration needed** |
+| `model_integrity` | 27 | 26 kurtosis false positives (Bug #2 → T11); Neural Cleanse skipped (shape mismatch) → **Thing 4** |
+| `distribution_shift` | 0 | Correct — same data compared to itself |
+
+**Image path resolution:** 80/80 samples now point to real files under `data/coco/val2017/`.
+
+---
+
+### Critical discoveries for next Things
+1. **Neural Cleanse skipped** — error: `operands could not be broadcast together with shapes (1,640,640) (32,224,224,3)`. CLI passes 224×224 images but YOLOv8n expects 640×640 letterbox. **→ Thing 4 is the highest-priority unblocker.**
+2. **Kurtosis false positives (Bug #2)** — 26 MEDIUM findings on healthy YOLOv8n. Static `kurtosis > 10` threshold wrong for conv weights. **→ T11 in Phase 2.**
+3. **Data integrity false positives** — pixel-stats features flag COCO diversity as near-dup/OOD. **→ Thing 5 (calibration harness) next in Phase 1.**
+4. **Provenance correctly skipped** — only runs when `inference_records` provided (not in CLI assess). By design.
+
+---
+
+## Upcoming — Thing 4: Model input preprocessing adapter (letterbox 640, RGB, 0-1 normalize)
+
+**Goal:** Add `preprocess()` to `ModelWrapper` (letterbox + normalize + RGB) and use it consistently in CLI + orchestrator for images AND probes.
+
+**Unblocks:** Neural Cleanse, entropy probes, drift logits, any model-dependent check using real images.
+
+**Expected done state:** YOLOv8n detects real objects in 80 images through wrapper; `predict()` returns sane logits/boxes; Neural Cleanse runs without shape errors.
