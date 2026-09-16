@@ -1,0 +1,2257 @@
+{
+  "report_id": "3771046b-9cf7-42d9-9b94-dd882e9acd46",
+  "framework_version": "2.0.0",
+  "timestamp": "2026-09-16T10:15:03.224092+00:00",
+  "pipeline_id": "pipeline-20260916-101502",
+  "assessments": {
+    "training_data_integrity": {
+      "findings": [
+        {
+          "finding_id": "82b2d4d2",
+          "module": "data_integrity",
+          "attack_class": "near_duplicate_flooding",
+          "severity": "MEDIUM",
+          "confidence": 0.9706,
+          "title": "Near-duplicate image clusters detected",
+          "description": "80 images form 2 near-duplicate clusters (cosine sim >= 0.95).",
+          "evidence": {
+            "near_cluster_count": 2,
+            "total_near_duplicates": 80,
+            "similarity_threshold": 0.95,
+            "clusters": [
+              {
+                "cluster_root": "80671",
+                "size": 77,
+                "contributors": {
+                  "unknown": 77
+                },
+                "sample_ids": [
+                  "397133",
+                  "296649",
+                  "386912",
+                  "289393",
+                  "17627",
+                  "143931",
+                  "322864",
+                  "153299",
+                  "308394",
+                  "456496"
+                ]
+              },
+              {
+                "cluster_root": "180135",
+                "size": 3,
+                "contributors": {
+                  "unknown": 3
+                },
+                "sample_ids": [
+                  "122745",
+                  "85329",
+                  "180135"
+                ]
+              }
+            ]
+          },
+          "affected_assets": [
+            "397133",
+            "296649",
+            "386912",
+            "289393",
+            "17627",
+            "143931",
+            "322864",
+            "153299",
+            "308394",
+            "456496",
+            "184321",
+            "565778",
+            "555705",
+            "443303",
+            "418281",
+            "25560",
+            "329323",
+            "511321",
+            "314294",
+            "233771",
+            "185250",
+            "356427",
+            "572517",
+            "270244",
+            "430961",
+            "577539",
+            "104612",
+            "486438",
+            "400573",
+            "109798",
+            "370677",
+            "369370",
+            "502737",
+            "37777",
+            "174482",
+            "403385",
+            "6818",
+            "458054",
+            "331352",
+            "502136",
+            "491497",
+            "184791",
+            "348881",
+            "522713",
+            "181666",
+            "303818",
+            "460347",
+            "226111",
+            "41888",
+            "297343",
+            "239274",
+            "286994",
+            "475779",
+            "516316",
+            "562121",
+            "360661",
+            "16228",
+            "266409",
+            "476258",
+            "448365",
+            "35197",
+            "349860",
+            "238866",
+            "252219",
+            "480985",
+            "463730",
+            "336587",
+            "301867",
+            "125211",
+            "382088",
+            "87038",
+            "219578",
+            "500663",
+            "312421",
+            "58636",
+            "403817",
+            "80671",
+            "122745",
+            "85329",
+            "180135"
+          ],
+          "disposition": "review",
+          "remediation": "Review near-duplicate clusters.  Keep the highest-quality version and remove others to avoid biasing the model.",
+          "timestamp": "2026-09-16T10:15:02.371046+00:00"
+        },
+        {
+          "finding_id": "5da15a2c",
+          "module": "data_integrity",
+          "attack_class": "near_duplicate_flooding",
+          "severity": "HIGH",
+          "confidence": 1.0,
+          "title": "Suspected duplicate flooding by contributor 'unknown'",
+          "description": "Contributor 'unknown' dominates 80 duplicate samples out of 80 total contributions (100.0%), suggesting intentional flooding.",
+          "evidence": {
+            "contributor": "unknown",
+            "duplicate_count": 80,
+            "total_from_contributor": 80,
+            "duplicate_rate": 1.0
+          },
+          "affected_assets": [
+            "397133",
+            "37777",
+            "252219",
+            "87038",
+            "174482",
+            "403385",
+            "6818",
+            "480985",
+            "458054",
+            "331352",
+            "296649",
+            "386912",
+            "502136",
+            "491497",
+            "184791",
+            "348881",
+            "289393",
+            "522713",
+            "181666",
+            "17627",
+            "143931",
+            "303818",
+            "463730",
+            "460347",
+            "322864",
+            "226111",
+            "153299",
+            "308394",
+            "456496",
+            "58636",
+            "41888",
+            "184321",
+            "565778",
+            "297343",
+            "336587",
+            "122745",
+            "219578",
+            "555705",
+            "443303",
+            "500663",
+            "418281",
+            "25560",
+            "403817",
+            "85329",
+            "329323",
+            "239274",
+            "286994",
+            "511321",
+            "314294",
+            "233771",
+            "475779",
+            "301867",
+            "312421",
+            "185250",
+            "356427",
+            "572517",
+            "270244",
+            "516316",
+            "125211",
+            "562121",
+            "360661",
+            "16228",
+            "382088",
+            "266409",
+            "430961",
+            "80671",
+            "577539",
+            "104612",
+            "476258",
+            "448365",
+            "35197",
+            "349860",
+            "180135",
+            "486438",
+            "400573",
+            "109798",
+            "370677",
+            "238866",
+            "369370",
+            "502737"
+          ],
+          "disposition": "quarantine",
+          "remediation": "Audit all submissions from 'unknown'. Rate-limit future contributions and require diversity checks.",
+          "timestamp": "2026-09-16T10:15:02.371077+00:00"
+        },
+        {
+          "finding_id": "2f8347d7",
+          "module": "data_integrity",
+          "attack_class": "ood_insertion",
+          "severity": "MEDIUM",
+          "confidence": 0.6429,
+          "title": "Out-of-distribution samples detected",
+          "description": "7 sample(s) flagged as OOD: 1 flagged by both detectors, 3 by Mahalanobis only, 3 by Isolation Forest only.",
+          "evidence": {
+            "total_flagged": 7,
+            "both_detectors": 1,
+            "mahalanobis_only": 3,
+            "isolation_forest_only": 3,
+            "contamination": 0.05,
+            "mahalanobis_threshold": 78.3874,
+            "per_sample_scores": {
+              "181666": {
+                "mahalanobis_distance": 78.8859,
+                "isolation_score": 0.461,
+                "flagged_by": "mahalanobis"
+              },
+              "460347": {
+                "mahalanobis_distance": 74.7654,
+                "isolation_score": 0.5202,
+                "flagged_by": "isolation_forest"
+              },
+              "297343": {
+                "mahalanobis_distance": 78.509,
+                "isolation_score": 0.4878,
+                "flagged_by": "mahalanobis"
+              },
+              "122745": {
+                "mahalanobis_distance": 76.9027,
+                "isolation_score": 0.5402,
+                "flagged_by": "isolation_forest"
+              },
+              "360661": {
+                "mahalanobis_distance": 78.8684,
+                "isolation_score": 0.4458,
+                "flagged_by": "mahalanobis"
+              },
+              "266409": {
+                "mahalanobis_distance": 78.8382,
+                "isolation_score": 0.504,
+                "flagged_by": "both"
+              },
+              "80671": {
+                "mahalanobis_distance": 78.1771,
+                "isolation_score": 0.5273,
+                "flagged_by": "isolation_forest"
+              }
+            },
+            "contributors": {
+              "unknown": 7
+            }
+          },
+          "affected_assets": [
+            "181666",
+            "460347",
+            "297343",
+            "122745",
+            "360661",
+            "266409",
+            "80671"
+          ],
+          "disposition": "quarantine",
+          "remediation": "Inspect flagged samples for relevance to the target domain. Remove confirmed OOD samples. Investigate contributing sources for intentional insertion.",
+          "timestamp": "2026-09-16T10:15:02.413136+00:00"
+        }
+      ],
+      "finding_count": 3,
+      "module_summaries": {
+        "patch_triggers": {
+          "ran": true,
+          "finding_count": 0
+        },
+        "spectral_signatures": {
+          "ran": true,
+          "finding_count": 0
+        },
+        "label_integrity": {
+          "ran": true,
+          "finding_count": 0
+        },
+        "duplicates": {
+          "ran": true,
+          "finding_count": 2
+        },
+        "ood": {
+          "ran": true,
+          "finding_count": 1
+        }
+      },
+      "source_risks": {
+        "unknown": {
+          "type": "contributor",
+          "total_samples": 80,
+          "finding_count": 167,
+          "risk_score": 7.0537,
+          "risk_level": "CRITICAL",
+          "attack_classes": [
+            "ood_insertion",
+            "near_duplicate_flooding"
+          ]
+        }
+      },
+      "overall_risk": "HIGH",
+      "timestamp": "2026-09-16T10:15:02.413355+00:00"
+    },
+    "model_integrity": {
+      "access_level": "white-box",
+      "checks_performed": [
+        "weight_analysis",
+        "entropy_probe"
+      ],
+      "checks_skipped": [
+        {
+          "check": "neural_cleanse",
+          "reason": "operands could not be broadcast together with shapes (1,640,640) (32,224,224,3) "
+        }
+      ],
+      "findings": [
+        {
+          "finding_id": "5f495fc8",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.7356161744312827,
+          "title": "High kurtosis in layer model.1.conv.weight",
+          "description": "Layer 'model.1.conv.weight' has kurtosis=21.78, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.1.conv.weight",
+            "kurtosis": 21.780808721564135,
+            "mean": -0.0017098880915603508,
+            "std": 0.28021462557028776
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.415881+00:00"
+        },
+        {
+          "finding_id": "9cf25822",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.722120021471258,
+          "title": "High kurtosis in layer model.2.cv1.conv.weight",
+          "description": "Layer 'model.2.cv1.conv.weight' has kurtosis=21.11, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.2.cv1.conv.weight",
+            "kurtosis": 21.1060010735629,
+            "mean": -0.017912062126419492,
+            "std": 0.11021281145165465
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.415942+00:00"
+        },
+        {
+          "finding_id": "945bb758",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.5264385046391332,
+          "title": "High kurtosis in layer model.2.cv2.conv.weight",
+          "description": "Layer 'model.2.cv2.conv.weight' has kurtosis=11.32, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.2.cv2.conv.weight",
+            "kurtosis": 11.32192523195666,
+            "mean": -0.008018882160110744,
+            "std": 0.1389569399960485
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.416007+00:00"
+        },
+        {
+          "finding_id": "00feb89e",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.7366630995552838,
+          "title": "High kurtosis in layer model.2.m.0.cv1.conv.weight",
+          "description": "Layer 'model.2.m.0.cv1.conv.weight' has kurtosis=21.83, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.2.m.0.cv1.conv.weight",
+            "kurtosis": 21.83315497776419,
+            "mean": -0.006347374126580263,
+            "std": 0.3003818621726985
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.416078+00:00"
+        },
+        {
+          "finding_id": "e31b4af5",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.5864326597238212,
+          "title": "High kurtosis in layer model.2.m.0.cv2.conv.weight",
+          "description": "Layer 'model.2.m.0.cv2.conv.weight' has kurtosis=14.32, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.2.m.0.cv2.conv.weight",
+            "kurtosis": 14.321632986191062,
+            "mean": -0.0016754887699737726,
+            "std": 0.10417183382453342
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.416142+00:00"
+        },
+        {
+          "finding_id": "0b7a8a4d",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.5377751503743561,
+          "title": "High kurtosis in layer model.4.cv1.conv.weight",
+          "description": "Layer 'model.4.cv1.conv.weight' has kurtosis=11.89, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.4.cv1.conv.weight",
+            "kurtosis": 11.888757518717805,
+            "mean": -0.009884539609357645,
+            "std": 0.2058975093048838
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.416449+00:00"
+        },
+        {
+          "finding_id": "43cb2707",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.51421874417144,
+          "title": "High kurtosis in layer model.4.m.0.cv2.conv.weight",
+          "description": "Layer 'model.4.m.0.cv2.conv.weight' has kurtosis=10.71, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.4.m.0.cv2.conv.weight",
+            "kurtosis": 10.710937208571998,
+            "mean": -0.006121016363638216,
+            "std": 0.11719817084366263
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.416831+00:00"
+        },
+        {
+          "finding_id": "f1608e62",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.576179636606206,
+          "title": "High kurtosis in layer model.6.m.0.cv1.conv.weight",
+          "description": "Layer 'model.6.m.0.cv1.conv.weight' has kurtosis=13.81, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.6.m.0.cv1.conv.weight",
+            "kurtosis": 13.808981830310298,
+            "mean": -0.007082257475576053,
+            "std": 0.10000731055889925
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.419033+00:00"
+        },
+        {
+          "finding_id": "bcd95a57",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.5468671860662021,
+          "title": "High kurtosis in layer model.8.m.0.cv2.conv.bias",
+          "description": "Layer 'model.8.m.0.cv2.conv.bias' has kurtosis=12.34, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.8.m.0.cv2.conv.bias",
+            "kurtosis": 12.343359303310104,
+            "mean": 0.1945616178563796,
+            "std": 0.9616627208657024
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.427509+00:00"
+        },
+        {
+          "finding_id": "75da59d1",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.7256590966103752,
+          "title": "High kurtosis in layer model.18.cv2.conv.weight",
+          "description": "Layer 'model.18.cv2.conv.weight' has kurtosis=21.28, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.18.cv2.conv.weight",
+            "kurtosis": 21.282954830518758,
+            "mean": -0.005264466385138176,
+            "std": 0.09333936012744698
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.432331+00:00"
+        },
+        {
+          "finding_id": "bae786a8",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.5993845481350669,
+          "title": "High kurtosis in layer model.18.m.0.cv2.conv.weight",
+          "description": "Layer 'model.18.m.0.cv2.conv.weight' has kurtosis=14.97, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.18.m.0.cv2.conv.weight",
+            "kurtosis": 14.969227406753348,
+            "mean": -0.006616777915709304,
+            "std": 0.1571188365106256
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.433134+00:00"
+        },
+        {
+          "finding_id": "742e25a9",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.21.cv2.conv.weight",
+          "description": "Layer 'model.21.cv2.conv.weight' has kurtosis=39.18, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.21.cv2.conv.weight",
+            "kurtosis": 39.18143924934888,
+            "mean": -0.008157690215499183,
+            "std": 0.08766298828639779
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.436533+00:00"
+        },
+        {
+          "finding_id": "5cfe9542",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.6077203388541195,
+          "title": "High kurtosis in layer model.21.m.0.cv2.conv.weight",
+          "description": "Layer 'model.21.m.0.cv2.conv.weight' has kurtosis=15.39, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.21.m.0.cv2.conv.weight",
+            "kurtosis": 15.386016942705972,
+            "mean": -0.0043601193888474455,
+            "std": 0.08211688282144641
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.439463+00:00"
+        },
+        {
+          "finding_id": "2676515e",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.603577105785287,
+          "title": "High kurtosis in layer model.22.cv2.0.0.conv.weight",
+          "description": "Layer 'model.22.cv2.0.0.conv.weight' has kurtosis=15.18, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.0.0.conv.weight",
+            "kurtosis": 15.178855289264352,
+            "mean": -0.006178841875176786,
+            "std": 0.08735990121127303
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.439867+00:00"
+        },
+        {
+          "finding_id": "7ec2283e",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv2.0.1.conv.weight",
+          "description": "Layer 'model.22.cv2.0.1.conv.weight' has kurtosis=58.08, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.0.1.conv.weight",
+            "kurtosis": 58.07808156923228,
+            "mean": -0.006227951014679258,
+            "std": 0.22378225262240461
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.440269+00:00"
+        },
+        {
+          "finding_id": "16c28d40",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.5202121341414221,
+          "title": "High kurtosis in layer model.22.cv2.0.2.weight",
+          "description": "Layer 'model.22.cv2.0.2.weight' has kurtosis=11.01, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.0.2.weight",
+            "kurtosis": 11.010606707071107,
+            "mean": 5.547917680814862e-07,
+            "std": 0.050297221207797733
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.440348+00:00"
+        },
+        {
+          "finding_id": "420a8b70",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv2.1.0.conv.weight",
+          "description": "Layer 'model.22.cv2.1.0.conv.weight' has kurtosis=51.19, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.1.0.conv.weight",
+            "kurtosis": 51.18946332015011,
+            "mean": -0.004705810810339325,
+            "std": 0.08025008725626921
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.441104+00:00"
+        },
+        {
+          "finding_id": "e9a0524d",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv2.1.1.conv.weight",
+          "description": "Layer 'model.22.cv2.1.1.conv.weight' has kurtosis=110.45, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.1.1.conv.weight",
+            "kurtosis": 110.44688791219569,
+            "mean": -0.0012689939713306448,
+            "std": 0.12475116044570504
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.441506+00:00"
+        },
+        {
+          "finding_id": "79744311",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.5145021690429679,
+          "title": "High kurtosis in layer model.22.cv2.1.2.weight",
+          "description": "Layer 'model.22.cv2.1.2.weight' has kurtosis=10.73, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.1.2.weight",
+            "kurtosis": 10.725108452148394,
+            "mean": -4.0845770854502916e-07,
+            "std": 0.0548127644873565
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.441583+00:00"
+        },
+        {
+          "finding_id": "8cc12a94",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv2.2.0.conv.weight",
+          "description": "Layer 'model.22.cv2.2.0.conv.weight' has kurtosis=40.75, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.2.0.conv.weight",
+            "kurtosis": 40.74914225350268,
+            "mean": -0.001901415374361619,
+            "std": 0.05187609170149919
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.443051+00:00"
+        },
+        {
+          "finding_id": "69663318",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv2.2.1.conv.weight",
+          "description": "Layer 'model.22.cv2.2.1.conv.weight' has kurtosis=76.50, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv2.2.1.conv.weight",
+            "kurtosis": 76.49613372450129,
+            "mean": -0.0018659262578276119,
+            "std": 0.09564114040831789
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.443460+00:00"
+        },
+        {
+          "finding_id": "d2be18d2",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv3.0.1.conv.weight",
+          "description": "Layer 'model.22.cv3.0.1.conv.weight' has kurtosis=108.15, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv3.0.1.conv.weight",
+            "kurtosis": 108.1468488671803,
+            "mean": -0.020108147993306832,
+            "std": 0.27263318005965986
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.444586+00:00"
+        },
+        {
+          "finding_id": "8a1c56f9",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.7066449433320648,
+          "title": "High kurtosis in layer model.22.cv3.1.0.conv.weight",
+          "description": "Layer 'model.22.cv3.1.0.conv.weight' has kurtosis=20.33, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv3.1.0.conv.weight",
+            "kurtosis": 20.332247166603242,
+            "mean": -0.0032210880809495127,
+            "std": 0.06161055093261089
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.445599+00:00"
+        },
+        {
+          "finding_id": "fe29a34f",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv3.1.1.conv.weight",
+          "description": "Layer 'model.22.cv3.1.1.conv.weight' has kurtosis=719.83, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv3.1.1.conv.weight",
+            "kurtosis": 719.8282126487,
+            "mean": -0.014880772471132543,
+            "std": 0.23572052977129979
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.446152+00:00"
+        },
+        {
+          "finding_id": "460ac41c",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv3.2.0.conv.weight",
+          "description": "Layer 'model.22.cv3.2.0.conv.weight' has kurtosis=110.00, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv3.2.0.conv.weight",
+            "kurtosis": 109.997298902191,
+            "mean": -0.0018048698385746546,
+            "std": 0.045013279304610763
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.448004+00:00"
+        },
+        {
+          "finding_id": "d8ab3065",
+          "module": "model_integrity",
+          "attack_class": "weight_modification",
+          "severity": "MEDIUM",
+          "confidence": 0.9,
+          "title": "High kurtosis in layer model.22.cv3.2.1.conv.weight",
+          "description": "Layer 'model.22.cv3.2.1.conv.weight' has kurtosis=727.52, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+          "evidence": {
+            "method": "weight_statistics",
+            "layer": "model.22.cv3.2.1.conv.weight",
+            "kurtosis": 727.5216537720527,
+            "mean": -0.014322720360074651,
+            "std": 0.17213775655584543
+          },
+          "affected_assets": [],
+          "disposition": "review",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:02.448554+00:00"
+        },
+        {
+          "finding_id": "fa1aac04",
+          "module": "model_integrity",
+          "attack_class": "",
+          "severity": "INFO",
+          "confidence": 0.0,
+          "title": "Entropy probe failed",
+          "description": "Could not run noise probe: [ONNXRuntimeError] : 2 : INVALID_ARGUMENT : Invalid rank for input: images Got: 5 Expected: 4 Please fix either the inputs/outputs or the model.",
+          "evidence": {
+            "error": "[ONNXRuntimeError] : 2 : INVALID_ARGUMENT : Invalid rank for input: images Got: 5 Expected: 4 Please fix either the inputs/outputs or the model."
+          },
+          "affected_assets": [],
+          "disposition": "accept",
+          "remediation": "",
+          "timestamp": "2026-09-16T10:15:03.184813+00:00"
+        }
+      ],
+      "finding_count": 27,
+      "overall_severity": "MEDIUM",
+      "overall_risk_score": 0.9,
+      "overall_disposition": "accept",
+      "limitations": [
+        "Neural Cleanse gradient-free optimization may miss clean-label attacks.",
+        "Entropy probe may produce false positives on poorly calibrated (but benign) models.",
+        "Behavioral fingerprinting requires a prior reference; first assessment has no baseline."
+      ]
+    },
+    "distribution_shift": {
+      "shift_detected": false,
+      "mahalanobis": {
+        "mean_distance": 8.012087713042433,
+        "std_distance": 0.7434645692356505,
+        "per_sample_distances": [
+          7.663931266689747,
+          8.282320113225724,
+          8.522917854610766,
+          8.693803751761177,
+          6.669018986413762,
+          7.716407311991715,
+          8.59041780477944,
+          7.084296268246384,
+          8.470421210633006,
+          8.52217268658309,
+          7.0982231243046305,
+          6.723333733628494,
+          7.669975790627352,
+          8.052494181485285,
+          8.560640637316405,
+          8.482244579275275,
+          7.684017184595605,
+          8.651304899146325,
+          8.797206854466308,
+          8.230424450920582,
+          8.422506620331578,
+          8.084131356398787,
+          8.624532489119947,
+          8.191856045582938,
+          8.664588921069905,
+          8.677813378812953,
+          8.242651288473663,
+          7.680915517453408,
+          7.4907216882712016,
+          8.728019995773215,
+          8.699526159610715,
+          8.529727049384345,
+          8.244851848017007,
+          8.78301861924475,
+          8.649901187626137,
+          8.228109839490893,
+          8.683737642509962,
+          7.89598201617454,
+          8.32355264602058,
+          8.40423471421841,
+          8.59058752013764,
+          7.923368547396973,
+          8.616597111547371,
+          7.832896721310763,
+          7.059145543584181,
+          7.600332784127571,
+          8.4288982404032,
+          6.241876208954155,
+          5.423841576102168,
+          5.874096977492757,
+          6.523035181839871,
+          7.95950714138321,
+          7.868324025280827,
+          7.758459983793842,
+          6.5860596323391984,
+          7.64262494256762,
+          8.536765068043946,
+          8.538157844788074,
+          6.648554895493206,
+          8.217262659331457,
+          8.809341337469569,
+          8.525845956329428,
+          8.054143873669302,
+          8.801431137737117,
+          8.629907899564904,
+          8.710377572951195,
+          8.326355882129839,
+          8.683785461878195,
+          8.616527660389195,
+          7.9095319785867595,
+          8.243985761925169,
+          8.021046004283596,
+          8.091181474080964,
+          8.414676618228095,
+          6.601215344519251,
+          7.781635586254607,
+          7.919133261980897,
+          7.833777759150645,
+          6.995876831085691,
+          8.710895320976233
+        ]
+      },
+      "mmd": {
+        "mmd2": -0.011457970391737904,
+        "p_value": 1.0,
+        "kernel_bandwidth": 0.6942729276281399
+      },
+      "ks_test": {
+        "top_shifted_dimensions": [
+          {
+            "dimension": 76,
+            "ks_statistic": 0.875,
+            "p_value": 4.941160908231773e-32,
+            "significant": true
+          },
+          {
+            "dimension": 75,
+            "ks_statistic": 0.7250000000000001,
+            "p_value": 1.3175032508098196e-20,
+            "significant": true
+          },
+          {
+            "dimension": 79,
+            "ks_statistic": 0.6875,
+            "p_value": 2.4547720569088556e-18,
+            "significant": true
+          },
+          {
+            "dimension": 77,
+            "ks_statistic": 0.525,
+            "p_value": 1.9834713084705621e-10,
+            "significant": true
+          },
+          {
+            "dimension": 78,
+            "ks_statistic": 0.5125000000000001,
+            "p_value": 6.204705118805349e-10,
+            "significant": true
+          },
+          {
+            "dimension": 0,
+            "ks_statistic": 0.012500000000000067,
+            "p_value": 1.0,
+            "significant": false
+          },
+          {
+            "dimension": 1,
+            "ks_statistic": 0.012500000000000067,
+            "p_value": 1.0,
+            "significant": false
+          },
+          {
+            "dimension": 2,
+            "ks_statistic": 0.012500000000000067,
+            "p_value": 1.0,
+            "significant": false
+          },
+          {
+            "dimension": 3,
+            "ks_statistic": 0.012500000000000067,
+            "p_value": 1.0,
+            "significant": false
+          },
+          {
+            "dimension": 4,
+            "ks_statistic": 0.012500000000000067,
+            "p_value": 1.0,
+            "significant": false
+          }
+        ],
+        "num_dimensions": 80,
+        "num_significant_raw": 5,
+        "num_significant_bonferroni": 5,
+        "fraction_shifted": 0.0625
+      },
+      "msp": null,
+      "characterization": {
+        "shift_type": "none",
+        "shift_magnitude": 0.0,
+        "natural_vs_adversarial": "probable_natural_drift",
+        "confidence": 0.9,
+        "reasoning": [
+          "Shift characteristics are consistent with natural operational drift (gradual, non-concentrated)."
+        ]
+      },
+      "findings": [],
+      "overall_severity": "LOW",
+      "overall_disposition": "accept"
+    }
+  },
+  "findings": [
+    {
+      "finding_id": "82b2d4d2",
+      "module": "data_integrity",
+      "attack_class": "near_duplicate_flooding",
+      "severity": "MEDIUM",
+      "confidence": 0.9706,
+      "title": "Near-duplicate image clusters detected",
+      "description": "80 images form 2 near-duplicate clusters (cosine sim >= 0.95).",
+      "evidence": {
+        "near_cluster_count": 2,
+        "total_near_duplicates": 80,
+        "similarity_threshold": 0.95,
+        "clusters": [
+          {
+            "cluster_root": "80671",
+            "size": 77,
+            "contributors": {
+              "unknown": 77
+            },
+            "sample_ids": [
+              "397133",
+              "296649",
+              "386912",
+              "289393",
+              "17627",
+              "143931",
+              "322864",
+              "153299",
+              "308394",
+              "456496"
+            ]
+          },
+          {
+            "cluster_root": "180135",
+            "size": 3,
+            "contributors": {
+              "unknown": 3
+            },
+            "sample_ids": [
+              "122745",
+              "85329",
+              "180135"
+            ]
+          }
+        ]
+      },
+      "affected_assets": [
+        "397133",
+        "296649",
+        "386912",
+        "289393",
+        "17627",
+        "143931",
+        "322864",
+        "153299",
+        "308394",
+        "456496",
+        "184321",
+        "565778",
+        "555705",
+        "443303",
+        "418281",
+        "25560",
+        "329323",
+        "511321",
+        "314294",
+        "233771",
+        "185250",
+        "356427",
+        "572517",
+        "270244",
+        "430961",
+        "577539",
+        "104612",
+        "486438",
+        "400573",
+        "109798",
+        "370677",
+        "369370",
+        "502737",
+        "37777",
+        "174482",
+        "403385",
+        "6818",
+        "458054",
+        "331352",
+        "502136",
+        "491497",
+        "184791",
+        "348881",
+        "522713",
+        "181666",
+        "303818",
+        "460347",
+        "226111",
+        "41888",
+        "297343",
+        "239274",
+        "286994",
+        "475779",
+        "516316",
+        "562121",
+        "360661",
+        "16228",
+        "266409",
+        "476258",
+        "448365",
+        "35197",
+        "349860",
+        "238866",
+        "252219",
+        "480985",
+        "463730",
+        "336587",
+        "301867",
+        "125211",
+        "382088",
+        "87038",
+        "219578",
+        "500663",
+        "312421",
+        "58636",
+        "403817",
+        "80671",
+        "122745",
+        "85329",
+        "180135"
+      ],
+      "disposition": "review",
+      "remediation": "Review near-duplicate clusters.  Keep the highest-quality version and remove others to avoid biasing the model.",
+      "timestamp": "2026-09-16T10:15:02.371046+00:00"
+    },
+    {
+      "finding_id": "5da15a2c",
+      "module": "data_integrity",
+      "attack_class": "near_duplicate_flooding",
+      "severity": "HIGH",
+      "confidence": 1.0,
+      "title": "Suspected duplicate flooding by contributor 'unknown'",
+      "description": "Contributor 'unknown' dominates 80 duplicate samples out of 80 total contributions (100.0%), suggesting intentional flooding.",
+      "evidence": {
+        "contributor": "unknown",
+        "duplicate_count": 80,
+        "total_from_contributor": 80,
+        "duplicate_rate": 1.0
+      },
+      "affected_assets": [
+        "397133",
+        "37777",
+        "252219",
+        "87038",
+        "174482",
+        "403385",
+        "6818",
+        "480985",
+        "458054",
+        "331352",
+        "296649",
+        "386912",
+        "502136",
+        "491497",
+        "184791",
+        "348881",
+        "289393",
+        "522713",
+        "181666",
+        "17627",
+        "143931",
+        "303818",
+        "463730",
+        "460347",
+        "322864",
+        "226111",
+        "153299",
+        "308394",
+        "456496",
+        "58636",
+        "41888",
+        "184321",
+        "565778",
+        "297343",
+        "336587",
+        "122745",
+        "219578",
+        "555705",
+        "443303",
+        "500663",
+        "418281",
+        "25560",
+        "403817",
+        "85329",
+        "329323",
+        "239274",
+        "286994",
+        "511321",
+        "314294",
+        "233771",
+        "475779",
+        "301867",
+        "312421",
+        "185250",
+        "356427",
+        "572517",
+        "270244",
+        "516316",
+        "125211",
+        "562121",
+        "360661",
+        "16228",
+        "382088",
+        "266409",
+        "430961",
+        "80671",
+        "577539",
+        "104612",
+        "476258",
+        "448365",
+        "35197",
+        "349860",
+        "180135",
+        "486438",
+        "400573",
+        "109798",
+        "370677",
+        "238866",
+        "369370",
+        "502737"
+      ],
+      "disposition": "quarantine",
+      "remediation": "Audit all submissions from 'unknown'. Rate-limit future contributions and require diversity checks.",
+      "timestamp": "2026-09-16T10:15:02.371077+00:00"
+    },
+    {
+      "finding_id": "2f8347d7",
+      "module": "data_integrity",
+      "attack_class": "ood_insertion",
+      "severity": "MEDIUM",
+      "confidence": 0.6429,
+      "title": "Out-of-distribution samples detected",
+      "description": "7 sample(s) flagged as OOD: 1 flagged by both detectors, 3 by Mahalanobis only, 3 by Isolation Forest only.",
+      "evidence": {
+        "total_flagged": 7,
+        "both_detectors": 1,
+        "mahalanobis_only": 3,
+        "isolation_forest_only": 3,
+        "contamination": 0.05,
+        "mahalanobis_threshold": 78.3874,
+        "per_sample_scores": {
+          "181666": {
+            "mahalanobis_distance": 78.8859,
+            "isolation_score": 0.461,
+            "flagged_by": "mahalanobis"
+          },
+          "460347": {
+            "mahalanobis_distance": 74.7654,
+            "isolation_score": 0.5202,
+            "flagged_by": "isolation_forest"
+          },
+          "297343": {
+            "mahalanobis_distance": 78.509,
+            "isolation_score": 0.4878,
+            "flagged_by": "mahalanobis"
+          },
+          "122745": {
+            "mahalanobis_distance": 76.9027,
+            "isolation_score": 0.5402,
+            "flagged_by": "isolation_forest"
+          },
+          "360661": {
+            "mahalanobis_distance": 78.8684,
+            "isolation_score": 0.4458,
+            "flagged_by": "mahalanobis"
+          },
+          "266409": {
+            "mahalanobis_distance": 78.8382,
+            "isolation_score": 0.504,
+            "flagged_by": "both"
+          },
+          "80671": {
+            "mahalanobis_distance": 78.1771,
+            "isolation_score": 0.5273,
+            "flagged_by": "isolation_forest"
+          }
+        },
+        "contributors": {
+          "unknown": 7
+        }
+      },
+      "affected_assets": [
+        "181666",
+        "460347",
+        "297343",
+        "122745",
+        "360661",
+        "266409",
+        "80671"
+      ],
+      "disposition": "quarantine",
+      "remediation": "Inspect flagged samples for relevance to the target domain. Remove confirmed OOD samples. Investigate contributing sources for intentional insertion.",
+      "timestamp": "2026-09-16T10:15:02.413136+00:00"
+    },
+    {
+      "finding_id": "5f495fc8",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.7356161744312827,
+      "title": "High kurtosis in layer model.1.conv.weight",
+      "description": "Layer 'model.1.conv.weight' has kurtosis=21.78, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.1.conv.weight",
+        "kurtosis": 21.780808721564135,
+        "mean": -0.0017098880915603508,
+        "std": 0.28021462557028776
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.415881+00:00"
+    },
+    {
+      "finding_id": "9cf25822",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.722120021471258,
+      "title": "High kurtosis in layer model.2.cv1.conv.weight",
+      "description": "Layer 'model.2.cv1.conv.weight' has kurtosis=21.11, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.2.cv1.conv.weight",
+        "kurtosis": 21.1060010735629,
+        "mean": -0.017912062126419492,
+        "std": 0.11021281145165465
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.415942+00:00"
+    },
+    {
+      "finding_id": "945bb758",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.5264385046391332,
+      "title": "High kurtosis in layer model.2.cv2.conv.weight",
+      "description": "Layer 'model.2.cv2.conv.weight' has kurtosis=11.32, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.2.cv2.conv.weight",
+        "kurtosis": 11.32192523195666,
+        "mean": -0.008018882160110744,
+        "std": 0.1389569399960485
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.416007+00:00"
+    },
+    {
+      "finding_id": "00feb89e",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.7366630995552838,
+      "title": "High kurtosis in layer model.2.m.0.cv1.conv.weight",
+      "description": "Layer 'model.2.m.0.cv1.conv.weight' has kurtosis=21.83, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.2.m.0.cv1.conv.weight",
+        "kurtosis": 21.83315497776419,
+        "mean": -0.006347374126580263,
+        "std": 0.3003818621726985
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.416078+00:00"
+    },
+    {
+      "finding_id": "e31b4af5",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.5864326597238212,
+      "title": "High kurtosis in layer model.2.m.0.cv2.conv.weight",
+      "description": "Layer 'model.2.m.0.cv2.conv.weight' has kurtosis=14.32, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.2.m.0.cv2.conv.weight",
+        "kurtosis": 14.321632986191062,
+        "mean": -0.0016754887699737726,
+        "std": 0.10417183382453342
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.416142+00:00"
+    },
+    {
+      "finding_id": "0b7a8a4d",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.5377751503743561,
+      "title": "High kurtosis in layer model.4.cv1.conv.weight",
+      "description": "Layer 'model.4.cv1.conv.weight' has kurtosis=11.89, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.4.cv1.conv.weight",
+        "kurtosis": 11.888757518717805,
+        "mean": -0.009884539609357645,
+        "std": 0.2058975093048838
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.416449+00:00"
+    },
+    {
+      "finding_id": "43cb2707",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.51421874417144,
+      "title": "High kurtosis in layer model.4.m.0.cv2.conv.weight",
+      "description": "Layer 'model.4.m.0.cv2.conv.weight' has kurtosis=10.71, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.4.m.0.cv2.conv.weight",
+        "kurtosis": 10.710937208571998,
+        "mean": -0.006121016363638216,
+        "std": 0.11719817084366263
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.416831+00:00"
+    },
+    {
+      "finding_id": "f1608e62",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.576179636606206,
+      "title": "High kurtosis in layer model.6.m.0.cv1.conv.weight",
+      "description": "Layer 'model.6.m.0.cv1.conv.weight' has kurtosis=13.81, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.6.m.0.cv1.conv.weight",
+        "kurtosis": 13.808981830310298,
+        "mean": -0.007082257475576053,
+        "std": 0.10000731055889925
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.419033+00:00"
+    },
+    {
+      "finding_id": "bcd95a57",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.5468671860662021,
+      "title": "High kurtosis in layer model.8.m.0.cv2.conv.bias",
+      "description": "Layer 'model.8.m.0.cv2.conv.bias' has kurtosis=12.34, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.8.m.0.cv2.conv.bias",
+        "kurtosis": 12.343359303310104,
+        "mean": 0.1945616178563796,
+        "std": 0.9616627208657024
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.427509+00:00"
+    },
+    {
+      "finding_id": "75da59d1",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.7256590966103752,
+      "title": "High kurtosis in layer model.18.cv2.conv.weight",
+      "description": "Layer 'model.18.cv2.conv.weight' has kurtosis=21.28, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.18.cv2.conv.weight",
+        "kurtosis": 21.282954830518758,
+        "mean": -0.005264466385138176,
+        "std": 0.09333936012744698
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.432331+00:00"
+    },
+    {
+      "finding_id": "bae786a8",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.5993845481350669,
+      "title": "High kurtosis in layer model.18.m.0.cv2.conv.weight",
+      "description": "Layer 'model.18.m.0.cv2.conv.weight' has kurtosis=14.97, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.18.m.0.cv2.conv.weight",
+        "kurtosis": 14.969227406753348,
+        "mean": -0.006616777915709304,
+        "std": 0.1571188365106256
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.433134+00:00"
+    },
+    {
+      "finding_id": "742e25a9",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.21.cv2.conv.weight",
+      "description": "Layer 'model.21.cv2.conv.weight' has kurtosis=39.18, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.21.cv2.conv.weight",
+        "kurtosis": 39.18143924934888,
+        "mean": -0.008157690215499183,
+        "std": 0.08766298828639779
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.436533+00:00"
+    },
+    {
+      "finding_id": "5cfe9542",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.6077203388541195,
+      "title": "High kurtosis in layer model.21.m.0.cv2.conv.weight",
+      "description": "Layer 'model.21.m.0.cv2.conv.weight' has kurtosis=15.39, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.21.m.0.cv2.conv.weight",
+        "kurtosis": 15.386016942705972,
+        "mean": -0.0043601193888474455,
+        "std": 0.08211688282144641
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.439463+00:00"
+    },
+    {
+      "finding_id": "2676515e",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.603577105785287,
+      "title": "High kurtosis in layer model.22.cv2.0.0.conv.weight",
+      "description": "Layer 'model.22.cv2.0.0.conv.weight' has kurtosis=15.18, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.0.0.conv.weight",
+        "kurtosis": 15.178855289264352,
+        "mean": -0.006178841875176786,
+        "std": 0.08735990121127303
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.439867+00:00"
+    },
+    {
+      "finding_id": "7ec2283e",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv2.0.1.conv.weight",
+      "description": "Layer 'model.22.cv2.0.1.conv.weight' has kurtosis=58.08, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.0.1.conv.weight",
+        "kurtosis": 58.07808156923228,
+        "mean": -0.006227951014679258,
+        "std": 0.22378225262240461
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.440269+00:00"
+    },
+    {
+      "finding_id": "16c28d40",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.5202121341414221,
+      "title": "High kurtosis in layer model.22.cv2.0.2.weight",
+      "description": "Layer 'model.22.cv2.0.2.weight' has kurtosis=11.01, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.0.2.weight",
+        "kurtosis": 11.010606707071107,
+        "mean": 5.547917680814862e-07,
+        "std": 0.050297221207797733
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.440348+00:00"
+    },
+    {
+      "finding_id": "420a8b70",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv2.1.0.conv.weight",
+      "description": "Layer 'model.22.cv2.1.0.conv.weight' has kurtosis=51.19, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.1.0.conv.weight",
+        "kurtosis": 51.18946332015011,
+        "mean": -0.004705810810339325,
+        "std": 0.08025008725626921
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.441104+00:00"
+    },
+    {
+      "finding_id": "e9a0524d",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv2.1.1.conv.weight",
+      "description": "Layer 'model.22.cv2.1.1.conv.weight' has kurtosis=110.45, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.1.1.conv.weight",
+        "kurtosis": 110.44688791219569,
+        "mean": -0.0012689939713306448,
+        "std": 0.12475116044570504
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.441506+00:00"
+    },
+    {
+      "finding_id": "79744311",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.5145021690429679,
+      "title": "High kurtosis in layer model.22.cv2.1.2.weight",
+      "description": "Layer 'model.22.cv2.1.2.weight' has kurtosis=10.73, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.1.2.weight",
+        "kurtosis": 10.725108452148394,
+        "mean": -4.0845770854502916e-07,
+        "std": 0.0548127644873565
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.441583+00:00"
+    },
+    {
+      "finding_id": "8cc12a94",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv2.2.0.conv.weight",
+      "description": "Layer 'model.22.cv2.2.0.conv.weight' has kurtosis=40.75, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.2.0.conv.weight",
+        "kurtosis": 40.74914225350268,
+        "mean": -0.001901415374361619,
+        "std": 0.05187609170149919
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.443051+00:00"
+    },
+    {
+      "finding_id": "69663318",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv2.2.1.conv.weight",
+      "description": "Layer 'model.22.cv2.2.1.conv.weight' has kurtosis=76.50, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv2.2.1.conv.weight",
+        "kurtosis": 76.49613372450129,
+        "mean": -0.0018659262578276119,
+        "std": 0.09564114040831789
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.443460+00:00"
+    },
+    {
+      "finding_id": "d2be18d2",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv3.0.1.conv.weight",
+      "description": "Layer 'model.22.cv3.0.1.conv.weight' has kurtosis=108.15, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv3.0.1.conv.weight",
+        "kurtosis": 108.1468488671803,
+        "mean": -0.020108147993306832,
+        "std": 0.27263318005965986
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.444586+00:00"
+    },
+    {
+      "finding_id": "8a1c56f9",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.7066449433320648,
+      "title": "High kurtosis in layer model.22.cv3.1.0.conv.weight",
+      "description": "Layer 'model.22.cv3.1.0.conv.weight' has kurtosis=20.33, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv3.1.0.conv.weight",
+        "kurtosis": 20.332247166603242,
+        "mean": -0.0032210880809495127,
+        "std": 0.06161055093261089
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.445599+00:00"
+    },
+    {
+      "finding_id": "fe29a34f",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv3.1.1.conv.weight",
+      "description": "Layer 'model.22.cv3.1.1.conv.weight' has kurtosis=719.83, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv3.1.1.conv.weight",
+        "kurtosis": 719.8282126487,
+        "mean": -0.014880772471132543,
+        "std": 0.23572052977129979
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.446152+00:00"
+    },
+    {
+      "finding_id": "460ac41c",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv3.2.0.conv.weight",
+      "description": "Layer 'model.22.cv3.2.0.conv.weight' has kurtosis=110.00, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv3.2.0.conv.weight",
+        "kurtosis": 109.997298902191,
+        "mean": -0.0018048698385746546,
+        "std": 0.045013279304610763
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.448004+00:00"
+    },
+    {
+      "finding_id": "d8ab3065",
+      "module": "model_integrity",
+      "attack_class": "weight_modification",
+      "severity": "MEDIUM",
+      "confidence": 0.9,
+      "title": "High kurtosis in layer model.22.cv3.2.1.conv.weight",
+      "description": "Layer 'model.22.cv3.2.1.conv.weight' has kurtosis=727.52, which is unusually high. This may indicate weight modifications or embedded hidden behavior.",
+      "evidence": {
+        "method": "weight_statistics",
+        "layer": "model.22.cv3.2.1.conv.weight",
+        "kurtosis": 727.5216537720527,
+        "mean": -0.014322720360074651,
+        "std": 0.17213775655584543
+      },
+      "affected_assets": [],
+      "disposition": "review",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:02.448554+00:00"
+    },
+    {
+      "finding_id": "fa1aac04",
+      "module": "model_integrity",
+      "attack_class": "",
+      "severity": "INFO",
+      "confidence": 0.0,
+      "title": "Entropy probe failed",
+      "description": "Could not run noise probe: [ONNXRuntimeError] : 2 : INVALID_ARGUMENT : Invalid rank for input: images Got: 5 Expected: 4 Please fix either the inputs/outputs or the model.",
+      "evidence": {
+        "error": "[ONNXRuntimeError] : 2 : INVALID_ARGUMENT : Invalid rank for input: images Got: 5 Expected: 4 Please fix either the inputs/outputs or the model."
+      },
+      "affected_assets": [],
+      "disposition": "accept",
+      "remediation": "",
+      "timestamp": "2026-09-16T10:15:03.184813+00:00"
+    }
+  ],
+  "overall_risk": "HIGH",
+  "overall_disposition": "review",
+  "audit_trail": [
+    {
+      "entry_id": "42e2adec-0ec2-4832-8e04-1090ec1d48b2",
+      "sequence_number": 0,
+      "timestamp": "2026-09-16T10:15:02.266335+00:00",
+      "action": "assessment_started",
+      "module": "orchestrator",
+      "details": {
+        "model_access_level": "white-box",
+        "skip_modules": [],
+        "timestamp": "2026-09-16T10:15:02.266313+00:00"
+      },
+      "input_hash": "",
+      "output_hash": "",
+      "previous_entry_hash": "GENESIS",
+      "entry_hash": "1eaeafafff3265d2ac8cee3af71fdfa9de72171047190ece8c80c905e61679f0"
+    },
+    {
+      "entry_id": "77eec8a3-14fb-4c9a-9b1b-4756cdaec137",
+      "sequence_number": 1,
+      "timestamp": "2026-09-16T10:15:02.266393+00:00",
+      "action": "module_started",
+      "module": "data_integrity",
+      "details": {},
+      "input_hash": "cb10b8e539b0160533826c4fd8eeb4459002a19dd693fdd2aede905bb0fdf345",
+      "output_hash": "",
+      "previous_entry_hash": "1eaeafafff3265d2ac8cee3af71fdfa9de72171047190ece8c80c905e61679f0",
+      "entry_hash": "36bac7c6f2f3e26bdd43b586280eb918c5234ef17c1e7c64058c391cd749c665"
+    },
+    {
+      "entry_id": "34e4e0f0-1c99-43cd-bb82-ef14f6ee691d",
+      "sequence_number": 2,
+      "timestamp": "2026-09-16T10:15:02.413384+00:00",
+      "action": "module_completed",
+      "module": "data_integrity",
+      "details": {
+        "finding_count": 3
+      },
+      "input_hash": "",
+      "output_hash": "3578cc8acfbd9cffa9934cfc7450b687d96200267c9b6f59887ca6ef2ac50007",
+      "previous_entry_hash": "36bac7c6f2f3e26bdd43b586280eb918c5234ef17c1e7c64058c391cd749c665",
+      "entry_hash": "78092eff66c813fd133c5453eddfc50568dc129dee969a71f1b915642bb77640"
+    },
+    {
+      "entry_id": "e422b157-34d9-414d-8d2b-2d99b374aebf",
+      "sequence_number": 3,
+      "timestamp": "2026-09-16T10:15:02.413399+00:00",
+      "action": "module_started",
+      "module": "model_integrity",
+      "details": {},
+      "input_hash": "2c1179cf72e248440b966d6590bdabee1b8c9ccbe0a627bb7fe0f5e4f8258549",
+      "output_hash": "",
+      "previous_entry_hash": "78092eff66c813fd133c5453eddfc50568dc129dee969a71f1b915642bb77640",
+      "entry_hash": "cce4364408956a8c5d5e3ec20b69e9ad87ae0b233baa16daa136cae107285e1a"
+    },
+    {
+      "entry_id": "e3128273-b143-4827-a5f0-ab27653157e2",
+      "sequence_number": 4,
+      "timestamp": "2026-09-16T10:15:03.185078+00:00",
+      "action": "module_completed",
+      "module": "model_integrity",
+      "details": {
+        "finding_count": 27
+      },
+      "input_hash": "",
+      "output_hash": "35394dd53206796ddb6a8ceac452a562b351cf4016c00d5190c0ae223460f513",
+      "previous_entry_hash": "cce4364408956a8c5d5e3ec20b69e9ad87ae0b233baa16daa136cae107285e1a",
+      "entry_hash": "40c0db3cc655ef862bda03b9f0bfce1133c5bb21791dac82735da31151dd58a6"
+    },
+    {
+      "entry_id": "e9844d05-20af-4ded-8029-b1e89ddc9fe3",
+      "sequence_number": 5,
+      "timestamp": "2026-09-16T10:15:03.185096+00:00",
+      "action": "module_started",
+      "module": "distribution_shift",
+      "details": {},
+      "input_hash": "",
+      "output_hash": "",
+      "previous_entry_hash": "40c0db3cc655ef862bda03b9f0bfce1133c5bb21791dac82735da31151dd58a6",
+      "entry_hash": "510b824ea61979ebdd3ab087d504001344b6f2049f66301e5ebc52c1fdcec52a"
+    },
+    {
+      "entry_id": "b269ffdf-0ed1-4ab3-9f8a-11c111d5cb36",
+      "sequence_number": 6,
+      "timestamp": "2026-09-16T10:15:03.223654+00:00",
+      "action": "module_completed",
+      "module": "distribution_shift",
+      "details": {
+        "shift_detected": false
+      },
+      "input_hash": "",
+      "output_hash": "",
+      "previous_entry_hash": "510b824ea61979ebdd3ab087d504001344b6f2049f66301e5ebc52c1fdcec52a",
+      "entry_hash": "f8f960accd72f3fa72bc84d7763fb22f08b0182e757b3235ecd089db9995934e"
+    },
+    {
+      "entry_id": "e2c22884-4371-493f-a353-0ae451a048c9",
+      "sequence_number": 7,
+      "timestamp": "2026-09-16T10:15:03.223725+00:00",
+      "action": "generate_report",
+      "module": "governance",
+      "details": {
+        "num_findings": 30
+      },
+      "input_hash": "",
+      "output_hash": "675f6b61463ae3f183c6245c0ce7437175ef6401e14a47dfb710c1a711b3effc",
+      "previous_entry_hash": "f8f960accd72f3fa72bc84d7763fb22f08b0182e757b3235ecd089db9995934e",
+      "entry_hash": "9e04fb302d9de860f21e226ccdbb77f72e969426c467e105fc5509c1716a1c12"
+    }
+  ],
+  "coverage_statement": {
+    "supported_attack_classes": [
+      {
+        "class": "trigger_injection",
+        "description": "Pixel-patch, blended, and frequency-domain trigger patterns injected into training images",
+        "detection_methods": [
+          "pixel_variance_analysis",
+          "fft_analysis",
+          "spectral_signatures"
+        ],
+        "access_required": "dataset",
+        "known_limitations": [
+          "Clean-label attacks with imperceptible triggers may evade pixel-level detection",
+          "WaNet (warping-based) triggers require flow-field analysis which is computationally expensive"
+        ]
+      },
+      {
+        "class": "label_flipping",
+        "description": "Deliberate or accidental label changes in training data",
+        "detection_methods": [
+          "confident_learning",
+          "cross_validation_disagreement"
+        ],
+        "access_required": "dataset + any classifier",
+        "known_limitations": [
+          "Requires sufficient samples per class (min ~50) for reliable detection",
+          "May flag genuinely ambiguous samples as mislabeled"
+        ]
+      },
+      {
+        "class": "systematic_mislabeling",
+        "description": "Coordinated mislabeling from a single contributor/source",
+        "detection_methods": [
+          "contributor_aggregation",
+          "pattern_analysis"
+        ],
+        "access_required": "dataset with contributor metadata",
+        "known_limitations": [
+          "Requires contributor/source metadata to attribute patterns",
+          "Small-scale mislabeling (<2% of samples) may not reach detection threshold"
+        ]
+      },
+      {
+        "class": "near_duplicate_flooding",
+        "description": "Near-duplicate images flooding the dataset to bias the model",
+        "detection_methods": [
+          "perceptual_hashing",
+          "cosine_similarity_clustering"
+        ],
+        "access_required": "dataset",
+        "known_limitations": [
+          "Subtle augmentation variants (rotations, crops) may not cluster as duplicates",
+          "Threshold sensitivity: too low catches legitimate similar images, too high misses near-duplicates"
+        ]
+      },
+      {
+        "class": "ood_insertion",
+        "description": "Out-of-distribution samples inserted into training data",
+        "detection_methods": [
+          "mahalanobis_distance",
+          "isolation_forest"
+        ],
+        "access_required": "dataset + reference distribution",
+        "known_limitations": [
+          "Requires a clean reference distribution for comparison",
+          "Borderline OOD samples near the decision boundary are hard to classify"
+        ]
+      },
+      {
+        "class": "model_backdoor",
+        "description": "Hidden backdoor behavior triggered by specific input patterns",
+        "detection_methods": [
+          "neural_cleanse (white-box)",
+          "entropy_probe (black-box)",
+          "strip_analysis (black-box)",
+          "weight_analysis (white-box)"
+        ],
+        "access_required": "model (white-box preferred, black-box possible)",
+        "known_limitations": [
+          "Gradient-free Neural Cleanse optimization is less reliable than gradient-based",
+          "Black-box entropy analysis may produce false positives on miscalibrated but clean models",
+          "Clean-label backdoors are harder to detect than patch-based triggers"
+        ]
+      },
+      {
+        "class": "model_substitution",
+        "description": "Entire model replaced with a different one",
+        "detection_methods": [
+          "weight_digest_comparison",
+          "behavioral_fingerprinting"
+        ],
+        "access_required": "model + reference fingerprint or digest",
+        "known_limitations": [
+          "First assessment has no baseline for comparison",
+          "Fine-tuning creates a new digest but may preserve most behavior"
+        ]
+      },
+      {
+        "class": "weight_modification",
+        "description": "Targeted modification of model weights post-training",
+        "detection_methods": [
+          "weight_statistics",
+          "dormant_neuron_analysis"
+        ],
+        "access_required": "white-box (model parameters)",
+        "known_limitations": [
+          "Cannot distinguish malicious modification from legitimate fine-tuning",
+          "Statistical tests have limited power against small, targeted changes"
+        ]
+      },
+      {
+        "class": "inference_replay",
+        "description": "Re-submission of old inference records as new",
+        "detection_methods": [
+          "nonce_verification",
+          "sequence_check",
+          "timestamp_validation"
+        ],
+        "access_required": "inference seal records",
+        "known_limitations": [
+          "Requires the provenance system to have been active during original inference"
+        ]
+      },
+      {
+        "class": "inference_tampering",
+        "description": "Post-hoc modification of inference inputs, outputs, or configuration",
+        "detection_methods": [
+          "cryptographic_seal_verification",
+          "hash_chain_validation"
+        ],
+        "access_required": "inference seal records + original artifacts",
+        "known_limitations": [
+          "Cannot detect tampering of records that were never sealed",
+          "Floating-point non-determinism may cause false positives in output hash verification across different hardware"
+        ]
+      },
+      {
+        "class": "output_substitution",
+        "description": "Replacement of genuine inference outputs with fabricated ones",
+        "detection_methods": [
+          "output_hash_verification",
+          "signature_verification"
+        ],
+        "access_required": "inference seal records",
+        "known_limitations": [
+          "Same as inference tampering limitations"
+        ]
+      },
+      {
+        "class": "covariate_shift",
+        "description": "Change in input feature distribution (terrain, season, sensor, illumination)",
+        "detection_methods": [
+          "mahalanobis_distance",
+          "mmd_test",
+          "ks_test"
+        ],
+        "access_required": "reference distribution + operational data features",
+        "known_limitations": [
+          "Requires representative reference distribution baseline",
+          "MMD kernel bandwidth sensitive to dimensionality"
+        ]
+      },
+      {
+        "class": "concept_drift",
+        "description": "Change in the relationship between features and labels",
+        "detection_methods": [
+          "accuracy_monitoring",
+          "prediction_shift_analysis"
+        ],
+        "access_required": "reference data with labels + operational data with labels",
+        "known_limitations": [
+          "Requires labeled operational data for concept drift detection",
+          "Hard to distinguish from covariate shift without labels"
+        ]
+      },
+      {
+        "class": "adversarial_distribution_shift",
+        "description": "Deliberately crafted distribution shift to degrade model performance",
+        "detection_methods": [
+          "anomaly_pattern_analysis",
+          "multi_signal_fusion"
+        ],
+        "access_required": "reference distribution + operational data",
+        "known_limitations": [
+          "Distinction between natural and adversarial shift is probabilistic, not definitive",
+          "Sophisticated adversarial shifts that mimic natural patterns may evade detection"
+        ]
+      }
+    ],
+    "unsupported_conditions": [
+      "Federated learning poisoning attacks (requires access to distributed training process)",
+      "Hardware-level Trojan injection (physical chip modifications)",
+      "Cryptographic key compromise (key management is out of scope)",
+      "Adversarial examples at inference time (test-time attacks on individual inputs)",
+      "Membership inference attacks (privacy attacks, not integrity)",
+      "Model extraction/stealing attacks (IP theft, not integrity)",
+      "Supply chain attacks on software dependencies",
+      "Side-channel attacks on inference hardware"
+    ],
+    "assumptions": [
+      "The assurance framework itself runs on trusted hardware",
+      "The Python runtime and cryptographic libraries are not compromised",
+      "Reference distributions and fingerprints, when provided, are genuine",
+      "File system integrity is maintained (files are not modified between hash computation and use)",
+      "Clock source for timestamps is not manipulated (relevant for air-gapped timestamp ordering)"
+    ]
+  },
+  "limitations": [
+    "[model_integrity] Neural Cleanse gradient-free optimization may miss clean-label attacks.",
+    "[model_integrity] Entropy probe may produce false positives on poorly calibrated (but benign) models.",
+    "[model_integrity] Behavioral fingerprinting requires a prior reference; first assessment has no baseline.",
+    "[model_integrity] neural_cleanse skipped: operands could not be broadcast together with shapes (1,640,640) (32,224,224,3) "
+  ],
+  "metadata": {
+    "audit_trail_valid": true,
+    "audit_trail_length": 8,
+    "human_readable_summary": "ASSURANCE REPORT - Pipeline: pipeline-20260916-101502\nGenerated: 2026-09-16T10:15:03.223784+00:00\nOverall Risk: HIGH\nRecommended Action: REVIEW\n\n--- DATA_INTEGRITY ---\n  [MEDIUM] Near-duplicate image clusters detected (confidence: 97%, action: review)\n    80 images form 2 near-duplicate clusters (cosine sim >= 0.95).\n  [HIGH] Suspected duplicate flooding by contributor 'unknown' (confidence: 100%, action: quarantine)\n    Contributor 'unknown' dominates 80 duplicate samples out of 80 total contributions (100.0%), suggesting intentional flooding.\n  [MEDIUM] Out-of-distribution samples detected (confidence: 64%, action: quarantine)\n    7 sample(s) flagged as OOD: 1 flagged by both detectors, 3 by Mahalanobis only, 3 by Isolation Forest only.\n\n--- MODEL_INTEGRITY ---\n  [MEDIUM] High kurtosis in layer model.1.conv.weight (confidence: 74%, action: review)\n    Layer 'model.1.conv.weight' has kurtosis=21.78, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.2.cv1.conv.weight (confidence: 72%, action: review)\n    Layer 'model.2.cv1.conv.weight' has kurtosis=21.11, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.2.cv2.conv.weight (confidence: 53%, action: review)\n    Layer 'model.2.cv2.conv.weight' has kurtosis=11.32, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.2.m.0.cv1.conv.weight (confidence: 74%, action: review)\n    Layer 'model.2.m.0.cv1.conv.weight' has kurtosis=21.83, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.2.m.0.cv2.conv.weight (confidence: 59%, action: review)\n    Layer 'model.2.m.0.cv2.conv.weight' has kurtosis=14.32, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.4.cv1.conv.weight (confidence: 54%, action: review)\n    Layer 'model.4.cv1.conv.weight' has kurtosis=11.89, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.4.m.0.cv2.conv.weight (confidence: 51%, action: review)\n    Layer 'model.4.m.0.cv2.conv.weight' has kurtosis=10.71, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.6.m.0.cv1.conv.weight (confidence: 58%, action: review)\n    Layer 'model.6.m.0.cv1.conv.weight' has kurtosis=13.81, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.8.m.0.cv2.conv.bias (confidence: 55%, action: review)\n    Layer 'model.8.m.0.cv2.conv.bias' has kurtosis=12.34, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.18.cv2.conv.weight (confidence: 73%, action: review)\n    Layer 'model.18.cv2.conv.weight' has kurtosis=21.28, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.18.m.0.cv2.conv.weight (confidence: 60%, action: review)\n    Layer 'model.18.m.0.cv2.conv.weight' has kurtosis=14.97, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.21.cv2.conv.weight (confidence: 90%, action: review)\n    Layer 'model.21.cv2.conv.weight' has kurtosis=39.18, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.21.m.0.cv2.conv.weight (confidence: 61%, action: review)\n    Layer 'model.21.m.0.cv2.conv.weight' has kurtosis=15.39, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.0.0.conv.weight (confidence: 60%, action: review)\n    Layer 'model.22.cv2.0.0.conv.weight' has kurtosis=15.18, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.0.1.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv2.0.1.conv.weight' has kurtosis=58.08, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.0.2.weight (confidence: 52%, action: review)\n    Layer 'model.22.cv2.0.2.weight' has kurtosis=11.01, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.1.0.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv2.1.0.conv.weight' has kurtosis=51.19, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.1.1.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv2.1.1.conv.weight' has kurtosis=110.45, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.1.2.weight (confidence: 51%, action: review)\n    Layer 'model.22.cv2.1.2.weight' has kurtosis=10.73, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.2.0.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv2.2.0.conv.weight' has kurtosis=40.75, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv2.2.1.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv2.2.1.conv.weight' has kurtosis=76.50, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv3.0.1.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv3.0.1.conv.weight' has kurtosis=108.15, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv3.1.0.conv.weight (confidence: 71%, action: review)\n    Layer 'model.22.cv3.1.0.conv.weight' has kurtosis=20.33, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv3.1.1.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv3.1.1.conv.weight' has kurtosis=719.83, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv3.2.0.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv3.2.0.conv.weight' has kurtosis=110.00, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [MEDIUM] High kurtosis in layer model.22.cv3.2.1.conv.weight (confidence: 90%, action: review)\n    Layer 'model.22.cv3.2.1.conv.weight' has kurtosis=727.52, which is unusually high. This may indicate weight modifications or embedded hidden behavior.\n  [INFO] Entropy probe failed (confidence: 0%, action: accept)\n    Could not run noise probe: [ONNXRuntimeError] : 2 : INVALID_ARGUMENT : Invalid rank for input: images Got: 5 Expected: 4 Please fix either the inputs/outputs or the model.\n",
+    "assessment_duration_seconds": 0.96,
+    "model_access_level": "white-box"
+  }
+}
