@@ -47,6 +47,10 @@ cviaf_demo_output/
 .cviaf_keys/
 *.pem
 *.key
+*.priv
+
+# Demo signing keys output (never commit restored keys)
+demo-output/
 
 # Temporary files
 *.ses
