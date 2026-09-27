@@ -145,7 +145,7 @@ The `cviaf_demo_output/` and `demo-output/` directories hold reports from earlie
 
 - `assurance_report.json` is the full report: findings, per-module assessments, the coverage statement, limitations, and the audit trail.
 - `audit_trail.json` is the standalone hash-chained action log.
-- `keys/` holds the signing keypairs used for that run.
+- `keys/` holds the signing keypairs used for that run. Key files are gitignored; see `demo-output/keys/README.md` for how to restore the historical demo keys locally.
 
 ## Repository layout
 
@@ -168,7 +168,7 @@ cviaf/
 
 - Provenance keys are regenerated on every engine construction. `InferenceProvenanceEngine.__init__` calls `generate_keypair()` unconditionally instead of loading an existing keypair from `key_dir`, so two engines pointed at the same directory get different keys. Any seal verified by an engine other than the one that signed it fails, which is why the demo flags all 10 seals. Audit trail verification is unaffected.
 - Without the `cryptography` package, signing silently falls back to HMAC-SHA256 with a shared secret. That is symmetric, so it provides no non-repudiation, and the fallback is not surfaced anywhere in the report. The current `.venv` is in this state because `cryptography` is not installed. Treat any seal as a tamper check, not as proof of origin, until `cryptography` is installed and the fallback is made explicit.
-- Private keys are committed. `.gitignore` is empty and the `*.priv` files under `cviaf_demo_output/keys/` and `demo-output/keys/` are tracked in git. They are demo keys for synthetic data, but `.gitignore` should exclude `.venv/`, `__pycache__/`, `cviaf.egg-info/`, and `keys/*.priv` before this repository is published anywhere.
+- Signing keys are not committed. The historical demo keys under `cviaf_demo_output/keys/` and `demo-output/keys/` were removed from the tree (in HMAC fallback mode the `.pub` is a copy of the same shared secret). The demo regenerates a fresh keypair on every run, so nothing is needed to run it. To re-verify the seals in the historical output directories, restore the original keys locally per `demo-output/keys/README.md`. Note the keys still exist in git history for clones made before this cleanup.
 - `assess` degrades silently. A missing imaging or model library produces a warning rather than an error, and the pipeline continues with whichever modules could run.
 
 ## Reference documents
