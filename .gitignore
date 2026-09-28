@@ -62,3 +62,7 @@ demo-output/
 
 # Jupyter
 .ipynb_checkpoints/
+_pycache_/
+*.pyc
+.freebuff/
+logs/

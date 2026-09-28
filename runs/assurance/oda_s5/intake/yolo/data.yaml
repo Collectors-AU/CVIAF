@@ -1,0 +1,5 @@
+path: /Users/billasur/cv-assurance-engine/runs/assurance/oda_s5/intake/yolo
+train: images
+val: images
+nc: 3
+names: ['vehicle', 'person', 'structure']

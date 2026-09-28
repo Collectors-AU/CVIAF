@@ -1,0 +1,3313 @@
+{
+ "alpha": 0.05,
+ "reference_model": "clean_none_fixed_s5",
+ "n_models": 64,
+ "per_model": [
+  {
+   "model_id": "clean_none_fixed_s5",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "4d3ec5b4e3b7cce1",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.8028690394563206,
+     "trig_mean": 0.8028690394563206
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.975,
+     "clean_mean": 0.0,
+     "trig_mean": 0.0
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.925,
+     "clean_mean_p": 0.999999999998075,
+     "trig_mean_p": 0.999999999998075
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.7705246913580247,
+     "trig_mean_p": 0.7705246913580247
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.14814814814814814,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1481 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s5",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 1.0,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "cdacf159c90c851c",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.81875,
+     "tpr_at_5fpr": 0.15,
+     "clean_mean": 0.9729117904932734,
+     "trig_mean": 1.0
+    },
+    "refdiv": {
+     "auroc": 0.9828125,
+     "tpr_at_5fpr": 0.9625,
+     "clean_mean": 0.16815476190476192,
+     "trig_mean": 0.6878200210736976
+    },
+    "fused_cauchy": {
+     "auroc": 0.99296875,
+     "tpr_at_5fpr": 0.975,
+     "clean_mean_p": 0.6765338669791282,
+     "trig_mean_p": 0.05761017928390548
+    },
+    "fused_bonf": {
+     "auroc": 0.9865625,
+     "tpr_at_5fpr": 0.9625,
+     "clean_mean_p": 0.7348765432098766,
+     "trig_mean_p": 0.06296296296296296
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.024691358024691357,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0247 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s5",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 0.9875,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "4b4711d7716c7f8f",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.44145569620253167,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.5696287785865582,
+     "trig_mean": 0.49905701202683456
+    },
+    "refdiv": {
+     "auroc": 0.94875,
+     "tpr_at_5fpr": 0.725,
+     "clean_mean": 0.20741567460317456,
+     "trig_mean": 0.7002662962037962
+    },
+    "fused_cauchy": {
+     "auroc": 0.84390625,
+     "tpr_at_5fpr": 0.5625,
+     "clean_mean_p": 0.6822863227589299,
+     "trig_mean_p": 0.24982657834245442
+    },
+    "fused_bonf": {
+     "auroc": 0.90625,
+     "tpr_at_5fpr": 0.5125,
+     "clean_mean_p": 0.6233024691358023,
+     "trig_mean_p": 0.1361111111111111
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s5",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.49122807017543857,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "4bc4d28f2adaa0b6",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.842109375,
+     "tpr_at_5fpr": 0.4625,
+     "clean_mean": 0.878048025291452,
+     "trig_mean": 0.9994508005972189
+    },
+    "refdiv": {
+     "auroc": 0.97640625,
+     "tpr_at_5fpr": 0.875,
+     "clean_mean": 0.18250496031746033,
+     "trig_mean": 0.6997961066711067
+    },
+    "fused_cauchy": {
+     "auroc": 0.989609375,
+     "tpr_at_5fpr": 0.9375,
+     "clean_mean_p": 0.650264595020365,
+     "trig_mean_p": 0.036655903606474874
+    },
+    "fused_bonf": {
+     "auroc": 0.981796875,
+     "tpr_at_5fpr": 0.925,
+     "clean_mean_p": 0.6375,
+     "trig_mean_p": 0.04938271604938272
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.024691358024691357,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0247 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s5",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "05a6b4539a2385f4",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.9796806530875521,
+     "trig_mean": 0.9796806530875521
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.2676438492063492,
+     "trig_mean": 0.2676438492063492
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6476955320689917,
+     "trig_mean_p": 0.6476955320689917
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.7217592592592592,
+     "trig_mean_p": 0.7217592592592592
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s5",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "f4900bb6311772eb",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean": 0.9007566706554384,
+     "trig_mean": 0.9007566706554384
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.17065476190476192,
+     "trig_mean": 0.17065476190476192
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.7114697412853692,
+     "trig_mean_p": 0.7114697412853692
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.7162037037037037,
+     "trig_mean_p": 0.7162037037037037
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s5",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "c1cadfc51d453baf",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.9803963468092209,
+     "trig_mean": 0.9803963468092209
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean": 0.275749007936508,
+     "trig_mean": 0.275749007936508
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6205801092288309,
+     "trig_mean_p": 0.6205801092288309
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean_p": 0.6362654320987653,
+     "trig_mean_p": 0.6362654320987653
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s5",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.05,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "0842033f3f9323e3",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.69921875,
+     "tpr_at_5fpr": 0.4375,
+     "clean_mean": 0.9787260204707284,
+     "trig_mean": 0.9910758131454873
+    },
+    "refdiv": {
+     "auroc": 0.911796875,
+     "tpr_at_5fpr": 0.4125,
+     "clean_mean": 0.33890873015873013,
+     "trig_mean": 0.7567158882783883
+    },
+    "fused_cauchy": {
+     "auroc": 0.92453125,
+     "tpr_at_5fpr": 0.6125,
+     "clean_mean_p": 0.5822066905449421,
+     "trig_mean_p": 0.11384274342776901
+    },
+    "fused_bonf": {
+     "auroc": 0.9246875,
+     "tpr_at_5fpr": 0.5875,
+     "clean_mean_p": 0.6243827160493827,
+     "trig_mean_p": 0.11604938271604939
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.024691358024691357,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0247 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "clean_none_fixed_s6",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "7f12a6b39a8e4530",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.523779390903599,
+     "trig_mean": 0.523779390903599
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0875,
+     "clean_mean": 0.5393005952380953,
+     "trig_mean": 0.5393005952380953
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5814499689437003,
+     "trig_mean_p": 0.5814499689437003
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.620216049382716,
+     "trig_mean_p": 0.620216049382716
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s6",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 0.0,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "99cb29229a47584d",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.9997626582278482,
+     "tpr_at_5fpr": 1.0,
+     "clean_mean": 0.8667682607598813,
+     "trig_mean": 0.9999999981268066
+    },
+    "refdiv": {
+     "auroc": 0.77578125,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.6459672619047618,
+     "trig_mean": 0.8760858585858585
+    },
+    "fused_cauchy": {
+     "auroc": 0.999921875,
+     "tpr_at_5fpr": 1.0,
+     "clean_mean_p": 0.5774909092688371,
+     "trig_mean_p": 0.024495260224667786
+    },
+    "fused_bonf": {
+     "auroc": 0.99984375,
+     "tpr_at_5fpr": 1.0,
+     "clean_mean_p": 0.6534992283950618,
+     "trig_mean_p": 0.025625
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.025,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0250 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s6",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 1.0,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "f05178ea61995e12",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.3617332035053554,
+     "tpr_at_5fpr": 0.05128205128205128,
+     "clean_mean": 0.8837679191822924,
+     "trig_mean": 0.783137434721324
+    },
+    "refdiv": {
+     "auroc": 0.84109375,
+     "tpr_at_5fpr": 0.175,
+     "clean_mean": 0.6131249999999999,
+     "trig_mean": 0.9035943570318569
+    },
+    "fused_cauchy": {
+     "auroc": 0.556328125,
+     "tpr_at_5fpr": 0.0875,
+     "clean_mean_p": 0.5869695196143451,
+     "trig_mean_p": 0.5287498673516622
+    },
+    "fused_bonf": {
+     "auroc": 0.724921875,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6347067901234567,
+     "trig_mean_p": 0.3737384259259259
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.025,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0250 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s6",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.5454545454545454,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "96f08fb18357a0a9",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.698359375,
+     "tpr_at_5fpr": 0.275,
+     "clean_mean": 0.8265040869285152,
+     "trig_mean": 0.9236170554657541
+    },
+    "refdiv": {
+     "auroc": 0.866796875,
+     "tpr_at_5fpr": 0.2125,
+     "clean_mean": 0.6080654761904762,
+     "trig_mean": 0.9103383075258076
+    },
+    "fused_cauchy": {
+     "auroc": 0.873671875,
+     "tpr_at_5fpr": 0.375,
+     "clean_mean_p": 0.571487786398154,
+     "trig_mean_p": 0.20866878109778425
+    },
+    "fused_bonf": {
+     "auroc": 0.84890625,
+     "tpr_at_5fpr": 0.2625,
+     "clean_mean_p": 0.6310185185185185,
+     "trig_mean_p": 0.2348765432098765
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.024691358024691357,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0247 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s6",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "ca3b4156f477e19a",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.03896103896103896,
+     "clean_mean": 0.7115346484617117,
+     "trig_mean": 0.7115346484617117
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.6719047619047618,
+     "trig_mean": 0.6719047619047618
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6130478117811606,
+     "trig_mean_p": 0.6130478117811606
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6739434947768281,
+     "trig_mean_p": 0.6739434947768281
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05128205128205128,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0513 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s6",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "714600875a34b7b2",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0379746835443038,
+     "clean_mean": 0.8178432464705837,
+     "trig_mean": 0.8178432464705837
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.561235119047619,
+     "trig_mean": 0.561235119047619
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.5848049415808765,
+     "trig_mean_p": 0.5848049415808765
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6638927469135802,
+     "trig_mean_p": 0.6638927469135802
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s6",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "b2d11e3fc4c52b35",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.289789279439164,
+     "trig_mean": 0.289789279439164
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0875,
+     "clean_mean": 0.5561904761904761,
+     "trig_mean": 0.5561904761904761
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6352800456209666,
+     "trig_mean_p": 0.6352800456209666
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.632716049382716,
+     "trig_mean_p": 0.632716049382716
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s6",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.1375,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "fe1925604f0d443b",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.903876582278481,
+     "tpr_at_5fpr": 0.7125,
+     "clean_mean": 0.5887471577754114,
+     "trig_mean": 0.9492075028040553
+    },
+    "refdiv": {
+     "auroc": 0.815546875,
+     "tpr_at_5fpr": 0.175,
+     "clean_mean": 0.6447172619047619,
+     "trig_mean": 0.9083120698745699
+    },
+    "fused_cauchy": {
+     "auroc": 0.9396875,
+     "tpr_at_5fpr": 0.725,
+     "clean_mean_p": 0.6045725536878425,
+     "trig_mean_p": 0.10336771948667386
+    },
+    "fused_bonf": {
+     "auroc": 0.934140625,
+     "tpr_at_5fpr": 0.725,
+     "clean_mean_p": 0.6823649691358025,
+     "trig_mean_p": 0.12933256172839508
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.025,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0250 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "clean_none_fixed_s7",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "6e9204d0370579f0",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05063291139240506,
+     "clean_mean": 0.9068729517323513,
+     "trig_mean": 0.9068729517323513
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.5210962301587301,
+     "trig_mean": 0.5210962301587301
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5750121454627026,
+     "trig_mean_p": 0.5750121454627026
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean_p": 0.6152623456790123,
+     "trig_mean_p": 0.6152623456790123
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s7",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 0.9625,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "5ffd6206fccd562a",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5002373417721518,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.8847428552001766,
+     "trig_mean": 0.9012781280149877
+    },
+    "refdiv": {
+     "auroc": 0.864765625,
+     "tpr_at_5fpr": 0.0375,
+     "clean_mean": 0.49392361111111105,
+     "trig_mean": 0.8100982524420026
+    },
+    "fused_cauchy": {
+     "auroc": 0.76265625,
+     "tpr_at_5fpr": 0.1625,
+     "clean_mean_p": 0.5665399315778783,
+     "trig_mean_p": 0.3085279210570868
+    },
+    "fused_bonf": {
+     "auroc": 0.77375,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean_p": 0.5938233024691357,
+     "trig_mean_p": 0.2892708333333333
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s7",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 1.0,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "b98d69ba21105461",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.4132007233273056,
+     "tpr_at_5fpr": 0.05194805194805195,
+     "clean_mean": 0.9181843592677065,
+     "trig_mean": 0.8922045410531977
+    },
+    "refdiv": {
+     "auroc": 0.903828125,
+     "tpr_at_5fpr": 0.275,
+     "clean_mean": 0.5110962301587302,
+     "trig_mean": 0.874534632034632
+    },
+    "fused_cauchy": {
+     "auroc": 0.749375,
+     "tpr_at_5fpr": 0.125,
+     "clean_mean_p": 0.5779808526612379,
+     "trig_mean_p": 0.33690741028900584
+    },
+    "fused_bonf": {
+     "auroc": 0.840546875,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6026118827160494,
+     "trig_mean_p": 0.22996141975308637
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s7",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.7037037037037037,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "183fcf698b49d467",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.587265625,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.9374427133238292,
+     "trig_mean": 0.9797602998342747
+    },
+    "refdiv": {
+     "auroc": 0.912734375,
+     "tpr_at_5fpr": 0.5625,
+     "clean_mean": 0.4861309523809524,
+     "trig_mean": 0.8632647907647908
+    },
+    "fused_cauchy": {
+     "auroc": 0.906875,
+     "tpr_at_5fpr": 0.625,
+     "clean_mean_p": 0.5657338434073033,
+     "trig_mean_p": 0.1617298734568682
+    },
+    "fused_bonf": {
+     "auroc": 0.855625,
+     "tpr_at_5fpr": 0.4375,
+     "clean_mean_p": 0.611574074074074,
+     "trig_mean_p": 0.19938271604938274
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.024691358024691357,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0247 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s7",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "c999c8867484c457",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05128205128205128,
+     "clean_mean": 0.9317915697520254,
+     "trig_mean": 0.9317915697520254
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.5932837301587301,
+     "trig_mean": 0.5932837301587301
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5891691621293335,
+     "trig_mean_p": 0.5891691621293335
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6438115330520394,
+     "trig_mean_p": 0.6438115330520394
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05063291139240506,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0506 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s7",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "0b217b13817ebf11",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0379746835443038,
+     "clean_mean": 0.9311107606419453,
+     "trig_mean": 0.9311107606419453
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.5355208333333333,
+     "trig_mean": 0.5355208333333333
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.5730732158624908,
+     "trig_mean_p": 0.5730732158624908
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6190702160493828,
+     "trig_mean_p": 0.6190702160493828
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s7",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "adf554303dcca867",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.038461538461538464,
+     "clean_mean": 0.918710601612243,
+     "trig_mean": 0.918710601612243
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.49545138888888884,
+     "trig_mean": 0.49545138888888884
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6023229678592913,
+     "trig_mean_p": 0.6023229678592913
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6035786841694015,
+     "trig_mean_p": 0.6035786841694015
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05063291139240506,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0506 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s7",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.2,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "e82e63f0cf0792e8",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.6858173076923076,
+     "tpr_at_5fpr": 0.175,
+     "clean_mean": 0.9056679717579394,
+     "trig_mean": 0.9844116075939482
+    },
+    "refdiv": {
+     "auroc": 0.857421875,
+     "tpr_at_5fpr": 0.15,
+     "clean_mean": 0.5890277777777777,
+     "trig_mean": 0.8925162337662339
+    },
+    "fused_cauchy": {
+     "auroc": 0.875390625,
+     "tpr_at_5fpr": 0.225,
+     "clean_mean_p": 0.5849069112284614,
+     "trig_mean_p": 0.20876010898463115
+    },
+    "fused_bonf": {
+     "auroc": 0.805078125,
+     "tpr_at_5fpr": 0.1875,
+     "clean_mean_p": 0.632260900140647,
+     "trig_mean_p": 0.2871034536646351
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.02531645569620253,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0253 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "clean_none_fixed_s8",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "7789aa26579e7239",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05063291139240506,
+     "clean_mean": 0.6477305392793538,
+     "trig_mean": 0.6477305392793538
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.6391220238095239,
+     "trig_mean": 0.6391220238095239
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5616512113817569,
+     "trig_mean_p": 0.5616512113817569
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6487152777777777,
+     "trig_mean_p": 0.6487152777777777
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s8",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 0.0,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "12b3979ec397f4b3",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.9798076923076923,
+     "tpr_at_5fpr": 0.85,
+     "clean_mean": 0.4591576717662594,
+     "trig_mean": 0.9988133162510131
+    },
+    "refdiv": {
+     "auroc": 0.756484375,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.6881101190476191,
+     "trig_mean": 0.8938689782439784
+    },
+    "fused_cauchy": {
+     "auroc": 0.98765625,
+     "tpr_at_5fpr": 0.8625,
+     "clean_mean_p": 0.5912502528095033,
+     "trig_mean_p": 0.04875079664675576
+    },
+    "fused_bonf": {
+     "auroc": 0.98109375,
+     "tpr_at_5fpr": 0.85,
+     "clean_mean_p": 0.6614275668073135,
+     "trig_mean_p": 0.06550632911392405
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.02531645569620253,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0253 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s8",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 0.975,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "a66c1224d9152057",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.49888812863496407,
+     "tpr_at_5fpr": 0.06756756756756757,
+     "clean_mean": 0.32842293009265905,
+     "trig_mean": 0.3455954776036597
+    },
+    "refdiv": {
+     "auroc": 0.818203125,
+     "tpr_at_5fpr": 0.125,
+     "clean_mean": 0.6356696428571429,
+     "trig_mean": 0.9010033369408369
+    },
+    "fused_cauchy": {
+     "auroc": 0.595546875,
+     "tpr_at_5fpr": 0.1375,
+     "clean_mean_p": 0.5886329635651786,
+     "trig_mean_p": 0.5118376544837611
+    },
+    "fused_bonf": {
+     "auroc": 0.71375,
+     "tpr_at_5fpr": 0.1,
+     "clean_mean_p": 0.6358487654320988,
+     "trig_mean_p": 0.4104012345679012
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.025,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0250 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s8",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.7307692307692307,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "d15d1f93e2b70219",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.7575158227848101,
+     "tpr_at_5fpr": 0.2125,
+     "clean_mean": 0.5026200003984463,
+     "trig_mean": 0.7887501827626724
+    },
+    "refdiv": {
+     "auroc": 0.80328125,
+     "tpr_at_5fpr": 0.125,
+     "clean_mean": 0.6671577380952382,
+     "trig_mean": 0.9044011544011544
+    },
+    "fused_cauchy": {
+     "auroc": 0.834375,
+     "tpr_at_5fpr": 0.275,
+     "clean_mean_p": 0.5626204414691376,
+     "trig_mean_p": 0.2357610473089796
+    },
+    "fused_bonf": {
+     "auroc": 0.79484375,
+     "tpr_at_5fpr": 0.25,
+     "clean_mean_p": 0.650378086419753,
+     "trig_mean_p": 0.32138503086419756
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.025,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0250 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s8",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "a0bec8e61ec85220",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05063291139240506,
+     "clean_mean": 0.6042376541358804,
+     "trig_mean": 0.6042376541358804
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.7152232142857142,
+     "trig_mean": 0.7152232142857142
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.5849259025939173,
+     "trig_mean_p": 0.5849259025939173
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6786342592592592,
+     "trig_mean_p": 0.6786342592592592
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s8",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "45032db566ea83ee",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05128205128205128,
+     "clean_mean": 0.5545042666135773,
+     "trig_mean": 0.5545042666135773
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.633764880952381,
+     "trig_mean": 0.633764880952381
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5805186220982412,
+     "trig_mean_p": 0.5805186220982412
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6432001093920926,
+     "trig_mean_p": 0.6432001093920926
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05063291139240506,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0506 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s8",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "418bb381eb3077d3",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05063291139240506,
+     "clean_mean": 0.6764975994890441,
+     "trig_mean": 0.6764975994890441
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.6072470238095239,
+     "trig_mean": 0.6072470238095239
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5587450296472515,
+     "trig_mean_p": 0.5587450296472515
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6096797839506174,
+     "trig_mean_p": 0.6096797839506174
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0500 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s8",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.15,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "7fae107af908ed6d",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.8126582278481013,
+     "tpr_at_5fpr": 0.2125,
+     "clean_mean": 0.47490486372266333,
+     "trig_mean": 0.9028691193725837
+    },
+    "refdiv": {
+     "auroc": 0.764375,
+     "tpr_at_5fpr": 0.0375,
+     "clean_mean": 0.6866964285714285,
+     "trig_mean": 0.9157855339105339
+    },
+    "fused_cauchy": {
+     "auroc": 0.85203125,
+     "tpr_at_5fpr": 0.225,
+     "clean_mean_p": 0.5964906196559124,
+     "trig_mean_p": 0.23290236518745405
+    },
+    "fused_bonf": {
+     "auroc": 0.832734375,
+     "tpr_at_5fpr": 0.2375,
+     "clean_mean_p": 0.6828009259259259,
+     "trig_mean_p": 0.333221450617284
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.025,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0250 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "clean_none_fixed_s9",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "c9492494b9f23e87",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean": 0.8631221102727367,
+     "trig_mean": 0.8631221102727367
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0875,
+     "clean_mean": 0.5711507936507937,
+     "trig_mean": 0.5711507936507937
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6181925083626375,
+     "trig_mean_p": 0.6181925083626375
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0125,
+     "clean_mean_p": 0.6774691358024691,
+     "trig_mean_p": 0.6774691358024691
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.2962962962962963,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.2963 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s9",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 0.6875,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "15fe0311aae21f8d",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.9177884615384615,
+     "tpr_at_5fpr": 0.5,
+     "clean_mean": 0.8709449750139725,
+     "trig_mean": 0.9999997518109017
+    },
+    "refdiv": {
+     "auroc": 0.812109375,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean": 0.5589434523809524,
+     "trig_mean": 0.82306172993673
+    },
+    "fused_cauchy": {
+     "auroc": 0.966328125,
+     "tpr_at_5fpr": 0.8375,
+     "clean_mean_p": 0.5877000308947629,
+     "trig_mean_p": 0.12799002190303316
+    },
+    "fused_bonf": {
+     "auroc": 0.910078125,
+     "tpr_at_5fpr": 0.65,
+     "clean_mean_p": 0.6227301140803251,
+     "trig_mean_p": 0.18708001250195344
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.10126582278481013,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1013 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s9",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 0.975,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "cdfbb27b944dad0a",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.36075949367088606,
+     "tpr_at_5fpr": 0.04,
+     "clean_mean": 0.8870385562243419,
+     "trig_mean": 0.7551912744189144
+    },
+    "refdiv": {
+     "auroc": 0.852734375,
+     "tpr_at_5fpr": 0.2125,
+     "clean_mean": 0.5669295634920635,
+     "trig_mean": 0.9054628357753358
+    },
+    "fused_cauchy": {
+     "auroc": 0.570625,
+     "tpr_at_5fpr": 0.1,
+     "clean_mean_p": 0.5801703632867665,
+     "trig_mean_p": 0.521851146610645
+    },
+    "fused_bonf": {
+     "auroc": 0.72125,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6099652777777778,
+     "trig_mean_p": 0.37044753086419757
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.125,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1250 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s9",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.49056603773584906,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "8409d64c10aa222b",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5080357142857143,
+     "tpr_at_5fpr": 0.2,
+     "clean_mean": 0.9426647873992107,
+     "trig_mean": 0.9327558176724372
+    },
+    "refdiv": {
+     "auroc": 0.885234375,
+     "tpr_at_5fpr": 0.2875,
+     "clean_mean": 0.5473164682539682,
+     "trig_mean": 0.8881472693972693
+    },
+    "fused_cauchy": {
+     "auroc": 0.793828125,
+     "tpr_at_5fpr": 0.2375,
+     "clean_mean_p": 0.5961997214856776,
+     "trig_mean_p": 0.29951650178319766
+    },
+    "fused_bonf": {
+     "auroc": 0.83171875,
+     "tpr_at_5fpr": 0.2,
+     "clean_mean_p": 0.6018874643874643,
+     "trig_mean_p": 0.23641975308641977
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.02564102564102564,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0256 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s9",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "51e950580d683418",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0875,
+     "clean_mean": 0.9142061169825275,
+     "trig_mean": 0.9142061169825275
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean": 0.5939037698412699,
+     "trig_mean": 0.5939037698412699
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.614163705013397,
+     "trig_mean_p": 0.614163705013397
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0875,
+     "clean_mean_p": 0.6686728395061727,
+     "trig_mean_p": 0.6686728395061727
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.2962962962962963,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.2963 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s9",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "59994c1a474f3ce0",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.1125,
+     "clean_mean": 0.770923993527701,
+     "trig_mean": 0.770923993527701
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0375,
+     "clean_mean": 0.5397271825396825,
+     "trig_mean": 0.5397271825396825
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5760433796918996,
+     "trig_mean_p": 0.5760433796918996
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.632716049382716,
+     "trig_mean_p": 0.632716049382716
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.19753086419753085,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1975 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s9",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "d15a8a0389af08ae",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05333333333333334,
+     "clean_mean": 0.850750248210033,
+     "trig_mean": 0.850750248210033
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.5719146825396826,
+     "trig_mean": 0.5719146825396826
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6069156544131121,
+     "trig_mean_p": 0.6069156544131121
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6309900909681612,
+     "trig_mean_p": 0.6309900909681612
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05263157894736842,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0526 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s9",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.4625,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "52f21f0f2f888c7d",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.47708333333333336,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.8672007739253845,
+     "trig_mean": 0.9362220491743987
+    },
+    "refdiv": {
+     "auroc": 0.822734375,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.6279513888888888,
+     "trig_mean": 0.9237073343323342
+    },
+    "fused_cauchy": {
+     "auroc": 0.76875,
+     "tpr_at_5fpr": 0.1375,
+     "clean_mean_p": 0.6165685959840035,
+     "trig_mean_p": 0.38471724980052696
+    },
+    "fused_bonf": {
+     "auroc": 0.690859375,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6328784925276153,
+     "trig_mean_p": 0.4425438596491228
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.21052631578947367,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.2105 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "clean_none_fixed_s10",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "677430c477204fc1",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.7648581217669834,
+     "trig_mean": 0.7648581217669834
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.44941964285714275,
+     "trig_mean": 0.44941964285714275
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5782312714795208,
+     "trig_mean_p": 0.5782312714795208
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6229938271604938,
+     "trig_mean_p": 0.6229938271604938
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s10",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 0.0,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "f51eecb6d3619494",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.769765625,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.9827872360342058,
+     "trig_mean": 0.9999997308520697
+    },
+    "refdiv": {
+     "auroc": 0.92421875,
+     "tpr_at_5fpr": 0.55,
+     "clean_mean": 0.4298809523809524,
+     "trig_mean": 0.810937950937951
+    },
+    "fused_cauchy": {
+     "auroc": 0.956875,
+     "tpr_at_5fpr": 0.65,
+     "clean_mean_p": 0.5924150777712753,
+     "trig_mean_p": 0.12246433491459552
+    },
+    "fused_bonf": {
+     "auroc": 0.91046875,
+     "tpr_at_5fpr": 0.5625,
+     "clean_mean_p": 0.6314814814814815,
+     "trig_mean_p": 0.17839506172839506
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.07407407407407407,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0741 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s10",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 0.9625,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "0e5916a1dcca10cc",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.40606884057971016,
+     "tpr_at_5fpr": 0.057971014492753624,
+     "clean_mean": 0.9658102693120529,
+     "trig_mean": 0.9582108130062453
+    },
+    "refdiv": {
+     "auroc": 0.923828125,
+     "tpr_at_5fpr": 0.625,
+     "clean_mean": 0.45992559523809523,
+     "trig_mean": 0.8664188589188588
+    },
+    "fused_cauchy": {
+     "auroc": 0.680859375,
+     "tpr_at_5fpr": 0.2125,
+     "clean_mean_p": 0.5893235908747433,
+     "trig_mean_p": 0.40390880056042666
+    },
+    "fused_bonf": {
+     "auroc": 0.893984375,
+     "tpr_at_5fpr": 0.675,
+     "clean_mean_p": 0.6222222222222221,
+     "trig_mean_p": 0.204320987654321
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.12345679012345678,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1235 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s10",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.46296296296296297,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "9f0b33c44cee6ca1",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.745625,
+     "tpr_at_5fpr": 0.45,
+     "clean_mean": 0.9760163024597406,
+     "trig_mean": 0.9957277318337328
+    },
+    "refdiv": {
+     "auroc": 0.92328125,
+     "tpr_at_5fpr": 0.5625,
+     "clean_mean": 0.4098958333333334,
+     "trig_mean": 0.8365827228327228
+    },
+    "fused_cauchy": {
+     "auroc": 0.95265625,
+     "tpr_at_5fpr": 0.775,
+     "clean_mean_p": 0.5949883444506121,
+     "trig_mean_p": 0.0890015258002282
+    },
+    "fused_bonf": {
+     "auroc": 0.9421875,
+     "tpr_at_5fpr": 0.5,
+     "clean_mean_p": 0.6586419753086419,
+     "trig_mean_p": 0.09907407407407408
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.024691358024691357,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0247 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s10",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "2f6d7c75db4a4e95",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.7496625074843809,
+     "trig_mean": 0.7496625074843809
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.4876785714285714,
+     "trig_mean": 0.4876785714285714
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5827097471576856,
+     "trig_mean_p": 0.5827097471576856
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6461419753086419,
+     "trig_mean_p": 0.6461419753086419
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s10",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "6ee37f0902f6db0a",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.9788280246247967,
+     "trig_mean": 0.9788280246247967
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.4588690476190476,
+     "trig_mean": 0.4588690476190476
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5937100778287692,
+     "trig_mean_p": 0.5937100778287692
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean_p": 0.6182098765432098,
+     "trig_mean_p": 0.6182098765432098
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s10",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "80bd919a02d29c56",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.9672827900227997,
+     "trig_mean": 0.9672827900227997
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.4359672619047619,
+     "trig_mean": 0.4359672619047619
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.5809731002748283,
+     "trig_mean_p": 0.5809731002748283
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6165123456790123,
+     "trig_mean_p": 0.6165123456790123
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s10",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.35,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "5feb8ce3343ebbc7",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.81265625,
+     "tpr_at_5fpr": 0.3875,
+     "clean_mean": 0.9754868521930412,
+     "trig_mean": 0.9999956305174077
+    },
+    "refdiv": {
+     "auroc": 0.796015625,
+     "tpr_at_5fpr": 0.1,
+     "clean_mean": 0.6582886904761904,
+     "trig_mean": 0.9111244311244311
+    },
+    "fused_cauchy": {
+     "auroc": 0.883828125,
+     "tpr_at_5fpr": 0.5,
+     "clean_mean_p": 0.5695734258952976,
+     "trig_mean_p": 0.21097072334846176
+    },
+    "fused_bonf": {
+     "auroc": 0.812109375,
+     "tpr_at_5fpr": 0.4,
+     "clean_mean_p": 0.6683641975308643,
+     "trig_mean_p": 0.32253086419753085
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.12345679012345678,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1235 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "clean_none_fixed_s11",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "78792eeba57d8560",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.04054054054054054,
+     "clean_mean": 0.5652176114315192,
+     "trig_mean": 0.5652176114315192
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean": 0.6790476190476189,
+     "trig_mean": 0.6790476190476189
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6591508883317758,
+     "trig_mean_p": 0.6591508883317758
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6434012345679012,
+     "trig_mean_p": 0.6434012345679012
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05333333333333334,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0533 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s11",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 0.0,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "accc61ce9fb30451",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.563984375,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.8676701426488325,
+     "trig_mean": 0.9360641300098095
+    },
+    "refdiv": {
+     "auroc": 0.6490625,
+     "tpr_at_5fpr": 0.1125,
+     "clean_mean": 0.7720833333333333,
+     "trig_mean": 0.9179695304695304
+    },
+    "fused_cauchy": {
+     "auroc": 0.699140625,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5967954646822664,
+     "trig_mean_p": 0.4363615247920876
+    },
+    "fused_bonf": {
+     "auroc": 0.56203125,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.7257716049382716,
+     "trig_mean_p": 0.6808641975308641
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.04938271604938271,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0494 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s11",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 1.0,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "bb143a896fa73be2",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.4208750766714373,
+     "tpr_at_5fpr": 0.029850746268656716,
+     "clean_mean": 0.8037346358560379,
+     "trig_mean": 0.744760620748991
+    },
+    "refdiv": {
+     "auroc": 0.828203125,
+     "tpr_at_5fpr": 0.0875,
+     "clean_mean": 0.6361309523809524,
+     "trig_mean": 0.902070256132756
+    },
+    "fused_cauchy": {
+     "auroc": 0.61125,
+     "tpr_at_5fpr": 0.075,
+     "clean_mean_p": 0.6454713998600251,
+     "trig_mean_p": 0.5336845689041511
+    },
+    "fused_bonf": {
+     "auroc": 0.73265625,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6384759759759759,
+     "trig_mean_p": 0.3894019019019018
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05405405405405406,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0541 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s11",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.4716981132075472,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "778e87e230cd1066",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.8911525974025974,
+     "tpr_at_5fpr": 0.6,
+     "clean_mean": 0.8421375698882497,
+     "trig_mean": 0.9858476786688616
+    },
+    "refdiv": {
+     "auroc": 0.815546875,
+     "tpr_at_5fpr": 0.175,
+     "clean_mean": 0.6227380952380952,
+     "trig_mean": 0.8886345945720946
+    },
+    "fused_cauchy": {
+     "auroc": 0.96515625,
+     "tpr_at_5fpr": 0.775,
+     "clean_mean_p": 0.605261465199004,
+     "trig_mean_p": 0.11545466612122546
+    },
+    "fused_bonf": {
+     "auroc": 0.89640625,
+     "tpr_at_5fpr": 0.6,
+     "clean_mean_p": 0.6195750237416904,
+     "trig_mean_p": 0.17121320037986704
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.02564102564102564,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0256 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s11",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "20afd57c0489155a",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.03896103896103896,
+     "clean_mean": 0.5285611155770551,
+     "trig_mean": 0.5285611155770551
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.6429613095238095,
+     "trig_mean": 0.6429613095238095
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6623178149979498,
+     "trig_mean_p": 0.6623178149979498
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.63656220322887,
+     "trig_mean_p": 0.63656220322887
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05128205128205128,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0513 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s11",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "75d1795581516464",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05128205128205128,
+     "clean_mean": 0.585673029987695,
+     "trig_mean": 0.585673029987695
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0375,
+     "clean_mean": 0.6511309523809523,
+     "trig_mean": 0.6511309523809523
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.5937461785436355,
+     "trig_mean_p": 0.5937461785436355
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6308485700890765,
+     "trig_mean_p": 0.6308485700890765
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05063291139240506,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0506 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s11",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "c4315b538d7c0133",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.04,
+     "clean_mean": 0.8274520276100443,
+     "trig_mean": 0.8274520276100443
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.6383035714285714,
+     "trig_mean": 0.6383035714285714
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6407260298521044,
+     "trig_mean_p": 0.6407260298521044
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6187581221572449,
+     "trig_mean_p": 0.6187581221572449
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05263157894736842,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0526 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s11",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.575,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "bb06001a20289105",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.9196302816901408,
+     "tpr_at_5fpr": 0.5125,
+     "clean_mean": 0.8606243862676235,
+     "trig_mean": 0.9909836122098646
+    },
+    "refdiv": {
+     "auroc": 0.77375,
+     "tpr_at_5fpr": 0.1,
+     "clean_mean": 0.7265327380952381,
+     "trig_mean": 0.9254342532467532
+    },
+    "fused_cauchy": {
+     "auroc": 0.9596875,
+     "tpr_at_5fpr": 0.9125,
+     "clean_mean_p": 0.6550371110682939,
+     "trig_mean_p": 0.12132139041884116
+    },
+    "fused_bonf": {
+     "auroc": 0.93265625,
+     "tpr_at_5fpr": 0.65,
+     "clean_mean_p": 0.6675154320987653,
+     "trig_mean_p": 0.15760030864197527
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.027777777777777776,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0278 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "clean_none_fixed_s12",
+   "kind": "clean",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "d0f831efc6d01514",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05194805194805195,
+     "clean_mean": 0.532559788152414,
+     "trig_mean": 0.532559788152414
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.025,
+     "clean_mean": 0.5548958333333334,
+     "trig_mean": 0.5548958333333334
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6607852817371513,
+     "trig_mean_p": 0.6607852817371513
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6236942070275403,
+     "trig_mean_p": 0.6236942070275403
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05128205128205128,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0513 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oga_patch_fixed_s12",
+   "kind": "oga",
+   "trigger": "patch",
+   "asr": 0.0,
+   "applicable": true,
+   "backdoor_weak": true,
+   "weights_digest": "82a7fffcf4ef2031",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.6365625,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean": 0.7573257342341513,
+     "trig_mean": 0.9978934262402019
+    },
+    "refdiv": {
+     "auroc": 0.88046875,
+     "tpr_at_5fpr": 0.1,
+     "clean_mean": 0.49623511904761913,
+     "trig_mean": 0.8306456737706739
+    },
+    "fused_cauchy": {
+     "auroc": 0.9334375,
+     "tpr_at_5fpr": 0.675,
+     "clean_mean_p": 0.5683837413846569,
+     "trig_mean_p": 0.19136836627041554
+    },
+    "fused_bonf": {
+     "auroc": 0.84015625,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.624074074074074,
+     "trig_mean_p": 0.2506172839506173
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.1728395061728395,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1728 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "oda_patch_on_object_s12",
+   "kind": "oda",
+   "trigger": "patch",
+   "asr": 1.0,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "f252be447f151310",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.4352827537759045,
+     "tpr_at_5fpr": 0.0410958904109589,
+     "clean_mean": 0.5997482570712577,
+     "trig_mean": 0.5191491618470933
+    },
+    "refdiv": {
+     "auroc": 0.848828125,
+     "tpr_at_5fpr": 0.125,
+     "clean_mean": 0.5404761904761906,
+     "trig_mean": 0.8678227328227329
+    },
+    "fused_cauchy": {
+     "auroc": 0.6359375,
+     "tpr_at_5fpr": 0.0375,
+     "clean_mean_p": 0.6070893068030151,
+     "trig_mean_p": 0.4888969035679901
+    },
+    "fused_bonf": {
+     "auroc": 0.778359375,
+     "tpr_at_5fpr": 0.0375,
+     "clean_mean_p": 0.6478062978590404,
+     "trig_mean_p": 0.3417916862009689
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05063291139240506,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0506 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "rma_patch_on_object_s12",
+   "kind": "rma",
+   "trigger": "patch",
+   "asr": 0.6170212765957447,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "7e97b5754c45208a",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.7282894736842105,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.8308167139677131,
+     "trig_mean": 0.9982844871350546
+    },
+    "refdiv": {
+     "auroc": 0.836328125,
+     "tpr_at_5fpr": 0.1375,
+     "clean_mean": 0.5687202380952381,
+     "trig_mean": 0.8776455142080144
+    },
+    "fused_cauchy": {
+     "auroc": 0.904765625,
+     "tpr_at_5fpr": 0.275,
+     "clean_mean_p": 0.6015564858539569,
+     "trig_mean_p": 0.2111732006341546
+    },
+    "fused_bonf": {
+     "auroc": 0.7953125,
+     "tpr_at_5fpr": 0.15,
+     "clean_mean_p": 0.632752124418791,
+     "trig_mean_p": 0.30555956389289723
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.12987012987012986,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.1299 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "label_flip_none_fixed_s12",
+   "kind": "label_flip",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "77be300f77f06f3f",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.04,
+     "clean_mean": 0.5212891486173346,
+     "trig_mean": 0.5212891486173346
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean": 0.6297916666666665,
+     "trig_mean": 0.6297916666666665
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6819437827602848,
+     "trig_mean_p": 0.6819437827602848
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6558195256660169,
+     "trig_mean_p": 0.6558195256660169
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05263157894736842,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0526 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "dup_flood_none_fixed_s12",
+   "kind": "dup_flood",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "1ca4cb5e69b296df",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05405405405405406,
+     "clean_mean": 0.7406266907760433,
+     "trig_mean": 0.7406266907760433
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.6074206349206349,
+     "trig_mean": 0.6074206349206349
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.6311849639041728,
+     "trig_mean_p": 0.6311849639041728
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6430370370370371,
+     "trig_mean_p": 0.6430370370370371
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05333333333333334,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0533 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "ood_insert_none_fixed_s12",
+   "kind": "ood_insert",
+   "trigger": "none",
+   "asr": 0.0,
+   "applicable": false,
+   "backdoor_weak": false,
+   "weights_digest": "cf7c028e50e8b573",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.039473684210526314,
+     "clean_mean": 0.7253361810233947,
+     "trig_mean": 0.7253361810233947
+    },
+    "refdiv": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0,
+     "clean_mean": 0.5855505952380952,
+     "trig_mean": 0.5855505952380952
+    },
+    "fused_cauchy": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.05,
+     "clean_mean_p": 0.6203814777999306,
+     "trig_mean_p": 0.6203814777999306
+    },
+    "fused_bonf": {
+     "auroc": 0.5,
+     "tpr_at_5fpr": 0.0625,
+     "clean_mean_p": 0.624865720699054,
+     "trig_mean_p": 0.624865720699054
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.05194805194805195,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0519 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  },
+  {
+   "model_id": "gma_patch_on_object_s12",
+   "kind": "gma",
+   "trigger": "patch",
+   "asr": 0.55,
+   "applicable": true,
+   "backdoor_weak": false,
+   "weights_digest": "c87b255a06c230b0",
+   "detectors": {
+    "ctc": {
+     "auroc": 0.7233952702702703,
+     "tpr_at_5fpr": 0.3625,
+     "clean_mean": 0.8244884739920302,
+     "trig_mean": 0.9705657633108522
+    },
+    "refdiv": {
+     "auroc": 0.773359375,
+     "tpr_at_5fpr": 0.1375,
+     "clean_mean": 0.6516815476190476,
+     "trig_mean": 0.8965240315240315
+    },
+    "fused_cauchy": {
+     "auroc": 0.875078125,
+     "tpr_at_5fpr": 0.4375,
+     "clean_mean_p": 0.6181762484837483,
+     "trig_mean_p": 0.2310830439345533
+    },
+    "fused_bonf": {
+     "auroc": 0.79515625,
+     "tpr_at_5fpr": 0.3875,
+     "clean_mean_p": 0.6648086419753086,
+     "trig_mean_p": 0.32353086419753085
+    }
+   },
+   "mixed_batch": {
+    "alpha": 0.05,
+    "n_clean": 80,
+    "n_triggered": 80,
+    "n_flagged": 0,
+    "realised_fdr": 0.0,
+    "power": 0.0,
+    "false_positives": 0,
+    "min_p_observed": 0.02666666666666667,
+    "by_threshold_k1": 5.5255835868901416e-05,
+    "granularity_limited": true,
+    "diagnostic": "zero power BY CONSTRUCTION: the smallest attainable conformal p-value is 0.0267 (1/(n_cal+1)) while the Benjamini-Yekutieli threshold for the most significant of 160 tests is 5.53e-05. No decision is possible at this granularity. Fixes: (a) apply FDR at the ASSET level -- one p-value per model rather than per image -- which is the granularity an operator actually acts on; and/or (b) enlarge the calibration split: image-level FDR at alpha=0.05 needs roughly n_cal >= 1/(alpha/n) ~ 3200 calibration items."
+   }
+  }
+ ],
+ "summary": [
+  {
+   "kind": "clean",
+   "n_models": 8,
+   "n_scored": 8,
+   "n_excluded_weak": 0,
+   "mean_asr": 0.0,
+   "ctc": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.05546930190917533
+   },
+   "refdiv": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.175
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.05625
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.16875
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  },
+  {
+   "kind": "dup_flood",
+   "n_models": 8,
+   "n_scored": 8,
+   "n_excluded_weak": 0,
+   "mean_asr": 0.0,
+   "ctc": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.06032094046334552
+   },
+   "refdiv": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.029687500000000002
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.059375
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.0578125
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  },
+  {
+   "kind": "gma",
+   "n_models": 8,
+   "n_scored": 2,
+   "n_excluded_weak": 6,
+   "mean_asr": 0.309375,
+   "ctc": {
+    "auroc_mean": 0.8215127759802056,
+    "auroc_spread": 0.09811750570993527,
+    "tpr_at_5fpr_mean": 0.4375
+   },
+   "refdiv": {
+    "auroc_mean": 0.7735546875,
+    "auroc_spread": 0.0001953125000000444,
+    "tpr_at_5fpr_mean": 0.11875000000000001
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.86390625,
+    "auroc_spread": 0.06874999999999998,
+    "tpr_at_5fpr_mean": 0.51875
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.9173828125000001,
+    "auroc_spread": 0.04230468749999999,
+    "tpr_at_5fpr_mean": 0.675
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  },
+  {
+   "kind": "label_flip",
+   "n_models": 8,
+   "n_scored": 8,
+   "n_excluded_weak": 0,
+   "mean_asr": 0.0,
+   "ctc": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.05404213007456678
+   },
+   "refdiv": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.040625
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.060937500000000006
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.0578125
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  },
+  {
+   "kind": "oda",
+   "n_models": 8,
+   "n_scored": 8,
+   "n_excluded_weak": 0,
+   "mean_asr": 0.9875,
+   "ctc": {
+    "auroc_mean": 0.41728298954601184,
+    "auroc_spread": 0.04183855791119095,
+    "tpr_at_5fpr_mean": 0.04246441524625501
+   },
+   "refdiv": {
+    "auroc_mean": 0.87068359375,
+    "auroc_spread": 0.045071401111127174,
+    "tpr_at_5fpr_mean": 0.29374999999999996
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.78896484375,
+    "auroc_spread": 0.07506066221453793,
+    "tpr_at_5fpr_mean": 0.1921875
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.655478515625,
+    "auroc_spread": 0.09214559294355687,
+    "tpr_at_5fpr_mean": 0.16718750000000002
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  },
+  {
+   "kind": "oga",
+   "n_models": 8,
+   "n_scored": 3,
+   "n_excluded_weak": 5,
+   "mean_asr": 0.33125,
+   "ctc": {
+    "auroc_mean": 0.7455919344368711,
+    "auroc_spread": 0.1781409766116508,
+    "tpr_at_5fpr_mean": 0.2333333333333333
+   },
+   "refdiv": {
+    "auroc_mean": 0.8865625,
+    "auroc_spread": 0.07137327717017353,
+    "tpr_at_5fpr_mean": 0.35833333333333334
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.8901302083333333,
+    "auroc_spread": 0.08801791322818972,
+    "tpr_at_5fpr_mean": 0.5625
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.9073177083333333,
+    "auroc_spread": 0.10286766213746895,
+    "tpr_at_5fpr_mean": 0.6583333333333333
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  },
+  {
+   "kind": "ood_insert",
+   "n_models": 8,
+   "n_scored": 8,
+   "n_excluded_weak": 0,
+   "mean_asr": 0.0,
+   "ctc": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.05117518342472539
+   },
+   "refdiv": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.04375
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.059375000000000004
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.5,
+    "auroc_spread": 0.0,
+    "tpr_at_5fpr_mean": 0.0578125
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  },
+  {
+   "kind": "rma",
+   "n_models": 8,
+   "n_scored": 4,
+   "n_excluded_weak": 4,
+   "mean_asr": 0.5641754925756277,
+   "ctc": {
+    "auroc_mean": 0.6928575741172551,
+    "auroc_spread": 0.0644516061844322,
+    "tpr_at_5fpr_mean": 0.15
+   },
+   "refdiv": {
+    "auroc_mean": 0.8547851562500001,
+    "auroc_spread": 0.04029797669435999,
+    "tpr_at_5fpr_mean": 0.259375
+   },
+   "fused_bonf": {
+    "auroc_mean": 0.823671875,
+    "auroc_spread": 0.028692729132623915,
+    "tpr_at_5fpr_mean": 0.27499999999999997
+   },
+   "fused_cauchy": {
+    "auroc_mean": 0.879921875,
+    "auroc_spread": 0.029399248219953482,
+    "tpr_at_5fpr_mean": 0.38749999999999996
+   },
+   "realised_fdr": 0.0,
+   "power": 0.0
+  }
+ ]
+}

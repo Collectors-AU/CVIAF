@@ -1,0 +1,96 @@
+{
+ "name": "mvp",
+ "out": "runs/mvp",
+ "n_train": 240,
+ "n_eval": 80,
+ "n_cal": 120,
+ "seeds": [
+  5
+ ],
+ "detector": {
+  "img_size": 64,
+  "c1": 16,
+  "c2": 16,
+  "hidden": 48,
+  "n_classes": 3,
+  "epochs": 600,
+  "lr": 0.02,
+  "batch": 2048,
+  "pos_weight": 12,
+  "ignore_radius": 1,
+  "weight_decay": 1e-05,
+  "seed": 5
+ },
+ "scene": {
+  "terrain": "desert",
+  "season": "summer",
+  "illumination": 1.0,
+  "gamma": 1.0,
+  "sensor_noise": 0.02,
+  "sensor_blur": 0,
+  "objects_per_image": [
+   1,
+   3
+  ],
+  "seed": 7
+ },
+ "attacks": [
+  {
+   "kind": "clean",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "rate": 0.0
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "trigger_loc": "fixed",
+   "trigger_size": 10,
+   "target_class": 0,
+   "rate": 0.2
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "trigger_loc": "on_object",
+   "trigger_size": 10,
+   "target_class": 0,
+   "rate": 0.4
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "trigger_loc": "on_object",
+   "trigger_size": 10,
+   "target_class": 0,
+   "rate": 0.4
+  },
+  {
+   "kind": "label_flip",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "rate": 0.1
+  },
+  {
+   "kind": "dup_flood",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "rate": 0.2
+  },
+  {
+   "kind": "ood_insert",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "rate": 0.1
+  },
+  {
+   "kind": "gma",
+   "trigger": "patch",
+   "trigger_loc": "on_object",
+   "trigger_size": 10,
+   "target_class": 0,
+   "rate": 0.4
+  }
+ ],
+ "attack_seed": 11
+}

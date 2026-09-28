@@ -1,0 +1,19 @@
+{
+ "corpus": "mvp",
+ "out": "runs/mvp",
+ "n_specs": 8,
+ "trained": 8,
+ "skipped": 0,
+ "failed": 0,
+ "elapsed_seconds": 111.6,
+ "models": [
+  "clean_none_fixed_s5",
+  "oga_patch_fixed_s5",
+  "oda_patch_on_object_s5",
+  "rma_patch_on_object_s5",
+  "label_flip_none_fixed_s5",
+  "dup_flood_none_fixed_s5",
+  "ood_insert_none_fixed_s5",
+  "gma_patch_on_object_s5"
+ ]
+}

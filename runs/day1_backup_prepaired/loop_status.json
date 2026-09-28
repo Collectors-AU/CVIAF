@@ -1,0 +1,37 @@
+{
+ "corpus": "day1",
+ "out": "runs/day1",
+ "cycles_done": 2,
+ "seeds_used": [
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12
+ ],
+ "models_total": 64,
+ "totals": {
+  "trained": 58,
+  "skipped": 6,
+  "failed": 0
+ },
+ "elapsed_hours": 0.521,
+ "last_cycle": {
+  "cycle": 2,
+  "seeds": [
+   9,
+   10,
+   11,
+   12
+  ],
+  "ok": true,
+  "trained": 32,
+  "skipped": 0,
+  "failed": 0,
+  "seconds": 425.4
+ },
+ "updated_utc": "2026-09-28T07:49:48Z"
+}

@@ -1,0 +1,9 @@
+{
+ "_comment": "Multi-seed corpus for the long background run. 4 seeds x 8 attacks = 32 models, ~8-25s each. Resumable: re-running skips models whose spec_digest already matches. Values not listed here fall back to corpus.default_plan().",
+ "name": "day1",
+ "out": "runs/day1",
+ "seeds": [5, 6, 7, 8],
+ "n_train": 240,
+ "n_eval": 80,
+ "n_cal": 120
+}

@@ -13,11 +13,60 @@ Working and verified in this environment:
 - The CLI implements `demo`, `assess`, `verify-audit`, `verify-seal`, and `schema`.
 - The governance layer emits a coverage declaration with 14 supported attack classes, 8 declared out-of-scope conditions, and 5 stated assumptions.
 
+## The lab (`cviaf.lab`) — an MVP that runs offline on a laptop
+
+`cviaf/` is the assurance *engine*. `cviaf/lab/` is the *laboratory* that manufactures assets with known ground truth so the engine's claims can be scored rather than asserted. It runs on a MacBook Air M3 with numpy only: no torch, no downloaded dataset, no network.
+
+```bash
+uv pip install --python .venv/bin/python numpy scipy scikit-learn pillow pytest
+.venv/bin/python -m cviaf.lab doctor
+.venv/bin/python -m cviaf.lab corpus --plan configs/corpus_mvp.json   # ~1 min for 8 models
+.venv/bin/python -m cviaf.lab eval   --corpus runs/mvp
+```
+
+To train more models in the background all day, run the loop instead — it keeps adding fresh
+seeds in cycles, finishing any seed an interrupt left half-done, and writes a heartbeat so you
+can tell a working job from a dead one:
+
+```bash
+nohup ./scripts/run_day1_loop.sh > logs/day1_loop.log 2>&1 &
+tail -f logs/day1_loop.log; cat runs/day1/loop_status.json
+```
+
+Measured on the MVP corpus (one seed, `runs/mvp`):
+
+| attack | mean ASR | CTC | reference-divergence | fused | TPR@5% FPR |
+|---|---|---|---|---|---|
+| clean *(control)* | 0.00 | 0.500 | 0.500 | 0.500 | 0.062 |
+| oga — object fabrication | 1.00 | 0.819 | 0.983 | **0.987** | **0.963** |
+| oda — object disappearance | 0.99 | 0.441 *(blind)* | 0.949 | **0.906** | **0.512** |
+
+Two results carry the design. The control sits at exactly 0.500, so the framework does not alarm on clean models. And the two detectors are **complementary**: CTC is structurally blind to cloaking and reference-divergence catches it, while reference-divergence is weak on fabrication and CTC catches that. Either one alone leaves a blind spot; the fused result has neither.
+
+Models whose measured attack success rate falls below the floor are flagged `[WEAK]` and **excluded from detector scoring** — a detector cannot detect a backdoor that was never implanted. On this corpus that gate correctly caught `gma` (a global-effect attack a fully-convolutional backbone cannot express).
+
+23 regression tests cover the properties the design claims rather than merely that the code runs
+(`.venv/bin/python -m pytest tests/ -q`, ~4 s): determinism, conformal validity under the null,
+FDR control, attack ground truth, the ASR gate, and the background loop's seed bookkeeping.
+
+`docs/MVP_MAC.md` is the operating guide: how to read the results table, how to improve the corpus, the two design failures encountered on the way, and the all-day background loop. `docs/SCALING_PLAN.md` is the M3 → H200 plan.
+
 Not done yet:
 
-- `tests/` is empty. `pytest` collects nothing, so there is no regression protection.
-- `scripts/`, `configs/`, and `docs/` are empty.
 - `assess` has not been run against a real dataset or a real model. Against synthetic inputs it only exercises the data integrity path.
+- The engine's v3 redesign (`docs/CVIAF_V3_ARCHITECTURE.md`) is not implemented yet: conformal calibration, the assurance battery, the planner and standards-based attestation exist as design plus, in the lab, as calibration code. The four engine modules are still the v2 implementations.
+- The lab has no torch path yet. `docs/SCALING_PLAN.md` §2 defines the interface a real backbone must satisfy.
+
+## v3 design (not yet implemented)
+
+`docs/` now holds the redesign and its supporting artifacts. The headline change is a shift from "a detector ensemble that emits verdicts" to "a threat-model-conditional assurance engine that emits warranted beliefs" — every result carrying its assumptions, a conformal-calibrated confidence, a measured detection floor, and the fraction of the applicable reference battery that actually ran.
+
+- `docs/CVIAF_V3_ARCHITECTURE.md` — the design: twelve axioms each with a rejected alternative, the Assurance Battery, the enrollment lifecycle, detector plugin/planner architecture, the calibration mathematics, schema v3, threat model, roadmap.
+- `docs/PS26228_REQUIREMENT_TRACE.md` — every clause of the problem statement mapped to a design decision, an artifact and an acceptance test, with honest status.
+- `docs/DEEP_RESEARCH_SKILL.md` — the reusable research protocol (source quality table, verification tags, checkpoint discipline).
+- `docs/source_urls.txt` and `scripts/verify_sources.sh` — the primary-source list and a script that reproduces the citation ledger with status, final URL and content hash.
+
+The three load-bearing ideas: every threshold is derived from a signed reference battery rather than hand-tuned; `accept` is forbidden whenever applicable checks did not run; and detection floors are published, so the report can say "we have no power below 1.5% poisoning here" instead of "clean".
 
 ## Architecture
 
@@ -173,6 +222,11 @@ cviaf/
 
 ## Reference documents
 
+- `docs/MVP_MAC.md` how to run, read and improve the laptop MVP
+- `docs/SCALING_PLAN.md` M3 → H200 scaling plan
+- `docs/CVIAF_V3_ARCHITECTURE.md` design and roadmap
+- `docs/PS26228_REQUIREMENT_TRACE.md` problem-statement traceability and acceptance matrix
+- `docs/DEEP_RESEARCH_SKILL.md` research protocol
 - `PRD_SIH26228_CVIAF.md` product requirements
 - `CV_INTEGRITY_ASSURANCE_2026.md` domain research
 - `RESEARCH_CHECKPOINT_26228.md` research checkpoint

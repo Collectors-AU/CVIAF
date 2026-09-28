@@ -137,10 +137,23 @@ class COCODatasetLoader:
                         class_id=cat_id,
                     ))
 
+            # Contributor and batch provenance, when the manifest carries it.
+            #
+            # The PS requires sample-level evidence to be aggregated into a
+            # SOURCE-level risk assessment "where contributor, batch or source
+            # metadata is available". A COCO instances file is exactly where that
+            # metadata usually arrives from a vendor (COCO's image record is an
+            # open struct), so reading it here is what makes source attribution
+            # possible at all: without this, every sample is attributed to the
+            # single contributor passed on the command line and the aggregation has
+            # nothing to aggregate. The constructor argument remains the fallback
+            # for manifests that do not carry the field.
             meta = SampleMetadata(
                 sample_id=str(img_id),
                 file_path=img_path,
-                contributor=self.contributor,
+                contributor=str(img_info.get("contributor", self.contributor)),
+                batch_id=str(img_info.get("batch_id", "")),
+                source="coco_image_record" if "contributor" in img_info else "loader_argument",
                 label=",".join(category_names) if category_names else "",
                 annotations={"coco_image_info": img_info},
             )

@@ -1,0 +1,123 @@
+{
+ "run_id": "6faf11c0-0fc2-4df7-8b31-2bae3b329824",
+ "created_utc": "2026-09-28T07:45:09.372556+00:00",
+ "pipeline_version": "cviaf-pipeline-1.0.0",
+ "environment": {
+  "pipeline_version": "cviaf-pipeline-1.0.0",
+  "python": "3.11.16",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "2.4.6",
+  "cpu_count": 8,
+  "utc": "2026-09-28T07:45:09.384668+00:00"
+ },
+ "asset": {
+  "model_id": "oda_patch_on_object_s5",
+  "corpus": "runs/mvp",
+  "ground_truth_used_for_scoring_only": {
+   "kind": "oda",
+   "rate_requested": 0.4,
+   "rate_actual": 0.4,
+   "n_poisoned": 96,
+   "attack_success_rate": {
+    "asr": 0.9875,
+    "n": 80,
+    "applicable": true,
+    "kind": "oda",
+    "placement": "on_object",
+    "note": "measured on held-out images; triggers are re-placed per image"
+   },
+   "note": "recorded in the bundle for scoring and review; the engine never received it, so the report's findings are blind"
+  },
+  "artifact_digests": {
+   "weights_digest": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+   "head_digest": "d70927fae9eef7de3f5755404a27cb9d74a7e1e8ccc1fb3e836e997fa5184f00",
+   "backbone_digest": "f3672b11ecbf72e801ea9655183af0bcb36b1fb7c2a24e6d38ad8cd174881f7d",
+   "n_params_head": 1208,
+   "n_params_backbone": 3568
+  },
+  "spec_digest": "b1673a41d5487834",
+  "contribution_label_used_for_scoring": "oda"
+ },
+ "inputs": {
+  "coco": "runs/assurance/oda_s5/intake/instances.json",
+  "yolo": "runs/assurance/oda_s5/intake/yolo",
+  "n_images": 240,
+  "n_contributors": 3,
+  "contributors": {
+   "lab_alpha": 80,
+   "lab_beta": 80,
+   "vendor_x": 80
+  }
+ },
+ "modules": {
+  "data_integrity": {
+   "findings": 8,
+   "overall_risk": "HIGH"
+  },
+  "model_integrity": {
+   "findings": 2,
+   "checks_performed": [
+    "neural_cleanse",
+    "weight_analysis",
+    "entropy_probe",
+    "behavioral_fingerprint"
+   ],
+   "checks_skipped": [],
+   "access_level": "white-box"
+  },
+  "inference_provenance": {
+   "n_records": 10,
+   "n_flagged": 8,
+   "signing_mode": "hmac-sha256-fallback"
+  },
+  "distribution_shift": {
+   "shift_detected": true,
+   "severity": "MEDIUM",
+   "shift_type": "covariate_shift",
+   "natural_vs_adversarial": "probable_natural_drift",
+   "mean_mahalanobis": 26.782938900732816,
+   "mmd_p_value": 0.0
+  }
+ },
+ "artifacts": {
+  "assurance_report": {
+   "path": "runs/assurance/oda_s5/assurance_report.json",
+   "sha256": "330ade53b12c9c9283ce1728a86c532224a6f4fce946ca2f40d7c10e00fb9504"
+  },
+  "audit_trail": {
+   "path": "runs/assurance/oda_s5/audit_trail.json",
+   "sha256": "db1132054849c871a654e84eeb88c54c0ffee5c998c975a185ba66000377b9f1"
+  },
+  "coverage_statement": {
+   "path": "runs/assurance/oda_s5/coverage_statement.json",
+   "sha256": "cb750fb5df9e0431f79d36f80ed4c0132ee3e7d1a944ef363797099b845af317"
+  },
+  "inference_records": {
+   "path": "runs/assurance/oda_s5/inference_records.json",
+   "sha256": "568b31cefb2ef04a392546d4ab122abb90f1bf222ba9008e3162294c21fce629"
+  }
+ },
+ "report_summary": {
+  "overall_risk": "CRITICAL",
+  "overall_disposition": "quarantine",
+  "n_findings": 17,
+  "audit_trail_valid": true,
+  "audit_trail_length": 7
+ },
+ "schema_validation": {
+  "schema": "https://cviaf.local/schemas/assurance-report-3.0.0.json",
+  "valid": true,
+  "errors": []
+ },
+ "reproduce": {
+  "command": "python -m cviaf.lab assure --corpus runs/mvp --model oda_patch_on_object_s5 --out runs/assurance/oda_s5 --access-level white-box",
+  "seeds": {
+   "scene": 12,
+   "attack": 11,
+   "detector": 5
+  },
+  "spec_digest": "b1673a41d5487834"
+ },
+ "elapsed_seconds": 27.6
+}

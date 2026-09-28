@@ -1,0 +1,678 @@
+{
+ "signing_mode": "hmac-sha256-fallback",
+ "signing_mode_note": "ASSUMPTION WITH TEETH: the cryptography package is absent, so the provenance layer falls back to HMAC-SHA256 with a shared secret. This still detects tampering by a party who does not hold the verification key, but it is SYMMETRIC: anyone who can verify a seal can also forge one. Treat seal verification in this run as a tamper check, not as proof of origin. Install the 'full' extra to get Ed25519 and non-repudiation.",
+ "key_dir": "runs/assurance/oda_s5/keys",
+ "n_history": 6,
+ "max_history_sequence": 5,
+ "history": [
+  {
+   "seal_id": "seal-000000",
+   "seal_hash": "5ea8c4a55374941ca70cffa32b7c10b83f6f49ee5ac58d251c902c4b38a08b72",
+   "sequence_number": 0
+  },
+  {
+   "seal_id": "seal-000001",
+   "seal_hash": "5a7833a9f08138d8d9915809170ccc7c127819d2b521a8138bfb00568f5c457f",
+   "sequence_number": 1
+  },
+  {
+   "seal_id": "seal-000002",
+   "seal_hash": "906c38c08ded2c02dcc744a4863d8a08ee3889a047ce63efd3104914af23f603",
+   "sequence_number": 2
+  },
+  {
+   "seal_id": "seal-000003",
+   "seal_hash": "63888bf7c9ebd4eab227fe7a828b59a5f46ea9974417e126d5647283c2dabdfe",
+   "sequence_number": 3
+  },
+  {
+   "seal_id": "seal-000004",
+   "seal_hash": "e71a0a01dabeef13f363b043e4f2975ccd0a335c608c3eb1754876011fbb84f7",
+   "sequence_number": 4
+  },
+  {
+   "seal_id": "seal-000005",
+   "seal_hash": "8b8e1a108805519abb4977a2a5c1094a5e61bd6d9526a96ed21bfeb566f8d3be",
+   "sequence_number": 5
+  }
+ ],
+ "records": [
+  {
+   "seal_id": "seal-000006",
+   "truth": "genuine",
+   "note": "honest record continuing the sequence",
+   "adversary_recomputed_hash": false,
+   "observed": {
+    "record_hash": "a2b8cc039ce9330a3fde665a5b2a11ce6b3d213aed3145dcf5a78a518454cb91",
+    "payload_hash": "49963e2d923c702814c8ab7497ff0594e7267799038ba313007f27d8185538a0",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 6,
+    "nonce": "c52597c4d841984ac4781b27ced0a2b4"
+   },
+   "cviaf_verification": {
+    "flagged": false,
+    "signature_valid": true,
+    "replay_detected": false,
+    "nonce_already_seen": false,
+    "stale_sequence": false,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash"
+    ],
+    "n_findings": 0,
+    "attack_class": "",
+    "findings": [],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "bc43ce5c8a4bfe912a7f694d2bc3a27a830f74f64b4103dcdbc8ef62e8cc2327",
+      "computed": "bc43ce5c8a4bfe912a7f694d2bc3a27a830f74f64b4103dcdbc8ef62e8cc2327"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "3514fad73973e8bb6d449b3a27b2f72c6477d0edf1e8d254f59e520fc978c972",
+      "computed": "3514fad73973e8bb6d449b3a27b2f72c6477d0edf1e8d254f59e520fc978c972"
+     },
+     "signature": {
+      "valid": true
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000007",
+   "truth": "genuine",
+   "note": "honest record continuing the sequence",
+   "adversary_recomputed_hash": false,
+   "observed": {
+    "record_hash": "4c99c25cdb1fe2d3d5a0416e9183790c8f02947a15289b94704d3a8fa36cbb89",
+    "payload_hash": "df9b3a7ccb73494b3a61087ca77403a3b5210bc2d2269bd4d45c477afa61d64b",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 7,
+    "nonce": "715622a600d70834a0334b1ecea6d7df"
+   },
+   "cviaf_verification": {
+    "flagged": false,
+    "signature_valid": true,
+    "replay_detected": false,
+    "nonce_already_seen": false,
+    "stale_sequence": false,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash"
+    ],
+    "n_findings": 0,
+    "attack_class": "",
+    "findings": [],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "86e9b663a81285fb8d643fa5e541ab0adbb51a23aa9776aa2890e3ed34f1b47e",
+      "computed": "86e9b663a81285fb8d643fa5e541ab0adbb51a23aa9776aa2890e3ed34f1b47e"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "4e10fbb4d7040cce73a58216baf347171b9c56a601c01b1ad23c07683c6176b6",
+      "computed": "4e10fbb4d7040cce73a58216baf347171b9c56a601c01b1ad23c07683c6176b6"
+     },
+     "signature": {
+      "valid": true
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000000",
+   "truth": "tampered_output",
+   "note": "stored record edited in place: output replaced and every unkeyed hash recomputed, so the record is self-consistent",
+   "adversary_recomputed_hash": true,
+   "observed": {
+    "record_hash": "939db93b21d4e827e6926eca5fcec4a21975fd954b20c652fb3ed7c8da707cb7",
+    "payload_hash": "f665bc2f33335185a029a45dc942453f090b99b3f79ceb5be2a446d39fc101e2",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 0,
+    "nonce": "121a3f01f3519f52acd6b72918709af9"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": false,
+    "replay_detected": false,
+    "nonce_already_seen": true,
+    "stale_sequence": true,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash",
+     "signature"
+    ],
+    "n_findings": 1,
+    "attack_class": "inference_tampering",
+    "findings": [
+     {
+      "finding_id": "a0762765",
+      "module": "provenance",
+      "attack_class": "inference_tampering",
+      "severity": "CRITICAL",
+      "confidence": 1.0,
+      "title": "Invalid signature",
+      "description": "Cryptographic signature verification failed. The seal may have been forged or tampered with.",
+      "evidence": {},
+      "affected_assets": [],
+      "disposition": "quarantine",
+      "remediation": "",
+      "timestamp": "2026-09-28T07:45:09.315773+00:00"
+     }
+    ],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "70712e2498f60f919f2f4a2ff6f7195503a7d35ee2947044851142a48ff35bab",
+      "computed": "70712e2498f60f919f2f4a2ff6f7195503a7d35ee2947044851142a48ff35bab"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "9834e85fa80557145c179c89869ccfe578abf5d50baa9c13f87d10428921fc79",
+      "computed": "9834e85fa80557145c179c89869ccfe578abf5d50baa9c13f87d10428921fc79"
+     },
+     "signature": {
+      "valid": false
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000001",
+   "truth": "tampered_output",
+   "note": "stored record edited in place: output replaced and every unkeyed hash recomputed, so the record is self-consistent",
+   "adversary_recomputed_hash": true,
+   "observed": {
+    "record_hash": "1401e65db170afe676586bbecefe53fc2253dc39cad06f5084be066061f11409",
+    "payload_hash": "6d68756b3dfdd1ed1614c87b9c2dd0301893a9f9e1b8ef0972f3e3f39b1709d5",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 1,
+    "nonce": "3f98455f991526608eb89cca6e53621a"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": false,
+    "replay_detected": false,
+    "nonce_already_seen": true,
+    "stale_sequence": true,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash",
+     "signature"
+    ],
+    "n_findings": 1,
+    "attack_class": "inference_tampering",
+    "findings": [
+     {
+      "finding_id": "623f1803",
+      "module": "provenance",
+      "attack_class": "inference_tampering",
+      "severity": "CRITICAL",
+      "confidence": 1.0,
+      "title": "Invalid signature",
+      "description": "Cryptographic signature verification failed. The seal may have been forged or tampered with.",
+      "evidence": {},
+      "affected_assets": [],
+      "disposition": "quarantine",
+      "remediation": "",
+      "timestamp": "2026-09-28T07:45:09.315826+00:00"
+     }
+    ],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "6215b63210e95c9264cf218b95cc9b5dcb8f5c6ccbcb4957035835f7794ac4f2",
+      "computed": "6215b63210e95c9264cf218b95cc9b5dcb8f5c6ccbcb4957035835f7794ac4f2"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "27c1a9b6074290badf1f747797ee2dc28c5db10ea96dce9e8eff98501987940f",
+      "computed": "27c1a9b6074290badf1f747797ee2dc28c5db10ea96dce9e8eff98501987940f"
+     },
+     "signature": {
+      "valid": false
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000002",
+   "truth": "swapped_model",
+   "note": "record re-attributed to a different model digest, hashes recomputed",
+   "adversary_recomputed_hash": true,
+   "observed": {
+    "record_hash": "691de03b0e2cb93b4de928a67ffdada33bc7765cace07a08388ee55d21b938e9",
+    "payload_hash": "045c54aab0488eedec1aeb33f323d43d8e72527f51a7a9cf3d4e1abbd81a6725",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 2,
+    "nonce": "acd8f9f3c3ba85e05845f5bc9b45d122"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": false,
+    "replay_detected": false,
+    "nonce_already_seen": true,
+    "stale_sequence": true,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash",
+     "signature"
+    ],
+    "n_findings": 1,
+    "attack_class": "inference_tampering",
+    "findings": [
+     {
+      "finding_id": "ed6b12dc",
+      "module": "provenance",
+      "attack_class": "inference_tampering",
+      "severity": "CRITICAL",
+      "confidence": 1.0,
+      "title": "Invalid signature",
+      "description": "Cryptographic signature verification failed. The seal may have been forged or tampered with.",
+      "evidence": {},
+      "affected_assets": [],
+      "disposition": "quarantine",
+      "remediation": "",
+      "timestamp": "2026-09-28T07:45:09.315866+00:00"
+     }
+    ],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "9960aaf5f50977f2809f93e18f250d10a1cabe0385a323d1fbdbceb3906715c9",
+      "computed": "9960aaf5f50977f2809f93e18f250d10a1cabe0385a323d1fbdbceb3906715c9"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "85e5200908b8043b7be4d8da2495725ba2ef2d74dcdfe79c7d9709cb11d01681",
+      "provided": "85e5200908b8043b7be4d8da2495725ba2ef2d74dcdfe79c7d9709cb11d01681"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "4e10fbb4d7040cce73a58216baf347171b9c56a601c01b1ad23c07683c6176b6",
+      "computed": "4e10fbb4d7040cce73a58216baf347171b9c56a601c01b1ad23c07683c6176b6"
+     },
+     "signature": {
+      "valid": false
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000003",
+   "truth": "swapped_model",
+   "note": "record re-attributed to a different model digest, hashes recomputed",
+   "adversary_recomputed_hash": true,
+   "observed": {
+    "record_hash": "5d3c1793a6c52ebfc0ffd967b6efe7ac134078eb0cdacbbed4f39cc29ca989bd",
+    "payload_hash": "ccde7f7fbd98e2e739d83f32e2c95b764fc5adca0d750800c95c3cb79971c8f6",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 3,
+    "nonce": "2fd92316801f54ced490e94b9dced6e8"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": false,
+    "replay_detected": false,
+    "nonce_already_seen": true,
+    "stale_sequence": true,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash",
+     "signature"
+    ],
+    "n_findings": 1,
+    "attack_class": "inference_tampering",
+    "findings": [
+     {
+      "finding_id": "e8c4fc8b",
+      "module": "provenance",
+      "attack_class": "inference_tampering",
+      "severity": "CRITICAL",
+      "confidence": 1.0,
+      "title": "Invalid signature",
+      "description": "Cryptographic signature verification failed. The seal may have been forged or tampered with.",
+      "evidence": {},
+      "affected_assets": [],
+      "disposition": "quarantine",
+      "remediation": "",
+      "timestamp": "2026-09-28T07:45:09.315904+00:00"
+     }
+    ],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "a915f2d8ed6f5a44f99dadbf4b4c0b99d7220211de2eb1cac37e7436c6af4ca0",
+      "computed": "a915f2d8ed6f5a44f99dadbf4b4c0b99d7220211de2eb1cac37e7436c6af4ca0"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "85e5200908b8043b7be4d8da2495725ba2ef2d74dcdfe79c7d9709cb11d01681",
+      "provided": "85e5200908b8043b7be4d8da2495725ba2ef2d74dcdfe79c7d9709cb11d01681"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "4e10fbb4d7040cce73a58216baf347171b9c56a601c01b1ad23c07683c6176b6",
+      "computed": "4e10fbb4d7040cce73a58216baf347171b9c56a601c01b1ad23c07683c6176b6"
+     },
+     "signature": {
+      "valid": false
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000008",
+   "truth": "forged_record",
+   "note": "a new record for an inference that never happened: fresh identity, no valid signature available to the adversary",
+   "adversary_recomputed_hash": true,
+   "observed": {
+    "record_hash": "bfca2afa70ad4cedc516217d0ba2956a9d2bb161e8e5f8c5c9cb512852a17e75",
+    "payload_hash": "874034f810918693b9f68fd9671e771c3a9586184fe3262ebb38145ebc7f6f92",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 8,
+    "nonce": "a0ad02651a9760dc451b8f1eac2ecafa"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": false,
+    "replay_detected": false,
+    "nonce_already_seen": false,
+    "stale_sequence": false,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash",
+     "signature"
+    ],
+    "n_findings": 1,
+    "attack_class": "inference_tampering",
+    "findings": [
+     {
+      "finding_id": "e163acf4",
+      "module": "provenance",
+      "attack_class": "inference_tampering",
+      "severity": "CRITICAL",
+      "confidence": 1.0,
+      "title": "Invalid signature",
+      "description": "Cryptographic signature verification failed. The seal may have been forged or tampered with.",
+      "evidence": {},
+      "affected_assets": [],
+      "disposition": "quarantine",
+      "remediation": "",
+      "timestamp": "2026-09-28T07:45:09.316156+00:00"
+     }
+    ],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "c1b7b182a212db55f3dcb8980525f5512f8cbd3d318cdd9aa49a2c0dd9334713",
+      "computed": "c1b7b182a212db55f3dcb8980525f5512f8cbd3d318cdd9aa49a2c0dd9334713"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "b7e3a155114d3d31ddc97179392910a90b76d09cc05008148beac82c3e9254f6",
+      "computed": "b7e3a155114d3d31ddc97179392910a90b76d09cc05008148beac82c3e9254f6"
+     },
+     "signature": {
+      "valid": false
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000009",
+   "truth": "forged_record",
+   "note": "a new record for an inference that never happened: fresh identity, no valid signature available to the adversary",
+   "adversary_recomputed_hash": true,
+   "observed": {
+    "record_hash": "84f50ad53cf6aa7e64703d95889253309af4f0e8ff15c233fa0f34814d8c86de",
+    "payload_hash": "5e2d9a9a7155b13fd418a4e62f0cf3c114894fe58b50bbe91d51329f00713238",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 9,
+    "nonce": "90aa0fce974dde732d69a3da3d759761"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": false,
+    "replay_detected": false,
+    "nonce_already_seen": false,
+    "stale_sequence": false,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash",
+     "signature"
+    ],
+    "n_findings": 1,
+    "attack_class": "inference_tampering",
+    "findings": [
+     {
+      "finding_id": "19e58305",
+      "module": "provenance",
+      "attack_class": "inference_tampering",
+      "severity": "CRITICAL",
+      "confidence": 1.0,
+      "title": "Invalid signature",
+      "description": "Cryptographic signature verification failed. The seal may have been forged or tampered with.",
+      "evidence": {},
+      "affected_assets": [],
+      "disposition": "quarantine",
+      "remediation": "",
+      "timestamp": "2026-09-28T07:45:09.316407+00:00"
+     }
+    ],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "84732a04a7c8a966466685b4ff442976ce69d67f81c364844da8d6d299c71a85",
+      "computed": "84732a04a7c8a966466685b4ff442976ce69d67f81c364844da8d6d299c71a85"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "ffc21bf0f8ef1b5f2e9bed3a75dedb0c9b19ef2bf464f8875ec2efdb327fd872",
+      "computed": "ffc21bf0f8ef1b5f2e9bed3a75dedb0c9b19ef2bf464f8875ec2efdb327fd872"
+     },
+     "signature": {
+      "valid": false
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000000",
+   "truth": "replayed",
+   "note": "byte-identical old record re-submitted as new; nothing about the stored bytes is wrong, so only a nonce/sequence check can see it",
+   "adversary_recomputed_hash": false,
+   "observed": {
+    "record_hash": "5ea8c4a55374941ca70cffa32b7c10b83f6f49ee5ac58d251c902c4b38a08b72",
+    "payload_hash": "fe7705e5ab896492357f3b0a2fafcc1eb37535d17eeeb8f1877baead1dfe1d76",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 0,
+    "nonce": "121a3f01f3519f52acd6b72918709af9"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": true,
+    "replay_detected": true,
+    "nonce_already_seen": true,
+    "stale_sequence": true,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash"
+    ],
+    "n_findings": 0,
+    "attack_class": "inference_replay",
+    "findings": [],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "70712e2498f60f919f2f4a2ff6f7195503a7d35ee2947044851142a48ff35bab",
+      "computed": "70712e2498f60f919f2f4a2ff6f7195503a7d35ee2947044851142a48ff35bab"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "da27737ccf83064d134beae07a9cc26c4d94f3b02b97760fe44d78dabe960472",
+      "computed": "da27737ccf83064d134beae07a9cc26c4d94f3b02b97760fe44d78dabe960472"
+     },
+     "signature": {
+      "valid": true
+     }
+    }
+   }
+  },
+  {
+   "seal_id": "seal-000001",
+   "truth": "replayed",
+   "note": "byte-identical old record re-submitted as new; nothing about the stored bytes is wrong, so only a nonce/sequence check can see it",
+   "adversary_recomputed_hash": false,
+   "observed": {
+    "record_hash": "5a7833a9f08138d8d9915809170ccc7c127819d2b521a8138bfb00568f5c457f",
+    "payload_hash": "1fbad2bc12a195894a4d72ba1f7ff394c0c644ae798108bc3aaf4d9a84179721",
+    "stored_hash_self_consistent": true,
+    "sequence_number": 1,
+    "nonce": "3f98455f991526608eb89cca6e53621a"
+   },
+   "cviaf_verification": {
+    "flagged": true,
+    "signature_valid": true,
+    "replay_detected": true,
+    "nonce_already_seen": true,
+    "stale_sequence": true,
+    "failed_checks": [
+     "image_hash",
+     "model_digest",
+     "config_hash",
+     "output_hash"
+    ],
+    "n_findings": 0,
+    "attack_class": "inference_replay",
+    "findings": [],
+    "checks": {
+     "image_hash": {
+      "match": true,
+      "expected": "6215b63210e95c9264cf218b95cc9b5dcb8f5c6ccbcb4957035835f7794ac4f2",
+      "computed": "6215b63210e95c9264cf218b95cc9b5dcb8f5c6ccbcb4957035835f7794ac4f2"
+     },
+     "model_digest": {
+      "match": true,
+      "expected": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b",
+      "provided": "4b4711d7716c7f8f779c9689487b5cb83366b21d5ec6cf32b78a3d45fe72218b"
+     },
+     "config_hash": {
+      "match": true,
+      "expected": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a",
+      "computed": "24bf17404babe62bfad50ca6636c86dca10f7aedafd468c28003e562d3320b2a"
+     },
+     "output_hash": {
+      "match": true,
+      "expected": "018e6bd974013c55dac987e7265df39eecef1a3403fe007340fe2ea42f5b701d",
+      "computed": "018e6bd974013c55dac987e7265df39eecef1a3403fe007340fe2ea42f5b701d"
+     },
+     "signature": {
+      "valid": true
+     }
+    }
+   }
+  }
+ ],
+ "assumption": "Records are produced by a sealing service the pipeline does not control, and the adversary holds write access to the record store but not the signing key."
+}

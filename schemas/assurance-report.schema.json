@@ -1,0 +1,275 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://cviaf.local/schemas/assurance-report-3.0.0.json",
+ "title": "CVIAF Assurance Report",
+ "description": "A single evidence-based assessment of a contributed dataset, a trained model and the inference records associated with them. Every finding carries a reason, evidence, confidence, the affected asset and a recommended disposition; the report carries the coverage statement and the limitations of its own assessment, and a tamper-evident audit trail.",
+ "type": "object",
+ "additionalProperties": true,
+ "required": [
+  "report_id",
+  "framework_version",
+  "timestamp",
+  "pipeline_id",
+  "assessments",
+  "findings",
+  "overall_risk",
+  "overall_disposition",
+  "audit_trail",
+  "coverage_statement",
+  "limitations",
+  "metadata"
+ ],
+ "properties": {
+  "report_id": {
+   "type": "string",
+   "minLength": 1
+  },
+  "framework_version": {
+   "type": "string"
+  },
+  "timestamp": {
+   "type": "string",
+   "format": "date-time"
+  },
+  "pipeline_id": {
+   "type": "string"
+  },
+  "assessments": {
+   "$ref": "#/$defs/assessments"
+  },
+  "findings": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/finding"
+   }
+  },
+  "overall_risk": {
+   "$ref": "#/$defs/severity"
+  },
+  "overall_disposition": {
+   "$ref": "#/$defs/disposition"
+  },
+  "audit_trail": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/audit_entry"
+   }
+  },
+  "coverage_statement": {
+   "$ref": "#/$defs/coverage_statement"
+  },
+  "limitations": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "metadata": {
+   "type": "object"
+  }
+ },
+ "$defs": {
+  "severity": {
+   "type": "string",
+   "enum": [
+    "CRITICAL",
+    "HIGH",
+    "MEDIUM",
+    "LOW",
+    "INFO"
+   ]
+  },
+  "disposition": {
+   "type": "string",
+   "enum": [
+    "quarantine",
+    "review",
+    "accept"
+   ]
+  },
+  "finding": {
+   "type": "object",
+   "required": [
+    "finding_id",
+    "module",
+    "attack_class",
+    "severity",
+    "confidence",
+    "title",
+    "description",
+    "evidence",
+    "affected_assets",
+    "disposition",
+    "remediation",
+    "timestamp"
+   ],
+   "properties": {
+    "finding_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "module": {
+     "type": "string",
+     "minLength": 1,
+     "description": "which assessment module raised this"
+    },
+    "attack_class": {
+     "type": "string",
+     "description": "the attack class this finding is evidence of, or empty when the module can only report an anomaly"
+    },
+    "severity": {
+     "$ref": "#/$defs/severity"
+    },
+    "confidence": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 1
+    },
+    "title": {
+     "type": "string",
+     "minLength": 1
+    },
+    "description": {
+     "type": "string",
+     "description": "human-readable reason for the flag"
+    },
+    "evidence": {
+     "type": "object",
+     "description": "measured values supporting the finding"
+    },
+    "affected_assets": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "disposition": {
+     "$ref": "#/$defs/disposition"
+    },
+    "remediation": {
+     "type": "string"
+    },
+    "timestamp": {
+     "type": "string",
+     "format": "date-time"
+    }
+   }
+  },
+  "audit_entry": {
+   "type": "object",
+   "required": [
+    "entry_id",
+    "sequence_number",
+    "timestamp",
+    "action",
+    "module",
+    "details",
+    "input_hash",
+    "output_hash",
+    "previous_entry_hash",
+    "entry_hash"
+   ],
+   "properties": {
+    "entry_id": {
+     "type": "string"
+    },
+    "sequence_number": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "timestamp": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "action": {
+     "type": "string"
+    },
+    "module": {
+     "type": "string"
+    },
+    "details": {
+     "type": "object"
+    },
+    "input_hash": {
+     "type": "string"
+    },
+    "output_hash": {
+     "type": "string"
+    },
+    "previous_entry_hash": {
+     "type": "string"
+    },
+    "entry_hash": {
+     "type": "string",
+     "description": "SHA-256 over the entry's own fields and its predecessor's hash; recomputing it is what verifies the chain"
+    }
+   }
+  },
+  "coverage_statement": {
+   "type": "object",
+   "required": [
+    "supported_attack_classes",
+    "unsupported_conditions",
+    "assumptions"
+   ],
+   "properties": {
+    "supported_attack_classes": {
+     "type": "array",
+     "minItems": 1,
+     "items": {
+      "type": "object",
+      "required": [
+       "class",
+       "description",
+       "detection_methods",
+       "access_required",
+       "known_limitations"
+      ],
+      "properties": {
+       "class": {
+        "type": "string"
+       },
+       "description": {
+        "type": "string"
+       },
+       "detection_methods": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       },
+       "access_required": {
+        "type": "string"
+       },
+       "known_limitations": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    },
+    "unsupported_conditions": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "assumptions": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "assessments": {
+   "type": "object",
+   "description": "One block per module that ran. A module that did not run is absent, and its absence is the signal that 'accept' cannot be claimed on its axis.",
+   "additionalProperties": {
+    "type": "object"
+   }
+  }
+ }
+}

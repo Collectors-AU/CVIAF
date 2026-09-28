@@ -1,0 +1,69 @@
+# Source URLs used in the CVIAF design and research documents.
+#
+# Feed this to scripts/verify_sources.sh to reproduce the citation ledger:
+#   scripts/verify_sources.sh docs/source_urls.txt > docs/evidence/source_ledger.txt
+#
+# Format: one URL per line. '#' comments allowed.
+# Keep this list to PRIMARY sources actually relied on. If a claim in the design
+# rests on a URL that is not here, the claim is a [LEAD], not a finding.
+
+# --- Theory: what detection can and cannot promise -------------------------
+# No-free-lunch: universal (adversary-unaware) backdoor detection is impossible.
+https://proceedings.mlr.press/v238/pichler24a/pichler24a.pdf
+# Attack-side counterpart: without assumptions on the attack, detection is not well-posed.
+https://gradientscience.org/rethinking-attacks/
+
+# --- Capability 2.2.2: model integrity (detector-native ladder) ------------
+# TRACE — CVPR 2025, black-box test-time OD backdoor detection (CTC + FTC).
+# NOTE: read the submission history; v2 revises the abstract and V1 numbers.
+https://arxiv.org/abs/2503.15293
+# ODPure — input-stage OD backdoor purification preserving a perception stream.
+https://arxiv.org/abs/2609.28239
+# BadDet+ — physical-world, position/scale-invariant RMA+ODA (threat model + partial coverage).
+https://arxiv.org/abs/2601.21066
+# DISTIL — data-free trigger inversion via latent diffusion (ICCV 2025).
+https://arxiv.org/abs/2507.22813
+# ODSCAN — detector-specific backdoor scanning (IEEE S&P 2024).
+https://github.com/Megum1/ODSCAN
+# BadDet — the OGA/RMA/GMA/ODA taxonomy this framework's coverage matrix is keyed to.
+https://arxiv.org/abs/2205.14497
+
+# --- Capability 2.2.1: training-data integrity -----------------------------
+# cleanlab ObjectLab — COCO/YOLO-native label-error scoring, no retraining.
+https://docs.cleanlab.ai/stable/tutorials/object_detection/object_detection.html
+# SSCD — self-supervised copy detection (CVPR 2022) for near-duplicate flooding.
+https://github.com/facebookresearch/sscd-copy-detection
+# OpenOOD v1.5 — the standardized OOD protocol used for per-RoI scoring.
+https://github.com/Jingkang50/OpenOOD
+
+# --- Standards spine (capability 2.2.3 and the "governance" vocabulary) ----
+# NIST AI 100-2e2025 — adversarial-ML taxonomy; the coverage matrix vocabulary.
+https://csrc.nist.gov/pubs/ai/100/2/e2025/final
+# OpenSSF Model Signing — sign the FILE MANIFEST, not the serialized tensor.
+https://openssf.org/projects/model-signing/
+# Sigstore model-transparency — provenance/transparency semantics for model artifacts.
+https://github.com/sigstore/model-transparency
+# in-toto attestation framework — the standard for multi-functionary (multi-contributor) pipelines.
+https://github.com/in-toto/attestation
+# SLSA provenance — the attestation model the in-toto predicates slot into.
+https://slsa.dev/spec/v1.0/provenance
+# CycloneDX ML-BOM (AI-BOM) — machine-readable ingredient inventory.
+https://cyclonedx.org/capabilities/mlbom/
+# C2PA — content credentials for AI/ML: output→model→input binding, sidecar manifests.
+https://spec.c2pa.org/specifications/specifications/2.4/ai-ml/ai-ml.html
+
+# --- Capability 2.2.4: distribution shift ----------------------------------
+# Two-window drift detectors are provably evadable -> prefer within-window/block.
+https://arxiv.org/abs/2411.16591
+
+# --- External validation harnesses ----------------------------------------
+# TrojAI (IARPA launched the program; NIST ran the associated evaluations).
+https://pages.nist.gov/trojai/
+# BackdoorBench — standardized attack/defense matrix.
+https://github.com/SCLBD/backdoorbench
+
+# --- Known-bad sources, kept deliberately (do NOT cite as authority) -------
+# AnywhereDoor: withdrawn by its author; code repository remains up.
+# Kept here so the verification ledger records the WITHDRAWAL rather than
+# quietly dropping it. Usable as threat-model inspiration only.
+https://github.com/HKU-TASR/AnywhereDoor
