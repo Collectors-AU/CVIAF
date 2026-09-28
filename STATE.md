@@ -105,10 +105,22 @@ merged dataclass must carry the union or every committed corpus breaks on one of
 5 new terrain/season/sensor cells x 240 images + manifests, reusing the declared SceneSpec axes and
 manifest format so driftbench consumes the cells directly; **one no-shift resample per cell** as the
 control. Commit + push.
-- [ ] Step 5.1 cell configs
-- [ ] Step 5.2 generate + manifests
-- [ ] Step 5.3 control resamples
-- [ ] Step 5.4 commit + push
+- [x] Step 5.1 `cviaf/lab/drift_cells.py`: 5 declared cells + reference + 1 resample control each
+- [x] Step 5.2 generated `runs/drift_cells` (11 cells, 2640 images, 26 MB) with manifests
+- [x] Step 5.3 controls: spec-identical to their cell, different seed offset, asserted by
+      `status()` (problems == []) and pinned by `tests/test_drift_cells.py`
+- [x] Step 5.4 commit + push (`caa18ce`); `--verify` reproduced 11/11 dataset digests and
+      11/11 stored-pixel hashes; 55 tests pass
+
+## TASK 3 — env check result (decision needed before any install)
+
+Measured: `.venv` (Python 3.11.16) has **no** torch / onnx / onnxruntime.
+`/opt/homebrew/bin/python3.12` (3.12.14) has torch **2.14.0 (MPS available)**, onnx **1.23.0**,
+onnxruntime **1.30.0**, numpy and PIL — but **no scipy and no scikit-learn**, which the repo's
+lab/eval path imports. So Task 3 needs either extra packages in the torch interpreter or torch
+in the repo venv; both are installs, and the STEER says ask first. No install has been run.
+Sequence when unblocked: export parity gate **first** (benign re-export → zero substitution
+findings), then the backdoored model + eval + null suite.
 
 ---
 ## Phase log
