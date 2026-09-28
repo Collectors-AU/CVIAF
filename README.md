@@ -222,6 +222,7 @@ cviaf/
 
 ## Reference documents
 
+- `docs/EXPERIMENT_LANES.md` the parallel experiment lanes and what they measured
 - `docs/MVP_MAC.md` how to run, read and improve the laptop MVP
 - `docs/SCALING_PLAN.md` M3 → H200 scaling plan
 - `docs/CVIAF_V3_ARCHITECTURE.md` design and roadmap

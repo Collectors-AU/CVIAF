@@ -94,7 +94,16 @@ def build_specs(plan: Dict[str, Any]) -> List[TrainSpec]:
             # fraction), so two entries that differ only in magnitude would otherwise
             # collide on one model_id and silently overwrite each other -- which is how
             # you end up with a "magnitude sweep" of exactly one magnitude.
-            if a.kind in MODEL_ATTACK_KINDS:
+            if a.kind == "weight_tamper":
+                # The mechanism is part of the identity, not just the magnitude. Two
+                # tampers of the same size by different mechanisms are different attacks
+                # with different signatures, and without this they collide on one
+                # model_id and one is silently overwritten -- the same failure the
+                # magnitude suffix was added to prevent. `substitution` has no mechanism
+                # (it is a retrain, not a weight edit), so it is left off its id.
+                model_id = (f"{a.kind}_{a.mechanism}_{a.trigger}_{a.trigger_loc}"
+                            f"_r{a.rate:g}_s{seed}")
+            elif a.kind in MODEL_ATTACK_KINDS:
                 model_id = f"{a.kind}_{a.trigger}_{a.trigger_loc}_r{a.rate:g}_s{seed}"
             else:
                 model_id = f"{a.kind}_{a.trigger}_{a.trigger_loc}_s{seed}"
@@ -138,6 +147,18 @@ def retest_corpus(
     if not entries:
         raise RuntimeError(f"no models found under {corpus_dir}/")
 
+    # Null-subtract against a clean corpus member. The criterion was already re-measured
+    # once, but the *null* is the part that makes it mean anything: on a clean model the
+    # same recipes measure 0.99 / 0.91 / 0.17, so the raw rate is mostly a measurement of
+    # the trigger patch's own ink. Picking the reference by sorted model_id keeps the
+    # choice reproducible instead of "whichever clean model was loaded first".
+    null_model = None
+    for e in sorted(entries, key=lambda x: x["manifest"]["model_id"]):
+        if e["manifest"]["ground_truth"]["kind"] == "clean":
+            null_model = ModelArtifact.load(e["dir"]).model
+            log(f"  null reference: {e['manifest']['model_id']}")
+            break
+
     before_weak = after_weak = 0
     per_kind: Dict[str, Dict[str, Any]] = {}
     updated: List[Dict[str, Any]] = []
@@ -151,9 +172,12 @@ def retest_corpus(
 
         clean_q = detection_quality(art.model, splits.eval_clean.images,
                                     splits.eval_clean.boxes, splits.eval_clean.labels)
+        ref = None if kind == "clean" else null_model
         asr = attack_success_rate(art.model, splits.eval_clean, spec.attack,
-                                  seed=spec.detector.seed)
-        weak = bool(asr["applicable"] and asr["asr"] < ASR_FLOOR)
+                                  seed=spec.detector.seed, null_model=ref)
+        basis = "asr_net" if "asr_net" in asr else "asr"
+        gate_value = float(asr[basis])
+        weak = bool(asr["applicable"] and gate_value < ASR_FLOOR)
 
         old_asr = float(m["metrics"]["attack_success_rate"]["asr"])
         old_weak = bool(m["quality_flags"]["backdoor_weak"])
@@ -164,29 +188,39 @@ def retest_corpus(
         m["metrics"]["attack_success_rate"] = asr
         m["quality_flags"]["backdoor_weak"] = weak
         m["quality_flags"]["asr_metric"] = asr["criterion"]
+        m["quality_flags"]["asr_gate_basis"] = basis
+        m["quality_flags"]["asr_gate_value"] = gate_value
         m.setdefault("retest", {})
+        old_basis = m["quality_flags"].get("asr_gate_basis_previous", "asr")
         m["retest"][asr["criterion"]] = {
+            "gate_basis": basis, "gate_before": old_basis,
             "asr_before": old_asr, "asr_after": float(asr["asr"]),
+            "asr_net": asr.get("asr_net"), "asr_null": asr.get("asr_null"),
             "asr_strict_iou": float(asr["asr_strict_iou"]),
             "weak_before": old_weak, "weak_after": weak,
-            "note": ("re-measured under the paired criterion; the strict IoU value is "
-                     "retained so earlier published numbers stay comparable"),
+            "note": ("re-measured under the paired criterion, null-subtracted against a "
+                     "clean corpus member; the raw and strict-IoU values are retained so "
+                     "earlier published numbers stay comparable"),
         }
 
-        agg = per_kind.setdefault(kind, {"n": 0, "usable": 0, "asr_sum": 0.0})
+        agg = per_kind.setdefault(kind, {"n": 0, "usable": 0, "asr_sum": 0.0,
+                                         "net_sum": 0.0, "null_sum": 0.0})
         agg["n"] += 1
         agg["usable"] += int(not weak)
         agg["asr_sum"] += float(asr["asr"])
+        agg["net_sum"] += float(asr.get("asr_net", asr["asr"]))
+        agg["null_sum"] += float(asr.get("asr_null", 0.0))
 
         if write:
             with open(os.path.join(e["dir"], "manifest.json"), "w") as fh:
                 json.dump(m, fh, indent=1, default=str)
         updated.append({"dir": e["dir"], "manifest": m})
         if old_weak != weak or abs(old_asr - float(asr["asr"])) > 1e-6:
-            log(f"  {m['model_id']:34s} ASR {old_asr:.3f} -> {asr['asr']:.3f} "
-                f"(strict {asr['asr_strict_iou']:.3f})"
-                f"{'  [now usable]' if old_weak and not weak else ''}"
-                f"{'  [now gated]' if weak and not old_weak else ''}")
+            net = asr.get("asr_net")
+            tag = ("  [now usable]" if (old_weak and not weak)
+                   else "  [now gated]" if (weak and not old_weak) else "")
+            log(f"  {m['model_id']:34s} ASR {old_asr:.3f} -> {asr['asr']:.3f}"
+                + (f" (net {net:.3f})" if net is not None else "") + tag)
 
     # The registry mirrors the manifests, so it is rebuilt rather than patched: a
     # half-updated registry is worse than none, because load_registry prefers it.
@@ -202,7 +236,9 @@ def retest_corpus(
         "usable_before": len(updated) - before_weak,
         "usable_after": len(updated) - after_weak,
         "per_kind": {k: {"n": v["n"], "usable": v["usable"],
-                         "mean_asr": round(v["asr_sum"] / v["n"], 4)}
+                         "mean_asr": round(v["asr_sum"] / v["n"], 4),
+                         "mean_asr_net": round(v["net_sum"] / v["n"], 4),
+                         "mean_asr_null": round(v["null_sum"] / v["n"], 4)}
                      for k, v in sorted(per_kind.items())},
         "registry": reg_path, "written": write,
     }
@@ -226,6 +262,24 @@ def run_corpus(
     specs = build_specs(plan)
     if max_models:
         specs = specs[:max_models]
+
+    # The clean reference the attack-success rate is null-subtracted against, resolved
+    # INSIDE the loop rather than before it. Without a null the gate compares the
+    # triggered side of a model against the triggered side of the SAME model, so any
+    # recipe that visibly changes the image scores as a successful attack on a model
+    # with no backdoor at all (measured: 0.988 for one such recipe on a clean model).
+    #
+    # Resolved in the loop, and per seed, for two reasons. The clean model is an
+    # ordinary corpus member, so pre-training it outside would silently inflate nothing
+    # while desynchronising the loop's trained/skipped counters. And taking the null
+    # from the clean model of the SAME seed block matches the reference on scene and
+    # detector seed, which is the comparison the ink effect actually varies with.
+    # Nothing to do with the plan: the null is whatever clean model was trained (or
+    # loaded) most recently, so a plan that lists its clean entry first just works.
+    null_model = None
+    null_reference_enabled = bool(plan.get("null_reference", True))
+    warned_no_null = False
+    from cviaf.lab.train import ModelArtifact as _ModelArtifact
 
     started = time.time()
     done = skipped = failed = 0
@@ -252,25 +306,50 @@ def run_corpus(
                     skipped += 1
                     log(f"  [{idx}/{len(specs)}] {spec.model_id:34s} skip (spec matches)")
                     results.append({"dir": mdir, "manifest": existing, "skipped": True})
+                    if null_reference_enabled and spec.attack.kind == "clean":
+                        # A resumed corpus must still have a null, or every attack model
+                        # retrained after a restart would quietly fall back to the raw
+                        # un-subtracted rate.
+                        null_model = _ModelArtifact.load(mdir).model
+                        log(f"  null reference: {spec.model_id} (reused for this seed)")
                     continue
             except Exception:
                 pass  # corrupt manifest -> retrain
 
+        if (null_reference_enabled and null_model is None
+                and spec.attack.kind not in ("clean", *MODEL_ATTACK_KINDS)
+                and not warned_no_null):
+            warned_no_null = True
+            log("  [warn] first trigger attack precedes any clean model: this model's "
+                "attack-success rate is RAW, not null-subtracted, and must not be used "
+                "as evidence (list a clean entry first)")
+
         t0 = time.time()
         try:
             splits = build_splits(spec)
-            art = train_model(spec, splits=splits)
+            art = train_model(spec, splits=splits, null_model=null_model)
             art.save(mdir)
             m = art.manifest
+            if null_reference_enabled and spec.attack.kind == "clean":
+                null_model = art.model
+                log(f"  null reference: {spec.model_id} (for every attack in this seed)")
             entry = {"dir": mdir, "manifest": m}
             results.append(entry)
             with open(reg_path, "a") as fh:
                 fh.write(json.dumps(entry) + "\n")
             done += 1
             a = m["metrics"]["attack_success_rate"]
+            qf = m["quality_flags"]
+            # The gate reports the basis it actually used. "ASR" without saying whether
+            # the null was subtracted is the number that made two of three recipes look
+            # like successes while they were mostly measuring the patch's own ink.
+            basis = qf.get("asr_gate_basis", "asr")
+            gate = f"{basis}={qf.get('asr_gate_value', a['asr']):.3f}"
+            if "asr_null" in a:
+                gate += f" null={a['asr_null']:.3f}"
             log(f"  [{idx}/{len(specs)}] {spec.model_id:34s} "
-                f"ASR={a['asr']:.3f} F1={m['metrics']['clean_quality']['f1']:.3f} "
-                f"({time.time()-t0:.1f}s){'  [WEAK]' if m['quality_flags']['backdoor_weak'] else ''}")
+                f"{gate} F1={m['metrics']['clean_quality']['f1']:.3f} "
+                f"({time.time()-t0:.1f}s){'  [WEAK]' if qf['backdoor_weak'] else ''}")
         except Exception as exc:  # a single bad model must not kill the run
             failed += 1
             log(f"  [{idx}/{len(specs)}] {spec.model_id:34s} FAILED: {exc}")
