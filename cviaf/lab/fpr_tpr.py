@@ -376,8 +376,16 @@ def kind_breakdown(records: Sequence[Dict[str, Any]], signal: str, threshold: fl
 
 
 def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
-                    min_negatives: int = 20, split_seed: int = 0) -> Dict[str, Any]:
-    """Score every signal in the ledger and summarise by kind."""
+                    min_negatives: int = 20, split_seed: int = 0,
+                    prevalence: Optional[float] = None,
+                    costs: Optional[Any] = None) -> Dict[str, Any]:
+    """Score every signal in the ledger and summarise by kind.
+
+    Each signal is also priced: expected loss per asset for three deployment policies
+    at a declared prevalence, from the signal's own MEASURED TPR and FPR (clause 1.4 --
+    risk, not just integrity). Units of a rule are not comparable across corpora, so
+    the prevalence and loss matrix are recorded next to every number.
+    """
     problems = validate_ledger(ledger)
     if problems:
         raise LedgerError("; ".join(problems))
@@ -451,6 +459,7 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
         "rules": rules,
         "per_kind": per_kind,
         "clause_checks": {"3.7_oda_recall": oda_check},
+        "risk": risk_block(rules, prevalence=prevalence, costs=costs),
         # The single sentence a reader should see before any number: without enough
         # clean assets on the evaluation half, FPR is not measured and every claim
         # downstream is conditional on an untested assumption.
@@ -460,6 +469,41 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
                      "report bounds, not rates" % (n_ev_neg, min_negatives)),
     }
     return report
+
+
+def risk_block(rules: Mapping[str, Any], prevalence: Optional[float] = None,
+               costs: Optional[Any] = None) -> Dict[str, Any]:
+    """Expected loss per signal, from its own measured operating point.
+
+    A signal whose FPR is only bounded (0/30 clean assets) has no point estimate and is
+    not priced: a bound cannot place a posterior. That refusal is the whole reason the
+    FPR harness reports bounds at all.
+    """
+    from cviaf.lab.risk import DEFAULT_PREVALENCE, rule_risk
+
+    pi = DEFAULT_PREVALENCE if prevalence is None else float(prevalence)
+    out: Dict[str, Any] = {
+        "schema": "cviaf.asset-risk.v1",
+        "prevalence": pi,
+        "prevalence_basis": ("declared default; override with --prevalence. The FPR "
+                             "corpus here is built 50/50 for power, which is NOT a "
+                             "deployment prevalence"),
+        "loss_matrix": (costs.to_dict() if costs is not None
+                        else __import__("cviaf.lab.review", fromlist=["OperatorCosts"])
+                        .OperatorCosts().to_dict()),
+        "per_signal": {},
+    }
+    for name, rule in rules.items():
+        if rule.get("status") == "refused":
+            out["per_signal"][name] = {"status": "not_measured",
+                                       "reason": rule.get("reason")}
+            continue
+        priced = rule_risk((rule["tpr"] or {}).get("point_estimate"),
+                           (rule["fpr"] or {}).get("point_estimate"), pi, costs)
+        priced["tpr_denominator"] = (rule["tpr"] or {}).get("denominator")
+        priced["fpr_denominator"] = (rule["fpr"] or {}).get("denominator")
+        out["per_signal"][name] = priced
+    return out
 
 
 def render_report(report: Dict[str, Any]) -> str:
@@ -505,6 +549,24 @@ def render_report(report: Dict[str, Any]) -> str:
         best = (f"{check['best_signal']}" if check["best_signal"] else "no signal")
         lines += ["", f"clause 3.7 ODA recall > 0: {'satisfied' if check['satisfied'] else 'NOT satisfied'} "
                       f"(best {best} {check['best_recall']:.3f}; {check['caveat'].split('.')[0]}.)"]
+
+    risk = report.get("risk")
+    if risk:
+        lines += ["", f"expected loss per asset at prevalence {risk['prevalence']:.3f} "
+                      f"(clause 1.4; loss matrix {risk['loss_matrix']})",
+                  f"{'signal':26s} {'accept_all':>10s} {'quarantine':>11s} "
+                  f"{'review':>8s} {'recommended':>18s} {'break-even pi':>13s}"]
+        for name, priced in sorted(risk["per_signal"].items()):
+            if priced.get("status") != "measured":
+                lines.append(f"{name:26s} {'not priced: ' + str(priced.get('reason'))[:60]}")
+                continue
+            el = priced["expected_loss_per_asset"]
+            be = priced.get("break_even_prevalence_vs_accept_all")
+            lines.append(
+                f"{name:26s} {el['accept_all']:10.3f} {el['quarantine_flagged']:11.3f} "
+                f"{el['review_flagged']:8.3f} {priced['recommended_policy']:>18s} "
+                f"{('n/a' if be is None else f'{be:.3f}'):>13s}")
+        lines.append(f"  prevalence basis: {risk['prevalence_basis']}")
     return "\n".join(lines)
 
 
@@ -521,6 +583,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     help="override the ledger's alpha")
     ap.add_argument("--min-negatives", type=int, default=20)
     ap.add_argument("--split-seed", type=int, default=0)
+    ap.add_argument("--prevalence", type=float, default=None,
+                    help="declared share of tampered assets for the expected-loss block")
     ap.add_argument("--validate-only", action="store_true")
     args = ap.parse_args(argv)
 
@@ -538,7 +602,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         ledger = {**ledger, "alpha": args.alpha}
     report = evaluate_corpus(ledger, alpha=args.alpha or ledger.get("alpha", 0.05),
                              min_negatives=args.min_negatives,
-                             split_seed=args.split_seed)
+                             split_seed=args.split_seed, prevalence=args.prevalence)
     print(render_report(report))
     if args.out:
         os.makedirs(os.path.dirname(os.path.abspath(args.out)) or ".", exist_ok=True)

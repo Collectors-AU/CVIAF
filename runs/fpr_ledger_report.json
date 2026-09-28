@@ -724,6 +724,153 @@
    "caveat": "the best-of-four number is selected over signals, so it is optimistic; the per-signal recall in this report is the authoritative figure. A kind with no evaluation-half assets is reported as not measured, not as zero recall."
   }
  },
+ "risk": {
+  "schema": "cviaf.asset-risk.v1",
+  "prevalence": 0.1,
+  "prevalence_basis": "declared default; override with --prevalence. The FPR corpus here is built 50/50 for power, which is NOT a deployment prevalence",
+  "loss_matrix": {
+   "false_accept": 25.0,
+   "false_quarantine": 5.0,
+   "review": 1.0,
+   "reviewer_error": 0.0
+  },
+  "per_signal": {
+   "ctc_mean_clean": {
+    "schema": "cviaf.asset-risk.v1",
+    "status": "measured",
+    "operating_point": {
+     "tpr": 0.0556,
+     "fpr": 0.2667
+    },
+    "prevalence": 0.1,
+    "loss_matrix": {
+     "false_accept": 25.0,
+     "false_quarantine": 5.0,
+     "review": 1.0,
+     "reviewer_error": 0.0
+    },
+    "accept_bound": 0.05,
+    "posterior_when_flagged": 0.02263935828006026,
+    "posterior_when_not_flagged": 0.12518391855887384,
+    "expected_loss_per_asset": {
+     "accept_all": 2.5,
+     "quarantine_flagged": 3.5611500000000005,
+     "review_flagged": 3.8067399999999996
+    },
+    "recommended_policy": "accept_all",
+    "tied_policies": [
+     "accept_all"
+    ],
+    "recommended_expected_loss_per_asset": 2.5,
+    "break_even_prevalence_vs_accept_all": 0.4896273179911077,
+    "caveat": "posteriors are decision-conditioned (every flagged asset shares one value); a per-asset posterior would need the alternative density, which the clean calibration set cannot identify",
+    "tpr_denominator": 36,
+    "fpr_denominator": 30
+   },
+   "ctc_peak_clean": {
+    "schema": "cviaf.asset-risk.v1",
+    "status": "measured",
+    "operating_point": {
+     "tpr": 0.0,
+     "fpr": 0.0
+    },
+    "prevalence": 0.1,
+    "loss_matrix": {
+     "false_accept": 25.0,
+     "false_quarantine": 5.0,
+     "review": 1.0,
+     "reviewer_error": 0.0
+    },
+    "accept_bound": 0.05,
+    "posterior_when_flagged": null,
+    "posterior_when_not_flagged": 0.1,
+    "expected_loss_per_asset": {
+     "accept_all": 2.5,
+     "quarantine_flagged": 2.5,
+     "review_flagged": 2.5
+    },
+    "recommended_policy": "accept_all",
+    "tied_policies": [
+     "accept_all",
+     "quarantine_flagged",
+     "review_flagged"
+    ],
+    "recommended_expected_loss_per_asset": 2.5,
+    "break_even_prevalence_vs_accept_all": 0.0,
+    "caveat": "posteriors are decision-conditioned (every flagged asset shares one value); a per-asset posterior would need the alternative density, which the clean calibration set cannot identify",
+    "note": "the rule never fires (TPR = FPR = 0), so no flagged-handling policy can differ from accept_all; the tie is structural, not a preference",
+    "tpr_denominator": 36,
+    "fpr_denominator": 30
+   },
+   "ctc_q95_clean": {
+    "schema": "cviaf.asset-risk.v1",
+    "status": "measured",
+    "operating_point": {
+     "tpr": 0.0,
+     "fpr": 0.0
+    },
+    "prevalence": 0.1,
+    "loss_matrix": {
+     "false_accept": 25.0,
+     "false_quarantine": 5.0,
+     "review": 1.0,
+     "reviewer_error": 0.0
+    },
+    "accept_bound": 0.05,
+    "posterior_when_flagged": null,
+    "posterior_when_not_flagged": 0.1,
+    "expected_loss_per_asset": {
+     "accept_all": 2.5,
+     "quarantine_flagged": 2.5,
+     "review_flagged": 2.5
+    },
+    "recommended_policy": "accept_all",
+    "tied_policies": [
+     "accept_all",
+     "quarantine_flagged",
+     "review_flagged"
+    ],
+    "recommended_expected_loss_per_asset": 2.5,
+    "break_even_prevalence_vs_accept_all": 0.0,
+    "caveat": "posteriors are decision-conditioned (every flagged asset shares one value); a per-asset posterior would need the alternative density, which the clean calibration set cannot identify",
+    "note": "the rule never fires (TPR = FPR = 0), so no flagged-handling policy can differ from accept_all; the tie is structural, not a preference",
+    "tpr_denominator": 36,
+    "fpr_denominator": 30
+   },
+   "refdiv_mean_clean": {
+    "schema": "cviaf.asset-risk.v1",
+    "status": "measured",
+    "operating_point": {
+     "tpr": 0.2222,
+     "fpr": 0.0667
+    },
+    "prevalence": 0.1,
+    "loss_matrix": {
+     "false_accept": 25.0,
+     "false_quarantine": 5.0,
+     "review": 1.0,
+     "reviewer_error": 0.0
+    },
+    "accept_bound": 0.05,
+    "posterior_when_flagged": 0.2701519756838906,
+    "posterior_when_not_flagged": 0.08475074911468265,
+    "expected_loss_per_asset": {
+     "accept_all": 2.5,
+     "quarantine_flagged": 2.2446500000000005,
+     "review_flagged": 2.3269
+    },
+    "recommended_policy": "quarantine_flagged",
+    "tied_policies": [
+     "quarantine_flagged"
+    ],
+    "recommended_expected_loss_per_asset": 2.2446500000000005,
+    "break_even_prevalence_vs_accept_all": 0.0566358151845634,
+    "caveat": "posteriors are decision-conditioned (every flagged asset shares one value); a per-asset posterior would need the alternative density, which the clean calibration set cannot identify",
+    "tpr_denominator": 36,
+    "fpr_denominator": 30
+   }
+  }
+ },
  "fpr_measured": true,
  "headline": "FPR is measured on 30 clean assets"
 }

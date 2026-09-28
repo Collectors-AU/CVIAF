@@ -376,6 +376,69 @@ def test_render_prints_per_kind_recall_and_the_clause():
     assert "clause 3.7 ODA recall > 0: satisfied" in text
 
 
+# --------------------------------------------------------------------------- #
+# expected loss (clause 1.4): every rule is priced from its own measured point
+# --------------------------------------------------------------------------- #
+
+def test_every_signal_is_priced_with_three_dispositions():
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    report = evaluate_corpus(make_population(), min_negatives=5, prevalence=0.1)
+    risk = report["risk"]
+    assert risk["prevalence"] == 0.1
+    assert set(risk["per_signal"]) == set(report["rules"])
+    for name, priced in risk["per_signal"].items():
+        assert priced["status"] == "measured"
+        assert set(priced["expected_loss_per_asset"]) == {
+            "accept_all", "quarantine_flagged", "review_flagged"}
+        assert priced["recommended_policy"] in priced["expected_loss_per_asset"]
+        assert priced["fpr_denominator"] >= 0 and priced["tpr_denominator"] >= 0
+
+
+def test_the_pricing_uses_the_declared_prevalence():
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    led = make_population()
+    low = evaluate_corpus(led, min_negatives=5, prevalence=0.01)["risk"]
+    high = evaluate_corpus(led, min_negatives=5, prevalence=0.5)["risk"]
+    assert high["prevalence"] == 0.5 and low["prevalence"] == 0.01
+    # accepting is only expensive when tampered assets are common
+    assert (high["per_signal"]["signal"]["expected_loss_per_asset"]["accept_all"]
+            > low["per_signal"]["signal"]["expected_loss_per_asset"]["accept_all"])
+
+
+def test_a_refused_signal_is_not_priced():
+    """A bound cannot place a posterior, so a rule with no point estimate has no cost."""
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    led = make_population(n_neg=4)
+    report = evaluate_corpus(led, min_negatives=1)
+    assert report["rules"]["signal"]["status"] == "refused"
+    priced = report["risk"]["per_signal"]["signal"]
+    assert priced["status"] == "not_measured"
+    assert "expected_loss_per_asset" not in priced
+
+
+def test_render_shows_the_expected_loss_table_and_its_basis():
+    from cviaf.lab.fpr_tpr import evaluate_corpus, render_report
+    text = render_report(evaluate_corpus(make_population(), min_negatives=5,
+                                         prevalence=0.1))
+    assert "expected loss per asset at prevalence 0.100" in text
+    assert "break-even pi" in text
+    assert "prevalence basis" in text
+
+
+def test_the_real_report_is_priced_and_names_its_prevalence():
+    path = "runs/fpr_ledger_report.json"
+    if not os.path.isfile(path):
+        pytest.skip("report not built yet")
+    with open(path, encoding="utf-8") as fh:
+        report = json.load(fh)
+    risk = report["risk"]
+    assert risk["prevalence"] > 0
+    assert "deployment prevalence" in risk["prevalence_basis"].lower()
+    refdiv = risk["per_signal"]["refdiv_mean_clean"]
+    assert refdiv["recommended_policy"] == "quarantine_flagged"
+    assert refdiv["break_even_prevalence_vs_accept_all"] < risk["prevalence"]
+
+
 def test_smoke_on_the_real_corpus_when_present():
     """If a ledger produced from the on-disk corpora exists, it must validate and
     score. This is the check that the harness works on real artefacts, not just
