@@ -345,6 +345,36 @@ def evaluate_rule(records: Sequence[Dict[str, Any]], signal: str, alpha: float,
     }
 
 
+def kind_breakdown(records: Sequence[Dict[str, Any]], signal: str, threshold: float,
+                   higher_is_more_anomalous: bool = True, min_n: int = 1
+                   ) -> Dict[str, Any]:
+    """TPR for each positive kind at one FIXED threshold.
+
+    The threshold is the corpus-level one, deliberately: picking a per-kind threshold
+    would let a kind choose its own operating point, and then the per-kind recalls
+    would no longer describe the single rule a deployment would run. A kind with no
+    evaluation items is reported as not measured rather than as 0.0 -- "we caught none
+    of the cloaking arms" and "we never looked at a cloaking arm" are different
+    statements, and clause 3.7 of the problem statement wants the first.
+    """
+    kinds: Dict[str, Any] = {}
+    for kind in sorted({r["kind"] for r in records if r["is_positive"]}):
+        items = [r for r in records
+                 if r["is_positive"] and r["kind"] == kind and r["split"] == "evaluation"]
+        if not items:
+            kinds[kind] = {"status": "not_measured", "n_evaluation": 0,
+                           "reason": "no evaluation-half assets of this kind"}
+            continue
+        tp = 0
+        for r in items:
+            s = r["scores"][signal]
+            tp += int((s > threshold) if higher_is_more_anomalous else (s < threshold))
+        kinds[kind] = {"status": "measured" if len(items) >= min_n else "partial",
+                       "n_evaluation": len(items), "tp": tp, "fn": len(items) - tp,
+                       "tpr": rate(tp, len(items), min_n)}
+    return kinds
+
+
 def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
                     min_negatives: int = 20, split_seed: int = 0) -> Dict[str, Any]:
     """Score every signal in the ledger and summarise by kind."""
@@ -375,6 +405,31 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
     n_ev_pos = sum(1 for r in records
                    if r["split"] == "evaluation" and r["is_positive"])
     ready = bool(n_ev_neg >= min_negatives and n_ev_pos > 0)
+    per_kind = {
+        s: ({"status": "refused", "kinds": {}} if rules[s].get("status") == "refused"
+            else {"status": "measured", "threshold": rules[s]["threshold"],
+                  "threshold_note": "the corpus-level threshold; per-kind thresholds "
+                                    "would let each kind pick its own operating point",
+                  "kinds": kind_breakdown(records, s, rules[s]["threshold"], higher)})
+        for s in signals}
+
+    # Clause 3.7 ("ODA recall > 0"): report it per signal and take the best, because
+    # one number is what the clause asks for -- but say out loud that choosing the max
+    # over four signals inflates it, so the per-signal column is the authoritative one.
+    oda = {s: (per_kind[s]["kinds"].get("oda", {}) or {}).get("tpr", {}).get("point_estimate")
+           for s in signals if per_kind[s]["status"] != "refused"}
+    caught = {s: v for s, v in oda.items() if v}
+    oda_check = {
+        "clause": "3.7 ODA (cloaking) recall > 0 on the reference battery",
+        "recall_per_signal": oda,
+        "best_signal": max(caught, key=caught.get) if caught else None,
+        "best_recall": max(caught.values()) if caught else 0.0,
+        "satisfied": bool(caught),
+        "caveat": ("the best-of-four number is selected over signals, so it is optimistic; "
+                   "the per-signal recall in this report is the authoritative figure. A "
+                   "kind with no evaluation-half assets is reported as not measured, not "
+                   "as zero recall."),
+    }
     report = {
         "schema": REPORT_SCHEMA,
         "ledger_schema": ledger["schema"],
@@ -394,6 +449,8 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
                    "evaluation_negatives": census(
                        lambda r: not r["is_positive"] and r["split"] == "evaluation")},
         "rules": rules,
+        "per_kind": per_kind,
+        "clause_checks": {"3.7_oda_recall": oda_check},
         # The single sentence a reader should see before any number: without enough
         # clean assets on the evaluation half, FPR is not measured and every claim
         # downstream is conditional on an untested assumption.
@@ -427,6 +484,27 @@ def render_report(report: Dict[str, Any]) -> str:
                   if f["ci95_wilson"] else f"<={f['exact_upper_bound_95']:.3f}")
         lines.append(f"{name:26s} {tpr_s:>7s} {tpr_ci:>16s} {fpr_s:>7s} {fpr_ci:>16s} "
                      f"{r['status']:>10s}")
+
+    lines += ["", "recall by attack kind, at the same threshold the TPR used",
+              "(tp/n; 'not measured' means no evaluation-half assets of that kind)"]
+    for name in sorted(report.get("per_kind", {})):
+        entry = report["per_kind"][name]
+        if entry.get("status") == "refused":
+            lines.append(f"  {name:24s} refused")
+            continue
+        parts = []
+        for kind, k in sorted(entry["kinds"].items()):
+            if k.get("status") == "not_measured":
+                parts.append(f"{kind}=not measured")
+            else:
+                parts.append(f"{kind}={k['tp']}/{k['n_evaluation']}")
+        lines.append(f"  {name:24s} {'  '.join(parts)}")
+
+    check = report.get("clause_checks", {}).get("3.7_oda_recall")
+    if check:
+        best = (f"{check['best_signal']}" if check["best_signal"] else "no signal")
+        lines += ["", f"clause 3.7 ODA recall > 0: {'satisfied' if check['satisfied'] else 'NOT satisfied'} "
+                      f"(best {best} {check['best_recall']:.3f}; {check['caveat'].split('.')[0]}.)"]
     return "\n".join(lines)
 
 

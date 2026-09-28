@@ -203,6 +203,527 @@
    }
   }
  },
+ "per_kind": {
+  "ctc_mean_clean": {
+   "status": "measured",
+   "threshold": 0.9659791427251075,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {
+    "dup_flood": {
+     "status": "measured",
+     "n_evaluation": 3,
+     "tp": 0,
+     "fn": 3,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 3,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.5615
+      ],
+      "exact_upper_bound_95": 0.6316,
+      "status": "measured"
+     }
+    },
+    "gma": {
+     "status": "measured",
+     "n_evaluation": 4,
+     "tp": 0,
+     "fn": 4,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 4,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4899
+      ],
+      "exact_upper_bound_95": 0.5271,
+      "status": "measured"
+     }
+    },
+    "label_flip": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 1,
+     "fn": 5,
+     "tpr": {
+      "numerator": 1,
+      "denominator": 6,
+      "point_estimate": 0.1667,
+      "ci95_wilson": [
+       0.0301,
+       0.5635
+      ],
+      "exact_upper_bound_95": 1.0,
+      "status": "measured"
+     }
+    },
+    "oda": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 0,
+     "fn": 5,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 5,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4345
+      ],
+      "exact_upper_bound_95": 0.4507,
+      "status": "measured"
+     }
+    },
+    "oga": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 0,
+     "fn": 6,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 6,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3903
+      ],
+      "exact_upper_bound_95": 0.393,
+      "status": "measured"
+     }
+    },
+    "ood_insert": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 0,
+     "fn": 5,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 5,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4345
+      ],
+      "exact_upper_bound_95": 0.4507,
+      "status": "measured"
+     }
+    },
+    "rma": {
+     "status": "measured",
+     "n_evaluation": 7,
+     "tp": 1,
+     "fn": 6,
+     "tpr": {
+      "numerator": 1,
+      "denominator": 7,
+      "point_estimate": 0.1429,
+      "ci95_wilson": [
+       0.0257,
+       0.5131
+      ],
+      "exact_upper_bound_95": 1.0,
+      "status": "measured"
+     }
+    }
+   }
+  },
+  "ctc_peak_clean": {
+   "status": "measured",
+   "threshold": 1.0,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {
+    "dup_flood": {
+     "status": "measured",
+     "n_evaluation": 3,
+     "tp": 0,
+     "fn": 3,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 3,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.5615
+      ],
+      "exact_upper_bound_95": 0.6316,
+      "status": "measured"
+     }
+    },
+    "gma": {
+     "status": "measured",
+     "n_evaluation": 4,
+     "tp": 0,
+     "fn": 4,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 4,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4899
+      ],
+      "exact_upper_bound_95": 0.5271,
+      "status": "measured"
+     }
+    },
+    "label_flip": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 0,
+     "fn": 6,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 6,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3903
+      ],
+      "exact_upper_bound_95": 0.393,
+      "status": "measured"
+     }
+    },
+    "oda": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 0,
+     "fn": 5,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 5,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4345
+      ],
+      "exact_upper_bound_95": 0.4507,
+      "status": "measured"
+     }
+    },
+    "oga": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 0,
+     "fn": 6,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 6,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3903
+      ],
+      "exact_upper_bound_95": 0.393,
+      "status": "measured"
+     }
+    },
+    "ood_insert": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 0,
+     "fn": 5,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 5,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4345
+      ],
+      "exact_upper_bound_95": 0.4507,
+      "status": "measured"
+     }
+    },
+    "rma": {
+     "status": "measured",
+     "n_evaluation": 7,
+     "tp": 0,
+     "fn": 7,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 7,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3543
+      ],
+      "exact_upper_bound_95": 0.3482,
+      "status": "measured"
+     }
+    }
+   }
+  },
+  "ctc_q95_clean": {
+   "status": "measured",
+   "threshold": 1.0,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {
+    "dup_flood": {
+     "status": "measured",
+     "n_evaluation": 3,
+     "tp": 0,
+     "fn": 3,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 3,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.5615
+      ],
+      "exact_upper_bound_95": 0.6316,
+      "status": "measured"
+     }
+    },
+    "gma": {
+     "status": "measured",
+     "n_evaluation": 4,
+     "tp": 0,
+     "fn": 4,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 4,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4899
+      ],
+      "exact_upper_bound_95": 0.5271,
+      "status": "measured"
+     }
+    },
+    "label_flip": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 0,
+     "fn": 6,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 6,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3903
+      ],
+      "exact_upper_bound_95": 0.393,
+      "status": "measured"
+     }
+    },
+    "oda": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 0,
+     "fn": 5,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 5,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4345
+      ],
+      "exact_upper_bound_95": 0.4507,
+      "status": "measured"
+     }
+    },
+    "oga": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 0,
+     "fn": 6,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 6,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3903
+      ],
+      "exact_upper_bound_95": 0.393,
+      "status": "measured"
+     }
+    },
+    "ood_insert": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 0,
+     "fn": 5,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 5,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4345
+      ],
+      "exact_upper_bound_95": 0.4507,
+      "status": "measured"
+     }
+    },
+    "rma": {
+     "status": "measured",
+     "n_evaluation": 7,
+     "tp": 0,
+     "fn": 7,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 7,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3543
+      ],
+      "exact_upper_bound_95": 0.3482,
+      "status": "measured"
+     }
+    }
+   }
+  },
+  "refdiv_mean_clean": {
+   "status": "measured",
+   "threshold": 0.4291249999999999,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {
+    "dup_flood": {
+     "status": "measured",
+     "n_evaluation": 3,
+     "tp": 1,
+     "fn": 2,
+     "tpr": {
+      "numerator": 1,
+      "denominator": 3,
+      "point_estimate": 0.3333,
+      "ci95_wilson": [
+       0.0615,
+       0.7923
+      ],
+      "exact_upper_bound_95": 0.3333,
+      "status": "measured"
+     }
+    },
+    "gma": {
+     "status": "measured",
+     "n_evaluation": 4,
+     "tp": 3,
+     "fn": 1,
+     "tpr": {
+      "numerator": 3,
+      "denominator": 4,
+      "point_estimate": 0.75,
+      "ci95_wilson": [
+       0.3006,
+       0.9544
+      ],
+      "exact_upper_bound_95": 0.75,
+      "status": "measured"
+     }
+    },
+    "label_flip": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 1,
+     "fn": 5,
+     "tpr": {
+      "numerator": 1,
+      "denominator": 6,
+      "point_estimate": 0.1667,
+      "ci95_wilson": [
+       0.0301,
+       0.5635
+      ],
+      "exact_upper_bound_95": 1.0,
+      "status": "measured"
+     }
+    },
+    "oda": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 1,
+     "fn": 4,
+     "tpr": {
+      "numerator": 1,
+      "denominator": 5,
+      "point_estimate": 0.2,
+      "ci95_wilson": [
+       0.0362,
+       0.6245
+      ],
+      "exact_upper_bound_95": 0.2,
+      "status": "measured"
+     }
+    },
+    "oga": {
+     "status": "measured",
+     "n_evaluation": 6,
+     "tp": 2,
+     "fn": 4,
+     "tpr": {
+      "numerator": 2,
+      "denominator": 6,
+      "point_estimate": 0.3333,
+      "ci95_wilson": [
+       0.0968,
+       0.7
+      ],
+      "exact_upper_bound_95": 0.3333,
+      "status": "measured"
+     }
+    },
+    "ood_insert": {
+     "status": "measured",
+     "n_evaluation": 5,
+     "tp": 0,
+     "fn": 5,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 5,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.4345
+      ],
+      "exact_upper_bound_95": 0.4507,
+      "status": "measured"
+     }
+    },
+    "rma": {
+     "status": "measured",
+     "n_evaluation": 7,
+     "tp": 0,
+     "fn": 7,
+     "tpr": {
+      "numerator": 0,
+      "denominator": 7,
+      "point_estimate": 0.0,
+      "ci95_wilson": [
+       0.0,
+       0.3543
+      ],
+      "exact_upper_bound_95": 0.3482,
+      "status": "measured"
+     }
+    }
+   }
+  }
+ },
+ "clause_checks": {
+  "3.7_oda_recall": {
+   "clause": "3.7 ODA (cloaking) recall > 0 on the reference battery",
+   "recall_per_signal": {
+    "ctc_mean_clean": 0.0,
+    "ctc_peak_clean": 0.0,
+    "ctc_q95_clean": 0.0,
+    "refdiv_mean_clean": 0.2
+   },
+   "best_signal": "refdiv_mean_clean",
+   "best_recall": 0.2,
+   "satisfied": true,
+   "caveat": "the best-of-four number is selected over signals, so it is optimistic; the per-signal recall in this report is the authoritative figure. A kind with no evaluation-half assets is reported as not measured, not as zero recall."
+  }
+ },
  "fpr_measured": true,
  "headline": "FPR is measured on 30 clean assets"
 }

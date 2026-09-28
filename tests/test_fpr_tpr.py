@@ -297,6 +297,85 @@ def test_cli_writes_a_report(tmp_path):
     assert report["fpr_measured"] is True
 
 
+# --------------------------------------------------------------------------- #
+# recall by attack kind, and clause 3.7 (ODA recall > 0)
+# --------------------------------------------------------------------------- #
+
+def kind_ledger(oda_scores=(5.0,), other_kinds=("gma",), n_neg=30, signal="sig"):
+    """A ledger with explicit splits, so the fixtures do not depend on a split seed."""
+    recs = []
+    for i in range(n_neg):
+        recs.append(rec(f"clean_s{i}", "clean", 0.0,
+                        split="calibration" if i < n_neg // 2 else "evaluation"))
+    for i, s in enumerate(oda_scores):
+        recs.append(rec(f"oda_s{i}", "oda", s, split="evaluation"))
+    for k in other_kinds:
+        recs.append(rec(f"{k}_s0", k, 5.0, split="evaluation"))
+        recs.append(rec(f"{k}_s1", k, 0.0, split="evaluation"))
+    return ledger(recs, positive_kinds=("oda",) + tuple(other_kinds))
+
+
+def test_per_kind_recall_uses_the_corpus_threshold():
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    report = evaluate_corpus(kind_ledger(oda_scores=(5.0, 0.0)), min_negatives=10)
+    per_kind = report["per_kind"]["signal"]
+    assert per_kind["threshold"] == report["rules"]["signal"]["threshold"]
+    counts = {k: (v["tp"], v["n_evaluation"]) for k, v in per_kind["kinds"].items()}
+    assert counts == {"gma": (1, 2), "oda": (1, 2)}
+
+
+def test_a_kind_with_no_evaluation_assets_is_not_measured_not_zero_recall():
+    """"We caught none" and "we never looked" are different claims."""
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    led = kind_ledger(oda_scores=(5.0,))
+    led["records"].append(rec("rma_cal", "rma", 5.0, split="calibration"))
+    led["positive_kinds"] = list(led["positive_kinds"]) + ["rma"]
+    report = evaluate_corpus(led, min_negatives=10)
+    entry = report["per_kind"]["signal"]["kinds"]["rma"]
+    assert entry["status"] == "not_measured" and entry["n_evaluation"] == 0
+    assert "tpr" not in entry
+
+
+def test_clause_3_7_is_satisfied_when_the_oda_arm_fires():
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    report = evaluate_corpus(kind_ledger(oda_scores=(5.0,)), min_negatives=10)
+    check = report["clause_checks"]["3.7_oda_recall"]
+    assert check["satisfied"] is True and check["best_recall"] == 1.0
+    assert check["best_signal"] == "signal"
+    assert check["recall_per_signal"]["signal"] == 1.0
+    assert "optimistic" in check["caveat"]
+
+
+def test_clause_3_7_is_not_satisfied_when_no_oda_arm_fires():
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    report = evaluate_corpus(kind_ledger(oda_scores=(0.0, 0.0)), min_negatives=10)
+    check = report["clause_checks"]["3.7_oda_recall"]
+    assert check["satisfied"] is False and check["best_recall"] == 0.0
+    assert check["recall_per_signal"]["signal"] == 0.0
+
+
+def test_the_real_report_measures_oda_recall_and_says_which_signal():
+    """The on-disk report must carry the clause check, whichever way it reads."""
+    path = "runs/fpr_ledger_report.json"
+    if not os.path.isfile(path):
+        pytest.skip("report not built yet")
+    with open(path, encoding="utf-8") as fh:
+        report = json.load(fh)
+    check = report["clause_checks"]["3.7_oda_recall"]
+    assert check["satisfied"] in (True, False)
+    assert "oda" in report["per_kind"]["refdiv_mean_clean"]["kinds"]
+    assert report["per_kind"]["refdiv_mean_clean"]["kinds"]["oda"]["n_evaluation"] > 0
+
+
+def test_render_prints_per_kind_recall_and_the_clause():
+    from cviaf.lab.fpr_tpr import evaluate_corpus, render_report
+    text = render_report(evaluate_corpus(kind_ledger(oda_scores=(5.0,)),
+                                         min_negatives=10))
+    assert "recall by attack kind" in text
+    assert "oda=1/1" in text
+    assert "clause 3.7 ODA recall > 0: satisfied" in text
+
+
 def test_smoke_on_the_real_corpus_when_present():
     """If a ledger produced from the on-disk corpora exists, it must validate and
     score. This is the check that the harness works on real artefacts, not just
