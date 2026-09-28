@@ -47,12 +47,18 @@ class NeuralCleanseDetector:
 
     def __init__(self, num_classes: int, input_shape: Tuple[int, ...],
                  lr: float = 0.1, steps: int = 500,
-                 lambda_reg: float = 0.01):
+                 lambda_reg: float = 0.01, seed: int = 0):
         self.num_classes = num_classes
         self.input_shape = input_shape  # (C, H, W)
         self.lr = lr
         self.steps = steps
         self.lambda_reg = lambda_reg
+        # Trigger reconstruction draws an initial mask/pattern and a gradient-free
+        # perturbation each step. These used the legacy GLOBAL np.random stream, so
+        # the same model produced different triggers (and different findings) on
+        # every run, with no way to reproduce a published number. Seeded generator,
+        # per instance, is the reproducibility contract the rest of the lab holds to.
+        self._rng = np.random.default_rng(seed)
 
     def _optimize_trigger_numpy(
         self, predict_fn, target_class: int,
@@ -73,8 +79,8 @@ class NeuralCleanseDetector:
             h, w = self.input_shape[-2], self.input_shape[-1]
             c = self.input_shape[0] if len(self.input_shape) > 2 else 3
 
-        mask = np.random.uniform(0, 0.1, (1, h, w)).astype(np.float32)
-        pattern = np.random.uniform(0, 1, (c, h, w)).astype(np.float32)
+        mask = self._rng.uniform(0, 0.1, (1, h, w)).astype(np.float32)
+        pattern = self._rng.uniform(0, 1, (c, h, w)).astype(np.float32)
 
         best_l1 = float("inf")
         best_mask = mask.copy()
@@ -115,8 +121,8 @@ class NeuralCleanseDetector:
                     best_pattern = pattern.copy()
 
                 # Simple gradient-free update: random perturbation + selection
-                mask_delta = np.random.randn(*mask.shape) * 0.01
-                pattern_delta = np.random.randn(*pattern.shape) * 0.01
+                mask_delta = self._rng.standard_normal(mask.shape) * 0.01
+                pattern_delta = self._rng.standard_normal(pattern.shape) * 0.01
 
                 # Try perturbation
                 new_mask = np.clip(mask + mask_delta, 0, 1)
@@ -334,7 +340,10 @@ class EntropyProbe:
     (STRIP-like behavior).
     """
 
-    def __init__(self, num_probes: int = 100, noise_std: float = 0.1):
+    def __init__(self, num_probes: int = 100, noise_std: float = 0.1, seed: int = 0):
+        # The noise probe is a statistical test on random inputs; an unseeded draw
+        # made its finding irreproducible (same class of bug as the trigger loop).
+        self._rng = np.random.default_rng(seed)
         self.num_probes = num_probes
         self.noise_std = noise_std
 
@@ -351,8 +360,8 @@ class EntropyProbe:
         findings = []
 
         # 1. Random noise probe
-        noise_inputs = np.random.randn(
-            self.num_probes, *input_shape
+        noise_inputs = self._rng.standard_normal(
+            (self.num_probes, *input_shape)
         ).astype(np.float32)
 
         try:
@@ -574,8 +583,12 @@ class ModelIntegrityAssessor:
     degradation between access levels.
     """
 
-    def __init__(self, access_level: str = "white-box"):
+    def __init__(self, access_level: str = "white-box", seed: int = 0):
         self.access_level = AccessLevel(access_level)
+        # Threaded to every stochastic sub-check so an assessment is reproducible: the
+        # same inputs and the same seed must yield the same findings, which is what
+        # lets a report be re-derived by a reviewer.
+        self.seed = int(seed)
 
     def assess(
         self,
@@ -612,6 +625,7 @@ class ModelIntegrityAssessor:
                         num_classes=num_classes,
                         input_shape=input_shape,
                         steps=200,  # Reduced for speed
+                        seed=self.seed,
                     )
                     nc_findings = nc.detect(predict_fn, clean_images)
                     all_findings.extend(nc_findings)
@@ -658,7 +672,7 @@ class ModelIntegrityAssessor:
 
         # 3. Entropy probe
         try:
-            ep = EntropyProbe(num_probes=50)
+            ep = EntropyProbe(num_probes=50, seed=self.seed)
             ep_findings = ep.probe(predict_fn, input_shape, clean_images)
             all_findings.extend(ep_findings)
             checks_performed.append("entropy_probe")
