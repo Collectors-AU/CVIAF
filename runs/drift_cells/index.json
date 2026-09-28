@@ -1,0 +1,602 @@
+{
+ "schema": "cviaf.drift-cells/1",
+ "n_images_per_cell": 240,
+ "reference_domain": {
+  "terrain": "desert",
+  "season": "summer",
+  "illumination": 1.0,
+  "gamma": 1.0,
+  "sensor_noise": 0.02,
+  "sensor_blur": 0,
+  "objects_per_image": [
+   1,
+   3
+  ],
+  "seed": 7
+ },
+ "cells": [
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "reference_desert_summer_clean",
+   "role": "reference",
+   "scene_spec": {
+    "terrain": "desert",
+    "season": "summer",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {},
+   "n_images": 240,
+   "seed_offset": 810000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "4e3cf582f508bca4be742b84df1f519b0b820a6e89d62d585f1ec8c3daa074b2",
+    "pixels_uint8_sha256": "406fc6c9b7e5d78ef1f259c89f3304c118790efd7bfa9fc4478147c6023382a6"
+   },
+   "object_count": 467,
+   "class_counts": [
+    165,
+    162,
+    140
+   ],
+   "paired_cell": null,
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "forest_summer_clean",
+   "role": "shifted",
+   "scene_spec": {
+    "terrain": "forest",
+    "season": "summer",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {
+    "terrain": "forest"
+   },
+   "n_images": 240,
+   "seed_offset": 820000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "b40af1f54a6ad8bf322dc8144909e8a995cd30b7272651e15d6d4f9b606fa6dc",
+    "pixels_uint8_sha256": "fc6f52fff237f7acad4009d444563efa9b49dc145376d0232dc14a6ca37984d5"
+   },
+   "object_count": 483,
+   "class_counts": [
+    151,
+    178,
+    154
+   ],
+   "paired_cell": "forest_summer_clean_resample",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "forest_summer_clean_resample",
+   "role": "no_shift_control",
+   "scene_spec": {
+    "terrain": "forest",
+    "season": "summer",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {},
+   "n_images": 240,
+   "seed_offset": 830000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "02202c97c19b0f6ed89e2dfa1f28c018696eb18924d4762a48b011dfcb5c626b",
+    "pixels_uint8_sha256": "f222d894218e1af22689e3e759f2a19daa7dd95119fd6ecdf709c9d08e5c85fd"
+   },
+   "object_count": 460,
+   "class_counts": [
+    140,
+    178,
+    142
+   ],
+   "paired_cell": "forest_summer_clean",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "urban_autumn_clean",
+   "role": "shifted",
+   "scene_spec": {
+    "terrain": "urban",
+    "season": "autumn",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {
+    "terrain": "urban",
+    "season": "autumn"
+   },
+   "n_images": 240,
+   "seed_offset": 821000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "4e1bf8fa1ced0a2e8e8132819b21b90653cb23e7006688db72e913b41ca84688",
+    "pixels_uint8_sha256": "8b67e51ac6b2109a1b5d6913ff698e774e117acabf50201b42aac0baa016b392"
+   },
+   "object_count": 474,
+   "class_counts": [
+    159,
+    157,
+    158
+   ],
+   "paired_cell": "urban_autumn_clean_resample",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "urban_autumn_clean_resample",
+   "role": "no_shift_control",
+   "scene_spec": {
+    "terrain": "urban",
+    "season": "autumn",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {},
+   "n_images": 240,
+   "seed_offset": 831000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "c8b664a733a3163bf0a3128d35ec6a7b34f62ec96cbfcb0e7d961726c3111ca8",
+    "pixels_uint8_sha256": "481906dd62632fb50a71c3c5718373f12ac07b7193e461b7171fb8debf01a018"
+   },
+   "object_count": 492,
+   "class_counts": [
+    146,
+    196,
+    150
+   ],
+   "paired_cell": "urban_autumn_clean",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "desert_winter_noisy",
+   "role": "shifted",
+   "scene_spec": {
+    "terrain": "desert",
+    "season": "winter",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.08,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {
+    "season": "winter",
+    "sensor_noise": 0.08
+   },
+   "n_images": 240,
+   "seed_offset": 822000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "81ade4b421b2ee1586255268854ec6178b0077f317f4abd9212f7470290e9df1",
+    "pixels_uint8_sha256": "df63ce9dce9a928f0e98dad4ed405b88755f6f226866ca83d6eb7c2656af86c0"
+   },
+   "object_count": 467,
+   "class_counts": [
+    181,
+    148,
+    138
+   ],
+   "paired_cell": "desert_winter_noisy_resample",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "desert_winter_noisy_resample",
+   "role": "no_shift_control",
+   "scene_spec": {
+    "terrain": "desert",
+    "season": "winter",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.08,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {},
+   "n_images": 240,
+   "seed_offset": 832000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "19b20eef327eca477d4bc720c72351667e064ba7a574e9986be398b6fb6efc88",
+    "pixels_uint8_sha256": "a937e93282bae2da3ca427be5c52bace73aca62bc0ba2f12d42507245233f379"
+   },
+   "object_count": 489,
+   "class_counts": [
+    153,
+    184,
+    152
+   ],
+   "paired_cell": "desert_winter_noisy",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "desert_summer_blurred",
+   "role": "shifted",
+   "scene_spec": {
+    "terrain": "desert",
+    "season": "summer",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 3,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {
+    "sensor_blur": 3
+   },
+   "n_images": 240,
+   "seed_offset": 823000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "f7182453ddb8d1a8fb1fc24cf60caefa1459cad6599e9baa4c76c4f78953672b",
+    "pixels_uint8_sha256": "0b11c5e5a90af13beb5cfa8d41a84c190704945abdaeaf5ff5597fa1402b7e20"
+   },
+   "object_count": 470,
+   "class_counts": [
+    161,
+    178,
+    131
+   ],
+   "paired_cell": "desert_summer_blurred_resample",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "desert_summer_blurred_resample",
+   "role": "no_shift_control",
+   "scene_spec": {
+    "terrain": "desert",
+    "season": "summer",
+    "illumination": 1.0,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 3,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {},
+   "n_images": 240,
+   "seed_offset": 833000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "e5cb16ca4432ae199f9cc498ae851359f0de8cd3cf9c1c96cc47185a7ae84282",
+    "pixels_uint8_sha256": "b8c31859e05857515c371306fc63abf660c4d129e3d69fb7f218525a631107d5"
+   },
+   "object_count": 491,
+   "class_counts": [
+    147,
+    203,
+    141
+   ],
+   "paired_cell": "desert_summer_blurred",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "snow_winter_dim",
+   "role": "shifted",
+   "scene_spec": {
+    "terrain": "snow",
+    "season": "winter",
+    "illumination": 0.7,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {
+    "terrain": "snow",
+    "season": "winter",
+    "illumination": 0.7
+   },
+   "n_images": 240,
+   "seed_offset": 824000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "84b2de4f1edd992d5d3b31135f7879c7bc309be9c0cdbd313dd4ee5958a6c719",
+    "pixels_uint8_sha256": "ac88048981ef2d5d72ece42ea62160930ebf8852e9caf809027bc50fad162c36"
+   },
+   "object_count": 466,
+   "class_counts": [
+    148,
+    163,
+    155
+   ],
+   "paired_cell": "snow_winter_dim_resample",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  },
+  {
+   "schema": "cviaf.drift-cells/1",
+   "cell_id": "snow_winter_dim_resample",
+   "role": "no_shift_control",
+   "scene_spec": {
+    "terrain": "snow",
+    "season": "winter",
+    "illumination": 0.7,
+    "gamma": 1.0,
+    "sensor_noise": 0.02,
+    "sensor_blur": 0,
+    "objects_per_image": [
+     1,
+     3
+    ],
+    "seed": 7
+   },
+   "declared_axes_moved": {},
+   "n_images": 240,
+   "seed_offset": 834000,
+   "contributors": [
+    "lab_alpha",
+    "lab_beta",
+    "vendor_x"
+   ],
+   "contributor_mode": "round_robin",
+   "contributor_counts": {
+    "lab_alpha": 80,
+    "lab_beta": 80,
+    "vendor_x": 80
+   },
+   "image_shape": [
+    240,
+    64,
+    64,
+    3
+   ],
+   "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+   "digests": {
+    "dataset": "512ffffc17936657c9ce6ceb7235fa18224aec80e19a5fe783e242127801b8ef",
+    "pixels_uint8_sha256": "cf3d4e62c14eefce83b6abcae1caabf6219f45871282d84bec8e6ef986d46b5e"
+   },
+   "object_count": 521,
+   "class_counts": [
+    185,
+    186,
+    150
+   ],
+   "paired_cell": "snow_winter_dim",
+   "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+  }
+ ],
+ "roles": {
+  "reference": "declared baseline domain",
+  "shifted": "declared axes moved off the reference",
+  "no_shift_control": "resample of the SAME spec as its paired cell"
+ },
+ "n_cells": 11,
+ "all_digests_unique": true,
+ "pixel_sha_unique": true
+}

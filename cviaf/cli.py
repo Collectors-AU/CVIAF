@@ -122,7 +122,9 @@ def cmd_demo(args):
 
     # --- Step 4: Create provenance seals and tamper some ---
     print("\n[5/7] Generating inference provenance seals...")
-    prov_engine = InferenceProvenanceEngine(key_dir=os.path.join(output_dir, "keys"))
+    prov_engine = InferenceProvenanceEngine(
+        key_dir=os.path.join(output_dir, "keys"),
+        allow_symmetric=getattr(args, "allow_symmetric", False))
 
     seals = []
     for i in range(10):
@@ -156,6 +158,7 @@ def cmd_demo(args):
         model_access_level="black-box",  # Use black-box for demo (faster)
         key_dir=os.path.join(output_dir, "keys"),
         output_dir=output_dir,
+        allow_symmetric=getattr(args, "allow_symmetric", False),
     )
 
     # Use clean features as reference distribution for drift detection
@@ -223,16 +226,20 @@ def cmd_demo(args):
 
 def cmd_assess(args):
     """Run assessment on real data."""
-    from cviaf.orchestrator import CVIAFOrchestrator
     from cviaf.formats import load_dataset
     from cviaf.formats.model_loader import load_model
     from cviaf.core.types import normalize_metadata
     from cviaf.utils import extract_features_from_images, compute_image_hashes
 
+    if not args.dataset or not args.model:
+        raise ValueError("assess requires both --dataset and --model; "
+                         "incomplete assessments cannot be accepted")
     print("CVIAF Assessment Pipeline")
     print("=" * 50)
 
     # Load dataset
+    if getattr(args, "image_size", None) is not None and args.image_size <= 0:
+        raise ValueError("--image-size must be positive")
     if args.dataset:
         print(f"Loading dataset from {args.dataset}...")
         samples = load_dataset(
@@ -245,26 +252,37 @@ def cmd_assess(args):
         if samples:
             print(f"  Sample image path e.g.: {samples[0].image_path}")
 
+        # Fail closed on detector-style annotations in this legacy single-label CLI.
+        if not samples:
+            raise ValueError("Dataset contains no samples")
+        if any(len(x.labels) > 1 for x in samples):
+            raise ValueError("Legacy assess requires exactly one label per image")
         # Load images and extract features
         images = []
         labels = []
         metadata = []
+        shapes = set()
         
         try:
             from PIL import Image
             for s in samples:
                 if os.path.exists(s.image_path):
-                    img = Image.open(s.image_path).convert("RGB").resize((224, 224))
-                    images.append(np.array(img, dtype=np.float32) / 255.0)
+                    img = Image.open(s.image_path).convert("RGB")
+                    if getattr(args, "image_size", None):
+                        img = img.resize((args.image_size, args.image_size))
+                    pixels = np.array(img, dtype=np.float32) / 255.0
+                    shapes.add(pixels.shape)
+                    images.append(pixels)
                     labels.append(s.labels[0] if s.labels else 0)
                     metadata.append(s.metadata)
-        except ImportError:
-            print("  Warning: PIL not available, using placeholder images")
-            for s in samples:
-                images.append(np.random.rand(224, 224, 3).astype(np.float32))
-                labels.append(s.labels[0] if s.labels else 0)
-                metadata.append(s.metadata)
+        except ImportError as e:
+            raise RuntimeError("Pillow is required to assess real dataset images; "
+                               "refusing synthetic placeholders") from e
 
+        if len(images) != len(samples):
+            raise FileNotFoundError(f"Incomplete assessment: only {len(images)} of {len(samples)} dataset images exist")
+        if len(shapes) != 1:
+            raise ValueError("Images have mixed shapes; use --image-size explicitly")
         images = np.array(images) if images else None
         labels = np.array(labels) if labels else None
         features = extract_features_from_images(images) if images is not None else None
@@ -300,7 +318,7 @@ def cmd_assess(args):
 
             print(f"  Model loaded: {model.get_info()}")
         except Exception as e:
-            print(f"  Error loading model: {e}")
+            raise RuntimeError(f"Could not load requested model {args.model}: {e}") from e
 
     # Run assessment
     output_dir = args.output or "cviaf_output"
@@ -308,6 +326,7 @@ def cmd_assess(args):
         pipeline_id=args.pipeline_id or "",
         model_access_level=args.access_level or "white-box",
         output_dir=output_dir,
+        allow_symmetric=getattr(args, "allow_symmetric", False),
     )
 
     report = orchestrator.run_full_assessment(
@@ -393,7 +412,9 @@ def cmd_verify_seal(args):
 
     print(f"  {len(seals)} seals found")
 
-    engine = InferenceProvenanceEngine(key_dir=args.key_dir or ".cviaf_keys")
+    engine = InferenceProvenanceEngine(
+        key_dir=args.key_dir or ".cviaf_keys",
+        allow_symmetric=getattr(args, "allow_symmetric", False))
 
     for i, seal_dict in enumerate(seals):
         seal = InferenceSeal.from_dict(seal_dict)
@@ -483,6 +504,7 @@ def main():
     # Demo command
     demo_parser = subparsers.add_parser("demo", help="Run end-to-end demo with synthetic data and attacks")
     demo_parser.add_argument("--output", "-o", default="cviaf_demo_output", help="Output directory")
+    demo_parser.add_argument("--allow-symmetric", action="store_true", help="Permit HMAC-SHA256 signing when Ed25519 is unavailable (tamper-evidence only, no non-repudiation; seals and report are tagged)")
 
     # Assess command
     assess_parser = subparsers.add_parser("assess", help="Run assessment on real data")
@@ -494,7 +516,9 @@ def main():
     assess_parser.add_argument("--pipeline-id", default="", help="Pipeline identifier")
     assess_parser.add_argument("--contributor", default="unknown", help="Dataset contributor name")
     assess_parser.add_argument("--images-dir", default="", help="Directory containing dataset images (optional; auto-inferred from the annotation file otherwise)")
+    assess_parser.add_argument("--image-size", type=int, default=None, help="Explicit square resize for legacy assessment")
     assess_parser.add_argument("--skip", default="", help="Comma-separated modules to skip (data,model,provenance,drift)")
+    assess_parser.add_argument("--allow-symmetric", action="store_true", help="Permit HMAC-SHA256 provenance signing when Ed25519 is unavailable")
 
     # Verify audit trail
     verify_audit_parser = subparsers.add_parser("verify-audit", help="Verify audit trail integrity")
@@ -504,6 +528,14 @@ def main():
     verify_seal_parser = subparsers.add_parser("verify-seal", help="Verify inference provenance seals")
     verify_seal_parser.add_argument("path", help="Path to seal JSON file")
     verify_seal_parser.add_argument("--key-dir", default=".cviaf_keys", help="Key directory")
+    verify_seal_parser.add_argument("--allow-symmetric", action="store_true", help="Permit loading a symmetric (HMAC) key for verification")
+
+    attest_parser = subparsers.add_parser("attest-report", help="Sign report and audit with an operator-held Ed25519 PEM key")
+    attest_parser.add_argument("--report", required=True)
+    attest_parser.add_argument("--audit", required=True)
+    attest_parser.add_argument("--private-key", required=True)
+    attest_parser.add_argument("--key-id", required=True)
+    attest_parser.add_argument("--output", required=True)
 
     # Schema command
     subparsers.add_parser("schema", help="Print the assurance report JSON schema")
@@ -518,6 +550,11 @@ def main():
         return cmd_verify_audit(args)
     elif args.command == "verify-seal":
         return cmd_verify_seal(args)
+    elif args.command == "attest-report":
+        from cviaf.provenance.attestation import sign_files
+        sign_files(args.report, args.audit, args.private_key, args.key_id, args.output)
+        print(f"Signed bundle saved to: {args.output}")
+        return 0
     elif args.command == "schema":
         return cmd_schema(args)
     else:

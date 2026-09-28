@@ -1,0 +1,51 @@
+{
+ "schema": "cviaf.drift-cells/1",
+ "cell_id": "urban_autumn_clean_resample",
+ "role": "no_shift_control",
+ "scene_spec": {
+  "terrain": "urban",
+  "season": "autumn",
+  "illumination": 1.0,
+  "gamma": 1.0,
+  "sensor_noise": 0.02,
+  "sensor_blur": 0,
+  "objects_per_image": [
+   1,
+   3
+  ],
+  "seed": 7
+ },
+ "declared_axes_moved": {},
+ "n_images": 240,
+ "seed_offset": 831000,
+ "contributors": [
+  "lab_alpha",
+  "lab_beta",
+  "vendor_x"
+ ],
+ "contributor_mode": "round_robin",
+ "contributor_counts": {
+  "lab_alpha": 80,
+  "lab_beta": 80,
+  "vendor_x": 80
+ },
+ "image_shape": [
+  240,
+  64,
+  64,
+  3
+ ],
+ "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+ "digests": {
+  "dataset": "c8b664a733a3163bf0a3128d35ec6a7b34f62ec96cbfcb0e7d961726c3111ca8",
+  "pixels_uint8_sha256": "481906dd62632fb50a71c3c5718373f12ac07b7193e461b7171fb8debf01a018"
+ },
+ "object_count": 492,
+ "class_counts": [
+  146,
+  196,
+  150
+ ],
+ "paired_cell": "urban_autumn_clean",
+ "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+}

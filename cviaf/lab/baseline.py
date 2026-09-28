@@ -377,6 +377,8 @@ def cviaf_data_asset_verdict(
     contributor_labels: Optional[Sequence[str]] = None,
     attribution_threshold: float = 0.5,
     lower_is_anomalous: Sequence[str] = (),
+    label_gate=None,
+    dataset=None,
 ) -> Verdict:
     """CVIAF's data-axis decision: calibrated, fused, aggregated, attributable.
 
@@ -398,6 +400,18 @@ def cviaf_data_asset_verdict(
     """
     from cviaf.lab.detectors import contributor_risk
 
+    # Two asset-level families: sample-signal fusion and annotation consistency.
+    # Spend half the error budget on each only when both are present. The gate is
+    # calibrated on whole clean assets, not per-item p-values (whose granularity
+    # makes BY powerless at realistic calibration sizes).
+    if (label_gate is None) != (dataset is None):
+        raise ValueError("label_gate and dataset must be supplied together")
+    label_result = (label_gate.assess(dataset, alpha=alpha/2)
+                    if label_gate is not None else None)
+    if label_result is not None and label_result.get("abstained"):
+        label_result = None
+    signal_alpha = alpha/2 if label_result is not None else alpha
+
     lower = set(lower_is_anomalous)
     item_p: Dict[str, np.ndarray] = {}
     for name, (ref, obs) in signals.items():
@@ -414,6 +428,13 @@ def cviaf_data_asset_verdict(
                 conformal_pvalues(r, o, higher_is_more_anomalous=name not in lower),
                 1.0)
 
+    if not item_p and label_result is not None:
+        return Verdict(system="cviaf", asset=asset, axis="data_integrity",
+                       flagged=label_result["flagged"],
+                       attack_class="label_inconsistency" if label_result["flagged"] else "",
+                       score=label_result["p_value"], threshold=alpha,
+                       reason="annotation consistency only; other data signals unavailable",
+                       evidence={"label_consistency": label_result, "coverage": "partial"})
     if not item_p:
         return Verdict(
             system="cviaf", asset=asset, axis="data_integrity", abstained=True,
@@ -425,7 +446,7 @@ def cviaf_data_asset_verdict(
     stacked = np.stack([item_p[k] for k in names_sorted], axis=1)
     m = stacked.shape[1]
     fused = np.clip(m * stacked.min(axis=1), 0.0, 1.0)
-    flagged = benjamini_yekutieli(fused, alpha)
+    flagged = benjamini_yekutieli(fused, signal_alpha)
 
     asset_p, combo = asset_pvalue_from_items(fused, method="cauchy")
     n_flagged = int(flagged.sum())
@@ -451,12 +472,16 @@ def cviaf_data_asset_verdict(
 
     return Verdict(
         system="cviaf", asset=asset, axis="data_integrity",
-        flagged=bool(n_flagged > 0),
-        attack_class=_data_attack_from_signals(item_p, fused, flagged),
-        score=asset_p, threshold=float(alpha),
-        confidence=float(1.0 - asset_p),
+        flagged=bool(n_flagged > 0 or (label_result and label_result["flagged"])),
+        attack_class=("label_inconsistency" if label_result and label_result["flagged"]
+                      else _data_attack_from_signals(item_p, fused, flagged)),
+        score=(min(1.0, 2.0 * min(asset_p, label_result["p_value"]))
+               if label_result else asset_p), threshold=float(alpha),
+        confidence=None if label_result else float(1.0 - asset_p),
         attribution=[top] if top else [],
-        reason=(f"{n_flagged} sample(s) flagged by FDR-controlled calibrated tests "
+        reason=((f"label-consistency check flagged {label_result['mismatch_images']} mismatched images; "
+                 if label_result and label_result["flagged"] else "") +
+                f"{n_flagged} sample(s) flagged by FDR-controlled calibrated tests "
                 f"(asset p={asset_p:.3g}); "
                 + (f"source attribution: {top}" if top else "no contributor rises "
                    "above the tolerance, which is the correct answer when the "
@@ -465,10 +490,11 @@ def cviaf_data_asset_verdict(
             "asset_pvalue": asset_p,
             "combination": combo,
             "n_flagged": n_flagged,
-            "signals": {k: {"n_flagged": int(np.sum(benjamini_yekutieli(item_p[k], alpha))),
+            "signals": {k: {"n_flagged": int(np.sum(benjamini_yekutieli(item_p[k], signal_alpha))),
                             "min_p": float(item_p[k].min())} for k in names_sorted},
             "contributor_posterior": attribution,
-            "fdr_alpha": float(alpha),
+            "label_consistency": label_result,
+            "fdr_alpha": float(signal_alpha),
         },
     )
 

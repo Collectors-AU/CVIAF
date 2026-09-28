@@ -1,0 +1,53 @@
+{
+ "schema": "cviaf.drift-cells/1",
+ "cell_id": "forest_summer_clean",
+ "role": "shifted",
+ "scene_spec": {
+  "terrain": "forest",
+  "season": "summer",
+  "illumination": 1.0,
+  "gamma": 1.0,
+  "sensor_noise": 0.02,
+  "sensor_blur": 0,
+  "objects_per_image": [
+   1,
+   3
+  ],
+  "seed": 7
+ },
+ "declared_axes_moved": {
+  "terrain": "forest"
+ },
+ "n_images": 240,
+ "seed_offset": 820000,
+ "contributors": [
+  "lab_alpha",
+  "lab_beta",
+  "vendor_x"
+ ],
+ "contributor_mode": "round_robin",
+ "contributor_counts": {
+  "lab_alpha": 80,
+  "lab_beta": 80,
+  "vendor_x": 80
+ },
+ "image_shape": [
+  240,
+  64,
+  64,
+  3
+ ],
+ "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+ "digests": {
+  "dataset": "b40af1f54a6ad8bf322dc8144909e8a995cd30b7272651e15d6d4f9b606fa6dc",
+  "pixels_uint8_sha256": "fc6f52fff237f7acad4009d444563efa9b49dc145376d0232dc14a6ca37984d5"
+ },
+ "object_count": 483,
+ "class_counts": [
+  151,
+  178,
+  154
+ ],
+ "paired_cell": "forest_summer_clean_resample",
+ "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+}

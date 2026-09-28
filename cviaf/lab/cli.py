@@ -305,9 +305,14 @@ def _cmd_compare(args) -> int:
     def log(msg: str) -> None:
         print(msg, flush=True)
 
+    gate = gate_digest = None
+    if args.label_gate_protocol:
+        from cviaf.lab.label_gate_protocol import load_synthetic
+        gate, gate_digest = load_synthetic(args.label_gate_protocol, args.corpus, args.alpha)
     res = compare_corpus(args.corpus, alpha=args.alpha, seed=args.seed,
                          n_backgrounds=args.backgrounds,
-                         max_models=args.max_models, log=log)
+                         max_models=args.max_models, label_gate=gate,
+                         label_gate_protocol_sha256=gate_digest, log=log)
     print()
     print(render_table(res))
     print()
@@ -322,6 +327,14 @@ def _cmd_compare(args) -> int:
         save_comparison(res, args.json)
         print()
         print(f"full comparison written to {args.json}")
+    return 0
+
+
+def _cmd_label_gate_fit(args) -> int:
+    from cviaf.lab.label_gate_protocol import fit_synthetic
+    payload = fit_synthetic(args.corpus, args.out, alpha=args.alpha)
+    print(f"synthetic label reference: {args.out} SHA-256 {payload['sha256']}")
+    print("Declared synthetic domain only; not a real-world reference or validated population FPR")
     return 0
 
 
@@ -364,6 +377,15 @@ def _cmd_verify_report(args) -> int:
             print(f"  {e}")
         return 1
     print(f"valid against {REPORT_SCHEMA_ID}")
+    return 0
+
+
+def _cmd_driftbench(args) -> int:
+    from cviaf.lab.driftbench import run_driftbench
+
+    out = args.out or os.path.join(args.corpus, "drift_calibration.json")
+    run_driftbench(out_path=out, alpha=args.alpha, seed=args.seed,
+                   n_ref=args.n_ref, n_op=args.n_op)
     return 0
 
 
@@ -461,11 +483,32 @@ def main(argv=None) -> int:
     cmp_.add_argument("--seed", type=int, default=1)
     cmp_.add_argument("--max-models", type=int, default=None)
     cmp_.add_argument("--json", default=None, help="write the full comparison here")
+    cmp_.add_argument("--label-gate-protocol", default=None,
+                      help="opt-in synthetic clean label reference JSON from label-gate-fit")
     cmp_.set_defaults(func=_cmd_compare)
+
+    lg = sub.add_parser("label-gate-fit", help="freeze an independent synthetic clean label reference")
+    lg.add_argument("--corpus", required=True)
+    lg.add_argument("--out", required=True)
+    lg.add_argument("--alpha", type=float, default=0.05)
+    lg.set_defaults(func=_cmd_label_gate_fit)
 
     cov = sub.add_parser("coverage", help="emit the coverage statement")
     cov.add_argument("--out", default=None)
     cov.set_defaults(func=_cmd_coverage)
+
+    ab = sub.add_parser("arm-b", help="experiment arm B: measure U2 residual risk and U3 LOCO attribution")
+    ab.add_argument("--out", default="runs/arm_b")
+    ab.add_argument("--u2-seeds", type=int, default=8)
+    ab.add_argument("--u3-seeds", type=int, default=10)
+    ab.add_argument("--n-train", type=int, default=240)
+    ab.add_argument("--tolerance", type=float, default=0.02,
+                    help="operator residual-risk tolerance from AB1.policy")
+    ab.add_argument("--alpha", type=float, default=0.05)
+    ab.add_argument("--bootstrap", type=int, default=40)
+    ab.add_argument("--skip-u2", action="store_true")
+    ab.add_argument("--skip-u3", action="store_true")
+    ab.set_defaults(func=_cmd_arm_b)
 
     vr = sub.add_parser("verify-report", help="validate a report against the schema")
     vr.add_argument("report", nargs="?", default=None)
@@ -474,8 +517,59 @@ def main(argv=None) -> int:
     vr.add_argument("--max-errors", type=int, default=25)
     vr.set_defaults(func=_cmd_verify_report)
 
+    db = sub.add_parser("driftbench",
+                        help="build the natural-drift attribution calibration "
+                             "and measure the arbiter on natural/manipulation/"
+                             "confuser batteries")
+    db.add_argument("--corpus", default="runs/mvp")
+    db.add_argument("--out", default=None,
+                    help="calibration path; default <corpus>/drift_calibration.json")
+    db.add_argument("--alpha", type=float, default=0.05)
+    db.add_argument("--seed", type=int, default=7)
+    db.add_argument("--n-ref", type=int, default=120,
+                    help="reference size; match the corpus plan's n_cal")
+    db.add_argument("--n-op", type=int, default=100,
+                    help="operational size; match the corpus plan's n_train")
+    db.set_defaults(func=_cmd_driftbench)
+
     args = p.parse_args(argv)
     return args.func(args)
+
+
+def _cmd_arm_b(args) -> int:
+    from cviaf.lab.arm_b import run_u2, run_u3
+
+    if not args.skip_u2:
+        r2 = run_u2(args.out,
+                    seeds=tuple(range(args.u2_seeds)),
+                    n_train=args.n_train, alpha=args.alpha,
+                    policy_tolerance=args.tolerance)
+        rr = r2["residual_risk"]
+        print(f"\n[U2] report-level R* = {rr['report_level_r_star']} "
+              f"(unbounded={rr['r_star_unbounded']})  tolerance={args.tolerance}")
+        print(f"[U2] accept_permitted={rr['accept_permitted']}  "
+              f"forced_disposition={rr['forced_disposition']}")
+        print(f"[U2] {rr['claim']}")
+        for name, v in r2["validation"].items():
+            if v.get("r_star") is not None:
+                print(f"[U2] {name:26s} r*={v['r_star']:.4f} conservative={v['conservative']}")
+        print(f"[U2] results -> {args.out}/arm_b_u2.json")
+    if not args.skip_u3:
+        r3 = run_u3(args.out,
+                    seeds=tuple(range(args.u3_seeds)),
+                    n_train=args.n_train, alpha=args.alpha,
+                    n_bootstrap=args.bootstrap)
+        for kind, s in sorted(r3["summary"].items()):
+            a = s["acceptance"]
+            print(f"\n[U3] {kind}: loco top-1 {s['loco_top1_accuracy']:.2f} "
+                  f"(posterior {s['posterior_top1_accuracy']:.2f})  "
+                  f"mean rank {s['loco_mean_true_rank']:.2f} vs "
+                  f"{s['posterior_mean_true_rank']:.2f}  "
+                  f"false-impl/contrib {s['loco_false_implication_rate_per_clean_contributor']:.3f}  "
+                  f"runtime/contrib {s['mean_per_contributor_seconds']:.1f}s")
+            print(f"     acceptance: {a}")
+        print(f"[U3] results -> {args.out}/arm_b_u3.json")
+    return 0
 
 
 if __name__ == "__main__":

@@ -59,10 +59,11 @@ from cviaf.core.types import (
     hash_bytes, hash_dict,
 )
 from cviaf.data_integrity import DataIntegrityAssessor
-from cviaf.drift import DistributionShiftAssessor
+from cviaf.drift import DRIFT_CALIBRATION_SCHEMA, DistributionShiftAssessor
 from cviaf.governance import COVERAGE_STATEMENT, GovernanceEngine
 from cviaf.model_integrity import BehavioralFingerprinter, ModelIntegrityAssessor
-from cviaf.provenance import InferenceProvenanceEngine, InferenceSeal
+from cviaf.provenance import (ALG_ED25519, InferenceProvenanceEngine,
+                              InferenceSeal, TrustStore, Verifier)
 from cviaf.utils import compute_image_hashes, extract_features_from_images
 
 from cviaf.lab.evaluate import load_registry, train_spec_from_manifest
@@ -70,6 +71,11 @@ from cviaf.lab.synth import CLASS_NAMES, IMG_SIZE, NUM_CLASSES, to_coco, to_yolo
 from cviaf.lab.train import ModelArtifact, build_splits
 
 PIPELINE_VERSION = "cviaf-pipeline-1.0.0"
+
+# Fixed seed for the distribution-shift lane's MMD permutation test, so the
+# same asset always gets the same drift verdict. Recorded in
+# drift_calibration.json and in the run bundle.
+DRIFT_ASSESSMENT_SEED = 20260928
 
 # The record-binding scenario needs a model identity to bind. It is a placeholder
 # digest in the standalone scenario; the real per-run digest is threaded through by
@@ -389,12 +395,24 @@ def build_provenance_scenario(
                                      config=config, output=out)
         history.append({"seal": seal, "raw": raw, "output": out})
 
-    # The verifier: same trust anchor (key manager), but its replay set is ONLY the
-    # trusted history. Getting this wrong is what makes a replay check vacuous --
-    # an engine that remembers everything it issued reports every genuine record as
-    # a replay.
-    verifier = InferenceProvenanceEngine(key_manager=sealer.key_mgr)
-    verifier.import_seals([h["seal"].to_dict() for h in history])
+    # Verifier/sealer separation. When the signing mode is asymmetric the
+    # verifier is built from the sealer's PUBLIC key only, delivered through a
+    # TrustStore exactly as an offline verifier would receive it; that is what
+    # makes non-repudiation a tested property instead of an asserted one. In
+    # HMAC mode no public key exists, so verification necessarily shares the
+    # secret and the run is labelled accordingly. Either way the verifier's
+    # replay set is ONLY the trusted history: an engine that remembers
+    # everything it issued reports every genuine record as a replay.
+    history_seals = [h["seal"] for h in history]
+    if sealer.key_mgr.alg == ALG_ED25519:
+        trust_dir = os.path.join(key_dir, "verifier-trust")
+        TrustStore.write_public_key(trust_dir, sealer.key_mgr.public_key_envelope())
+        verifier = Verifier(TrustStore(trust_dir), history=history_seals)
+        verifier_key_material = "public-only"
+    else:
+        verifier = InferenceProvenanceEngine(key_manager=sealer.key_mgr)
+        verifier.import_seals([h["seal"].to_dict() for h in history])
+        verifier_key_material = "shared-secret"
     max_seq = max(h["seal"].sequence_number for h in history)
 
     records: List[Dict[str, Any]] = []
@@ -411,7 +429,11 @@ def build_provenance_scenario(
         # a signature failure borrow the replay control's credit and would mislabel
         # the attack class in the report.
         nonce_seen = bool(verifier.detect_replay(seal))
-        stale_sequence = seal.sequence_number <= max_seq
+        # Per-key sequence ceiling when the verifier tracks one (rotation
+        # restarts the sequence); the single-key scenario is unaffected.
+        _is_stale = getattr(verifier, "is_stale", None)
+        stale_sequence = bool(_is_stale(seal)) if _is_stale else \
+            seal.sequence_number <= max_seq
         replay = bool(sig_valid and (nonce_seen or stale_sequence))
         failed_checks = [k for k, v in verification["checks"].items() if not v.get("valid")]
         records.append({
@@ -503,6 +525,7 @@ def build_provenance_scenario(
     return {
         "signing_mode": mode,
         "signing_mode_note": mode_note,
+        "verifier_key_material": verifier_key_material,
         "key_dir": key_dir,
         "n_history": n_history,
         "max_history_sequence": max_seq,
@@ -687,12 +710,38 @@ def assure_model(
 
     # -- module 4: distribution shift
     log("  [5/5] distribution shift")
-    drift_assessment = DistributionShiftAssessor().assess(
+    # Attribution calibration: empirical nulls from the driftbench natural
+    # battery. Absent the file the module fails closed (attribution_unavailable)
+    # instead of guessing natural-vs-manipulated.
+    from cviaf.drift.attribution import NaturalDriftCalibration
+    attrib_cal = None
+    cal_path = os.path.join(corpus_dir, "drift_calibration.json")
+    if os.path.exists(cal_path):
+        attrib_cal = NaturalDriftCalibration.load(cal_path)
+        log(f"        attribution calibration: {attrib_cal.digest()} "
+            f"({len(attrib_cal.scenario_descriptions)} natural scenarios)")
+    else:
+        log("        attribution calibration: NONE (verdict will be "
+            "attribution_unavailable)")
+    drift_assessment = DistributionShiftAssessor(seed=DRIFT_ASSESSMENT_SEED).assess(
         reference_features=ref_features,
         operational_features=features,
         reference_logits=None, operational_logits=None,
         reference_labels=None, operational_labels=None,
+        reference_images=splits.cal_clean.images,
+        operational_images=images,
+        operational_contributors=[m.contributor for m in metadata],
+        attribution_calibration=attrib_cal,
     )
+    # This is a run-local assessment record, not the natural-drift arbiter's
+    # independently measured calibration in the corpus directory.
+    drift_record_path = os.path.join(out_dir, "drift_assessment_record.json")
+    with open(drift_record_path, "w") as fh:
+        json.dump({"schema": DRIFT_CALIBRATION_SCHEMA,
+                   "pipeline_version": PIPELINE_VERSION,
+                   "seed": DRIFT_ASSESSMENT_SEED,
+                   "model_id": manifest["model_id"],
+                   "assessment": drift_assessment}, fh, indent=1, sort_keys=True, default=str)
     _module("distribution_shift", {
         "module": "distribution_shift",
         "shift_detected": drift_assessment.get("shift_detected"),
@@ -797,6 +846,8 @@ def assure_model(
                 "mean_mahalanobis": (drift_assessment.get("mahalanobis") or {})
                                     .get("mean_distance"),
                 "mmd_p_value": (drift_assessment.get("mmd") or {}).get("p_value"),
+                "seed": DRIFT_ASSESSMENT_SEED,
+                "calibration_artifact": "drift_calibration.json",
             },
         },
         "artifacts": {},
@@ -813,7 +864,7 @@ def assure_model(
             "command": (f"python -m cviaf.lab assure --corpus {corpus_dir} "
                         f"--model {manifest['model_id']} --out {out_dir} "
                         f"--access-level {access_level}"),
-            "seeds": manifest["seeds"],
+            "seeds": {**manifest["seeds"], "drift_assessment": DRIFT_ASSESSMENT_SEED},
             "spec_digest": manifest["spec_digest"],
         },
         "elapsed_seconds": round(time.time() - t0, 1),

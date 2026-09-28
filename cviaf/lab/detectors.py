@@ -610,15 +610,22 @@ def spectral_signature_scores(
     return out
 
 
-def duplicate_scores(images: np.ndarray, small: int = 12) -> np.ndarray:
+def duplicate_scores(images: np.ndarray, small: int = 12,
+                     return_neighbors: bool = False):
     """Nearest-neighbour distance on average-hash descriptors. Low = duplicate.
 
     Deliberately cheap: this is the first pass. The scaling plan swaps in SSCD
     embeddings, which survive the augmentations that defeat a hash.
+
+    ``return_neighbors`` also returns the argmax neighbour index per image -- the
+    nearest-neighbour graph the review policy clusters co-flagged pairs on
+    (the flood copy and its innocent original are each other's nearest
+    neighbour, which is exactly why both flag).
     """
     n = len(images)
     if n == 0:
-        return np.zeros(0)
+        empty = np.zeros(0)
+        return (empty, np.zeros(0, np.int64)) if return_neighbors else empty
     # box-average down to `small` x `small` grayscale, then mean-centre
     H, W, _ = images.shape[1:]
     fy, fx = H // small, W // small
@@ -630,8 +637,12 @@ def duplicate_scores(images: np.ndarray, small: int = 12) -> np.ndarray:
     unit = desc / norms
     sim = unit @ unit.T
     np.fill_diagonal(sim, -np.inf)
-    nearest = sim.max(axis=1)                       # cosine similarity to nearest neighbour
-    return 1.0 - nearest                            # distance: 0 == exact duplicate
+    nn = sim.argmax(axis=1)
+    nearest = sim[np.arange(n), nn]                 # cosine similarity to nearest neighbour
+    dist = 1.0 - nearest                            # distance: 0 == exact duplicate
+    if return_neighbors:
+        return dist, nn
+    return dist
 
 
 def contributor_risk(

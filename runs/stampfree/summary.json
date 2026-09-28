@@ -1,0 +1,56 @@
+{
+ "corpus": "runs/stampfree",
+ "kind": "stampfree",
+ "seeds": [
+  100,
+  101,
+  102
+ ],
+ "n_arms": 3,
+ "condition": "scale",
+ "poison_repeats": 1,
+ "declared": {
+  "victim_class": 0,
+  "target_class": 2,
+  "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+  "criterion": "centre-cell class assignment"
+ },
+ "asr_present_net": {
+  "values": [
+   0.5333333333333333,
+   0.1111111111111111,
+   0.05555555555555555
+  ],
+  "mean": 0.2333333333333333,
+  "k_above_floor": 1,
+  "n_seeds": 3,
+  "floor": 0.5
+ },
+ "asr_absent_net": {
+  "values": [
+   0.08695652173913043,
+   0.13186813186813187,
+   0.009009009009009009
+  ],
+  "mean": 0.07594455420542377
+ },
+ "n_conditional": 1,
+ "no_pixel_artifact": true,
+ "models": [
+  "stampfree_scale_s100",
+  "stampfree_scale_s101",
+  "stampfree_scale_s102"
+ ],
+ "registry_entries": 12,
+ "registry_clean_models_reused": [
+  "clean_none_fixed_s100",
+  "clean_none_fixed_s101",
+  "clean_none_fixed_s102",
+  "clean_none_fixed_s103",
+  "clean_none_fixed_s104",
+  "clean_none_fixed_s105",
+  "clean_none_fixed_s106",
+  "clean_none_fixed_s107",
+  "clean_none_fixed_s108"
+ ]
+}

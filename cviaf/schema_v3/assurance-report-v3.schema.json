@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cviaf.local/schemas/assurance-report-v3.json",
+  "title": "CVIAF additive assurance report v3",
+  "type": "object",
+  "required": ["schema_version", "report_id", "timestamp", "framework_version", "threat_model_declared", "battery", "plan", "assessment_completeness", "hypothesis_posteriors", "assessments", "findings", "coverage_matrix", "loss_matrix_used"],
+  "properties": {
+    "schema_version": {"const": "3.0"},
+    "report_id": {"type":"string", "minLength":1},
+    "timestamp": {"type":"string", "minLength":1},
+    "framework_version": {"type":"string", "minLength":1},
+    "threat_model_declared": {"type":"object", "required":["attack_classes_in_scope","access_granted","assumptions"], "properties":{"attack_classes_in_scope":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"access_granted":{"type":"object"},"assumptions":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"reference_distribution":{"type":"object"},"declared_by":{"type":"string"},"policy_ref":{"type":"string"}}},
+    "battery": {"type":"object","required":["id","digest","slices_used"],"properties":{"id":{"type":"string","minLength":1},"digest":{"type":"string","minLength":1},"slices_used":{"type":"array","items":{"type":"string"}}}},
+    "plan": {"type":"object","required":["planner_version","selected","rejected"],"properties":{"planner_version":{"type":"string","minLength":1},"selected":{"type":"array","items":{"type":"string"}},"rejected":{"type":"array","items":{"type":"object","required":["detector","reason","coverage_impact"],"properties":{"detector":{"type":"string"},"reason":{"type":"string"},"coverage_impact":{"type":"string"}}}}}},
+    "assessment_completeness": {"type":"object","required":["applicable","executed","fraction","accept_permitted","blocking_skips"],"properties":{"applicable":{"type":"integer","minimum":0},"executed":{"type":"integer","minimum":0},"fraction":{"type":"number","minimum":0,"maximum":1},"accept_permitted":{"type":"boolean"},"blocking_skips":{"type":"array","items":{"type":"string"}}}},
+    "hypothesis_posteriors":{"type":"array","items":{"type":"object","required":["hypothesis","posterior","evidence_refs"],"properties":{"hypothesis":{"type":"string"},"posterior":{"type":"number","minimum":0,"maximum":1},"evidence_refs":{"type":"array","items":{"type":"string"}}}}},
+    "assessments":{"type":"object"},
+    "findings":{"type":"array","items":{"type":"object","required":["finding_id","module","attack_class","method","access_mode","confidence","detection_floor","battery_coverage_fraction","assumptions","evidence"],"properties":{"finding_id":{"type":"string"},"module":{"type":"string"},"attack_class":{"type":"string"},"method":{"type":"string"},"access_mode":{"type":"string"},"confidence":{"type":"object","required":["value","type","calibration_ref"],"properties":{"value":{"type":"number","minimum":0,"maximum":1},"type":{"type":"string"},"calibration_ref":{"type":"string"}}},"detection_floor":{"type":"object","required":["metric","value","power","alpha"],"properties":{"metric":{"type":"string"},"value":{"type":"number","minimum":0},"power":{"type":"number","minimum":0,"maximum":1},"alpha":{"type":"number","minimum":0,"maximum":1}}},"battery_coverage_fraction":{"type":"number","minimum":0,"maximum":1},"assumptions":{"type":"array","items":{"type":"string"}},"evidence":{"type":"object"}}}},
+    "coverage_matrix":{"type":"array","items":{"type":"object","required":["module","attack_class","taxonomy","taxonomy_ref","status","method","access_required","calibration_set","measured_detection_floor","residual_risk","evidence_pointer","skipped_checks"],"properties":{"module":{"type":"string"},"attack_class":{"type":"string"},"taxonomy":{"type":"string"},"taxonomy_ref":{"type":"string"},"status":{"enum":["covered","partial","not_covered","not_applicable"]},"method":{"type":"array","items":{"type":"string"}},"access_required":{"type":"array","items":{"type":"string"}},"calibration_set":{"type":"array","items":{"type":"string"}},"measured_detection_floor":{"type":"array","items":{"type":"object"}},"residual_risk":{"type":"string"},"evidence_pointer":{"type":"array","items":{"type":"string"}},"skipped_checks":{"type":"array","items":{"type":"object"}}}}},
+    "loss_matrix_used":{"type":"object"}
+  }
+}

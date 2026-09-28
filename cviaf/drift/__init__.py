@@ -22,6 +22,14 @@ import numpy as np
 from sklearn.decomposition import PCA
 
 from cviaf.core.types import Finding, Severity, Disposition, AttackClass
+from cviaf.drift.attribution import (
+    NaturalDriftCalibration,
+    run_attribution,
+    VERDICT_SUSPICIOUS,
+    VERDICT_NATURAL,
+    VERDICT_UNDERDETERMINED,
+    VERDICT_UNAVAILABLE,
+)
 
 
 class MahalanobisDetector:
@@ -75,8 +83,12 @@ class MMDCalculator:
     in a reproducing kernel Hilbert space.
     """
 
-    def __init__(self, kernel_bandwidth: float = None):
+    def __init__(self, kernel_bandwidth: float = None, seed: Optional[int] = 0):
         self.bandwidth = kernel_bandwidth
+        # Seed for the permutation test. Default is a fixed seed so the p-value
+        # (and every verdict derived from it) is reproducible run to run.
+        # Pass seed=None only to restore the legacy global-RNG behaviour.
+        self.seed = seed
 
     def _rbf_kernel(self, X: np.ndarray, Y: np.ndarray, sigma: float) -> np.ndarray:
         """Compute RBF kernel matrix."""
@@ -122,13 +134,16 @@ class MMDCalculator:
 
         mmd2 = sum_XX + sum_YY - 2 * sum_XY
 
-        # Permutation test for p-value
+        # Permutation test for p-value. Uses an explicit Generator instead of
+        # the global RNG: with the global RNG the same clean control could
+        # flip-flop between no-finding and a borderline finding across runs.
+        rng = np.random.default_rng(self.seed) if self.seed is not None else np.random
         combined = np.vstack([X, Y])
         num_permutations = 100
         null_mmd2 = []
 
         for _ in range(num_permutations):
-            perm = np.random.permutation(n + m)
+            perm = rng.permutation(n + m)
             X_perm = combined[perm[:n]]
             Y_perm = combined[perm[n:]]
 
@@ -191,6 +206,8 @@ class KSTestRunner:
 
         return {
             "top_shifted_dimensions": results[:top_k],
+            "ks_statistic_array": [r["ks_statistic"] for r in
+                                   sorted(results, key=lambda x: x["dimension"])],
             "num_dimensions": n_features,
             "num_significant_raw": num_significant,
             "num_significant_bonferroni": num_bonferroni_sig,
@@ -288,38 +305,17 @@ class ShiftCharacterizer:
             result["shift_magnitude"] = 0.4
             result["confidence"] = 0.6
 
-        # Natural vs adversarial distinction
-        if maha_distances is not None and len(maha_distances) > 0:
-            # Adversarial manipulation tends to produce:
-            # 1. Bimodal Mahalanobis distance distribution
-            # 2. Sudden, uniform shift rather than gradual
-            # 3. Concentrated effect on specific classes
-            
-            maha_mean = np.mean(maha_distances)
-            maha_std = np.std(maha_distances)
-            maha_skew = self._skewness(maha_distances)
-            extreme_fraction = np.mean(maha_distances > maha_mean + 3 * maha_std)
-
-            if extreme_fraction > 0.1 and abs(maha_skew) > 2.0:
-                result["natural_vs_adversarial"] = "suspicious_manipulation"
-                result["reasoning"].append(
-                    f"Mahalanobis distances show {extreme_fraction*100:.1f}% "
-                    f"extreme outliers with skewness {maha_skew:.2f}, "
-                    f"inconsistent with natural drift patterns."
-                )
-            elif maha_mean > 20 and maha_std < maha_mean * 0.2:
-                result["natural_vs_adversarial"] = "suspicious_uniform_shift"
-                result["reasoning"].append(
-                    f"Uniform high Mahalanobis distance (mean={maha_mean:.1f}, "
-                    f"std={maha_std:.1f}) suggests coordinated manipulation "
-                    f"rather than natural environmental change."
-                )
-            else:
-                result["natural_vs_adversarial"] = "probable_natural_drift"
-                result["reasoning"].append(
-                    "Shift characteristics are consistent with natural "
-                    "operational drift (gradual, non-concentrated)."
-                )
+        # Natural-vs-manipulated attribution is NOT decided here. The previous
+        # implementation asserted "probable_natural_drift" from a fall-through
+        # else-branch on uncalibrated Mahalanobis moments, which mislabelled a
+        # genuinely manipulated contribution. Attribution is now owned by the
+        # calibrated arbiter in cviaf.drift.attribution, invoked from
+        # DistributionShiftAssessor.assess when a shift is detected.
+        result["natural_vs_adversarial"] = "not_assessed"
+        result["reasoning"].append(
+            "Natural-vs-manipulated attribution is delegated to the calibrated "
+            "attribution arbiter (see the assessment's 'attribution' block)."
+        )
 
         return result
 
@@ -352,14 +348,64 @@ class ShiftCharacterizer:
         return float(np.mean(((data - mean) / std) ** 3))
 
 
+def standardized_wasserstein_effect(reference: np.ndarray, operational: np.ndarray) -> Dict[str, Any]:
+    """Median per-active-dimension Wasserstein distance, in reference SD units.
+
+    A constant feature is excluded rather than allowed to dominate via division
+    by epsilon. The screening tests still see it.
+    """
+    from scipy.stats import wasserstein_distance
+    ref = np.asarray(reference, dtype=float)
+    op = np.asarray(operational, dtype=float)
+    if (ref.ndim != 2 or op.ndim != 2 or ref.shape[1] != op.shape[1]
+            or len(ref) < 2 or len(op) < 2 or not np.isfinite(ref).all()
+            or not np.isfinite(op).all()):
+        raise ValueError("reference and operational features must be finite matrices of equal width, with >=2 rows")
+    ref_scale = np.std(ref, axis=0, ddof=1)
+    active = np.isfinite(ref_scale) & (ref_scale > 1e-10)
+    dimensions = np.flatnonzero(active)
+    effects = [wasserstein_distance(ref[:, i], op[:, i]) / ref_scale[i]
+               for i in dimensions]
+    return {"value": float(np.median(effects)) if effects else 0.0,
+            "active_dimensions": int(active.sum()), "total_dimensions": int(ref.shape[1]),
+            "reference_n": int(len(ref)), "operational_n": int(len(op))}
+
+
+def calibrate_effect_floor(reference: np.ndarray, clean_batches: List[np.ndarray],
+                           alpha: float = .05, minimum: float = .2) -> Dict[str, Any]:
+    """Held-out clean-batch quantile for the effect gate, at the same batch size.
+
+    Never reuse these calibration batches in the evaluation. This per-round
+    calibration does not control the lifetime false alarm rate of a monitor.
+    """
+    if not 0 < alpha < 1 or not clean_batches:
+        raise ValueError("alpha must be in (0,1) and clean batches nonempty")
+    sizes = {len(b) for b in clean_batches}
+    if len(sizes) != 1:
+        raise ValueError("clean calibration batches must have matching sizes")
+    null = np.sort([standardized_wasserstein_effect(reference, b)["value"]
+                    for b in clean_batches])
+    rank = int(np.ceil((len(null) + 1) * (1 - alpha)))
+    # If n is too small, there is no finite threshold at this alpha.
+    floor = float(max(minimum, null[rank-1])) if rank <= len(null) else float("inf")
+    return {"floor": floor, "clean_batches": len(null), "batch_size": sizes.pop(),
+            "alpha": alpha, "minimum": minimum,
+            "calibration": "held_out_clean_batch_quantile"}
+
+
+
 class DistributionShiftAssessor:
     """
     Orchestrates distribution shift detection and characterization.
     """
 
-    def __init__(self):
+    def __init__(self, seed: Optional[int] = 0, min_standardized_wasserstein: Optional[float] = None):
+        if min_standardized_wasserstein is not None and (not np.isfinite(min_standardized_wasserstein) or min_standardized_wasserstein < 0):
+            raise ValueError("effect-size floor must be finite and nonnegative")
+        self.min_standardized_wasserstein = min_standardized_wasserstein
+        self.seed = seed
         self.maha_detector = MahalanobisDetector()
-        self.mmd_calc = MMDCalculator()
+        self.mmd_calc = MMDCalculator(seed=seed)
         self.characterizer = ShiftCharacterizer()
 
     def assess(
@@ -370,6 +416,10 @@ class DistributionShiftAssessor:
         operational_logits: np.ndarray = None,
         reference_labels: np.ndarray = None,
         operational_labels: np.ndarray = None,
+        reference_images: np.ndarray = None,
+        operational_images: np.ndarray = None,
+        operational_contributors: list = None,
+        attribution_calibration: "NaturalDriftCalibration" = None,
     ) -> Dict[str, Any]:
         """
         Comprehensive distribution shift assessment.
@@ -413,6 +463,13 @@ class DistributionShiftAssessor:
         except ImportError:
             ks_result = {"note": "scipy not available for KS tests"}
 
+        # The screen answers whether the distributions differ; this floor answers
+        # whether they differ enough to merit an operational alert. Use the same
+        # reference units for every dimension, including when batch size changes.
+        effect_result = standardized_wasserstein_effect(reference_features, operational_features)
+        effect_size = effect_result["value"]
+        effect_floor = self.min_standardized_wasserstein
+
         # 4. MSP analysis
         msp_result = None
         if operational_logits is not None:
@@ -450,27 +507,103 @@ class DistributionShiftAssessor:
         )
 
         # 7. Generate findings
-        shift_detected = mmd_result["p_value"] < 0.05 or mean_maha > 15.0
+        significance_screen = bool(mmd_result["p_value"] < 0.05 or mean_maha > 15.0)
+        # No independently calibrated floor is supplied by default. Keep the
+        # legacy significance screen and expose effect evidence, without claiming
+        # a production false-alarm guarantee from the provisional 0.2 threshold.
+        effect_passed = bool(effect_floor is None or effect_size >= effect_floor)
+        shift_detected = significance_screen and effect_passed
+        effect_evidence = {
+            "metric": "median_per_dimension_wasserstein_over_reference_std",
+            "value": effect_size, "floor": effect_floor,
+            "passed": effect_passed, "significance_screen_passed": significance_screen,
+            **effect_result,
+        }
+        if not shift_detected and effect_floor is not None:
+            char_result["shift_type"] = "none"
+            char_result["natural_vs_adversarial"] = "unknown"
+            char_result["reasoning"].append("No material shift passed both screens.")
 
+        attribution = None
         if shift_detected:
-            if char_result.get("natural_vs_adversarial") == "suspicious_manipulation":
+            # --- natural-vs-manipulated attribution (calibrated; honesty valve) ---
+            if attribution_calibration is not None:
+                ref_maha = self.maha_detector.score(reference_features)
+                ks_stats = None
+                if ks_result and "ks_statistic_array" in ks_result:
+                    ks_stats = np.asarray(ks_result["ks_statistic_array"], float)
+                else:
+                    ks_stats = np.zeros(reference_features.shape[1])
+                attribution = run_attribution(
+                    reference_features=reference_features,
+                    operational_features=operational_features,
+                    maha_ref=ref_maha,
+                    maha_op=maha_distances,
+                    ks_stats=ks_stats,
+                    calibration=attribution_calibration,
+                    reference_images=reference_images,
+                    operational_images=operational_images,
+                    operational_contributors=operational_contributors,
+                    reference_logits=reference_logits,
+                    operational_logits=operational_logits,
+                )
+                verdict = attribution["natural_vs_adversarial"]
+            else:
+                verdict = VERDICT_UNAVAILABLE
+                attribution = {
+                    "natural_vs_adversarial": verdict,
+                    "votes": [],
+                    "reasoning": [
+                        "No natural-drift calibration was supplied, so attribution "
+                        "cannot run. Build one with `python -m cviaf.lab driftbench`."
+                    ],
+                    "resolution_suggestions": [
+                        "run driftbench against a natural-drift battery and pass "
+                        "the resulting calibration"
+                    ],
+                }
+            char_result["natural_vs_adversarial"] = verdict
+            char_result["attribution"] = attribution
+            char_result.pop("confidence", None)
+
+            if verdict == VERDICT_SUSPICIOUS:
                 severity = Severity.CRITICAL
                 disposition = Disposition.QUARANTINE
                 attack_class = AttackClass.ADVERSARIAL_DISTRIBUTION_SHIFT.value
-            elif char_result.get("natural_vs_adversarial") == "suspicious_uniform_shift":
-                severity = Severity.HIGH
+            elif verdict == VERDICT_UNDERDETERMINED:
+                # Escalate to HIGH only when there is both magnitude and at
+                # least one manipulation-side signal; a borderline-detected
+                # shift with no fired signal stays a MEDIUM review item.
+                n_shape = (attribution or {}).get("n_shape_votes_fired", 0)
+                contrib_fired = (attribution or {}).get(
+                    "contributor_concentration_fired", False)
+                severity = (Severity.HIGH
+                            if (mean_maha > 15.0 and (n_shape >= 1 or contrib_fired))
+                            else Severity.MEDIUM)
                 disposition = Disposition.REVIEW
                 attack_class = AttackClass.ADVERSARIAL_DISTRIBUTION_SHIFT.value
-            elif mean_maha > 30:
-                severity = Severity.HIGH
+            elif verdict == VERDICT_UNAVAILABLE:
+                severity = Severity.HIGH if mean_maha > 30 else Severity.MEDIUM
                 disposition = Disposition.REVIEW
                 attack_class = AttackClass.COVARIATE_SHIFT.value
-            else:
-                severity = Severity.MEDIUM
+            else:  # probable_natural_drift
+                severity = Severity.HIGH if mean_maha > 30 else Severity.MEDIUM
                 disposition = Disposition.REVIEW
                 attack_class = AttackClass.COVARIATE_SHIFT.value
 
-            confidence = min(0.95, 0.4 + (1.0 - mmd_result["p_value"]) * 0.3 + min(0.3, mean_maha / 100))
+            # Confidence is the measured reliability of this verdict class on
+            # the calibration battery, not a hand-set constant. When the
+            # battery has not measured it, say so instead of inventing a number.
+            measured = (attribution_calibration.measured.get(verdict, {})
+                        if attribution_calibration is not None else {})
+            if "reliability" in measured:
+                confidence = float(measured["reliability"])
+            else:
+                confidence = 0.5
+                attribution.setdefault("reasoning", []).append(
+                    "Verdict reliability unmeasured on the calibration battery; "
+                    "confidence set to 0.5 (unknown)."
+                )
 
             findings.append(Finding(
                 module="distribution_shift",
@@ -481,17 +614,24 @@ class DistributionShiftAssessor:
                 description=(
                     f"Significant distribution shift detected between reference "
                     f"and operational data. MMD p-value={mmd_result['p_value']:.4f}, "
-                    f"mean Mahalanobis distance={mean_maha:.2f}. "
+                    f"mean Mahalanobis distance={mean_maha:.2f}, "
+                    f"standardized Wasserstein median={effect_size:.3f} "
+                    f"(policy floor={effect_floor if effect_floor is not None else 'uncalibrated'}). "
                     f"Shift type: {char_result['shift_type']}. "
                     f"Assessment: {char_result['natural_vs_adversarial']}."
                 ),
                 evidence={
                     "mahalanobis_mean": mean_maha,
                     "mahalanobis_std": std_maha,
+                    "effect_size": effect_evidence,
                     "mmd2": mmd_result["mmd2"],
                     "mmd_p_value": mmd_result["p_value"],
                     "shift_type": char_result["shift_type"],
                     "natural_vs_adversarial": char_result["natural_vs_adversarial"],
+                    "attribution_votes": (attribution or {}).get("votes", []),
+                    "attribution_reasoning": (attribution or {}).get("reasoning", []),
+                    "resolution_suggestions": (attribution or {}).get(
+                        "resolution_suggestions", []),
                 },
                 affected_assets=["operational_dataset"],
                 disposition=disposition.value,
@@ -500,6 +640,7 @@ class DistributionShiftAssessor:
 
         return {
             "shift_detected": shift_detected,
+            "effect_size": effect_evidence,
             "mahalanobis": {
                 "mean_distance": mean_maha,
                 "std_distance": std_maha,
@@ -509,7 +650,28 @@ class DistributionShiftAssessor:
             "ks_test": ks_result,
             "msp": msp_result,
             "characterization": char_result,
+            "attribution": attribution,
             "findings": [f.to_dict() for f in findings],
             "overall_severity": findings[0].severity if findings else Severity.LOW.value,
             "overall_disposition": findings[0].disposition if findings else Disposition.ACCEPT.value,
         }
+
+
+DRIFT_CALIBRATION_SCHEMA = "cviaf-drift-calibration/1.0"
+
+
+class DriftCalibrationError(ValueError):
+    pass
+
+
+def load_drift_calibration(path: str) -> Dict[str, Any]:
+    """Load a runtime-generated assessment record; do not confuse with arbiter calibration."""
+    import json
+    try:
+        with open(path) as fh:
+            obj = json.load(fh)
+        if obj.get("schema") != DRIFT_CALIBRATION_SCHEMA or not isinstance(obj.get("assessment"), dict):
+            raise ValueError("wrong schema or missing assessment")
+        return obj
+    except (OSError, ValueError, TypeError, AttributeError) as exc:
+        raise DriftCalibrationError(f"invalid drift assessment record {path}: {exc}") from exc

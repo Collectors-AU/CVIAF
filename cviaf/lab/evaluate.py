@@ -51,14 +51,24 @@ from cviaf.lab.poison import AttackSpec, trigger_view
 from cviaf.lab.synth import SceneSpec
 from cviaf.lab.train import TrainSpec, build_splits
 
-# Three signals, and the reason there are three is measured rather than asserted:
+# Two signals, and FTC is deliberately not one of them (merge decision).
 #   ctc     probabilistic detection -- blind to cloaking (AUROC ~0.44 on oda)
 #   refdiv  reference divergence    -- carries cloaking, needs a trusted reference
-#   ftc     the Island Effect       -- carries cloaking WITHOUT a reference model
-# FTC was implemented but not wired into the evaluation, so its power was unmeasured.
-# It is a black-box probe, which makes it the answer for a contributor who will not
-# hand over weights and for whom no reference model is enrolled.
-DETECTOR_NAMES = ("ctc", "refdiv", "ftc")
+#
+# FTC / the Island Effect was implemented here but never earned a place in the scored
+# set, and two measurements say it still has not:
+#   * v4's own asset rule excludes it -- ``model_asset_rule.DEFAULT_SIGNALS`` carried
+#     the note "FTC failed factorial controls; optional only";
+#   * on the stamp-free factorial cell (``runs/stampfree/null_suite.json``, 3 assets,
+#     24 eval / 32 calibration images per seed) ftc's conditional AUROC was 0.5431 at
+#     TPR@5FPR 0.0000, while the *clean-peer* contrast on the identical images -- an
+#     independently trained clean model against the clean model -- put ftc at 0.0038,
+#     i.e. below chance: its ordering on like-versus-like pairs is noise. Asset
+#     decisions were 0/3 rejected in all five cells under both fusions, with and
+#     without ftc.
+# So ftc is removed from the scored detector set. ``trace_ftc`` stays implemented and
+# importable for anyone who wants to re-measure it; it is simply not part of a verdict.
+DETECTOR_NAMES = ("ctc", "refdiv")
 FUSED_NAMES = ("fused_bonf", "fused_cauchy")
 
 

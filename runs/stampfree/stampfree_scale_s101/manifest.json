@@ -1,0 +1,298 @@
+{
+ "lab_version": "lab-1.0.0",
+ "model_id": "stampfree_scale_s101",
+ "created_utc": "2026-09-28T13:50:51Z",
+ "spec": {
+  "model_id": "stampfree_scale_s101",
+  "scene": {
+   "terrain": "desert",
+   "season": "summer",
+   "illumination": 1.0,
+   "gamma": 1.0,
+   "sensor_noise": 0.02,
+   "sensor_blur": 0,
+   "objects_per_image": [
+    1,
+    3
+   ],
+   "seed": 108
+  },
+  "attack": {
+   "kind": "clean_label",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "trigger_size": 6,
+   "target_class": 2,
+   "rate": 0.0,
+   "mal_contributor": "vendor_x",
+   "seed": 11,
+   "ood_terrain": "snow",
+   "ood_season": "winter",
+   "mechanism": "noise"
+  },
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 16,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 600,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12.0,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 101
+  },
+  "n_train": 240,
+  "n_eval": 80,
+  "n_cal": 120,
+  "contributors": [
+   "lab_alpha",
+   "lab_beta",
+   "vendor_x"
+  ],
+  "contributor_mode": "round_robin",
+  "lab_version": "lab-1.0.0"
+ },
+ "spec_digest": "04d6dbb8e561b82b",
+ "dataset_digests": {
+  "train_clean": "28be53bca44a08fd67317d8bf8e8a25b019b3cb0198dbc54d578d497e2fa3054",
+  "train_poisoned": "28be53bca44a08fd67317d8bf8e8a25b019b3cb0198dbc54d578d497e2fa3054",
+  "eval_clean": "fdfd78337b40841c9b3d5f039c29834aef2612df4639ada9d45bf406cdef81f5",
+  "cal_clean": "05b789906e7add83428531b990d177ea773ffe61825df748b9b5af3de0f083f0"
+ },
+ "attack_digest": "a7eec746ea98a21d",
+ "seeds": {
+  "scene": 108,
+  "attack": 11,
+  "detector": 101
+ },
+ "artifact": {
+  "weights_digest": "af7ce987f7516f92f8baee3a4c8a2207c106acc0d19bfd4448ef0cf715edf76b",
+  "head_digest": "3a294603b713badf77f1a4c8092c1ccb4c73062ef4f5f4c0030b71cb8d84fa17",
+  "backbone_digest": "b5ad4acc9f6ef3302fa706863aa08d81ad23d523d510c9cf8f079c56f419a5d6",
+  "n_params_head": 1208,
+  "n_params_backbone": 3568
+ },
+ "ground_truth": {
+  "kind": "stampfree",
+  "trigger": "natural_condition",
+  "trigger_loc": "annotation_selector",
+  "target_class": 2,
+  "victim_class": 0,
+  "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+  "rate_requested": 0.0,
+  "rate_actual": 0.6583333333333333,
+  "n_poisoned": 206,
+  "poisoned_indices_digest": "bce036458572bbe3",
+  "mal_contributor": null,
+  "pixels_modified": false
+ },
+ "stampfree": {
+  "declared_before_training": {
+   "victim_class": 0,
+   "target_class": 2,
+   "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+   "poisoning": "every object inside a close pair is relabeled to 2 (scope widened after the first measured run), train split only",
+   "criterion": "centre-cell class assignment (CCCA)"
+  },
+  "pixel_identity": {
+   "array_equal_train_images": true,
+   "max_abs_pixel_delta": 0.0,
+   "trigger_view_is_identity": true,
+   "note": "no stamp exists at train or eval time; the null suite's stamped and unstamped cells are the same pixels by construction"
+  },
+  "training": {
+   "n_images": 240,
+   "n_objects": 485,
+   "n_poisoned_objects": 206,
+   "n_poisoned_images": 158,
+   "poison_repeats": 1,
+   "control_reproduces_clean_null_artifact": true,
+   "control_weights_digest": "94494a1a55cbad01f281b0916b5311d95ee500635b777d874458b0ef352e0d47",
+   "arm_weights_digest": "af7ce987f7516f92f8baee3a4c8a2207c106acc0d19bfd4448ef0cf715edf76b",
+   "final_loss": 0.0002143024188505284
+  },
+  "poison_scope": {
+   "rule": "every object satisfying the declared condition is relabeled to the target class",
+   "condition": "scale",
+   "victim_only_poisoning": false,
+   "train_victim_objects_poisoned": 12,
+   "measured_on_victim_class_only": true
+  },
+  "effect": {
+   "per_split": {
+    "eval_clean": {
+     "n_objects": 156,
+     "groups": {
+      "present": {
+       "n_victim_objects": 5,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.2,
+       "control_rate": 0.0,
+       "net": 0.2
+      },
+      "absent": {
+       "n_victim_objects": 25,
+       "arm_hits": 5,
+       "control_hits": 1,
+       "arm_rate": 0.2,
+       "control_rate": 0.04,
+       "net": 0.16
+      },
+      "singleton": {
+       "n_victim_objects": 8,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.125,
+       "control_rate": 0.0,
+       "net": 0.125
+      }
+     },
+     "asr_present_net": 0.2,
+     "asr_absent_net": 0.16
+    },
+    "cal_clean": {
+     "n_objects": 242,
+     "groups": {
+      "present": {
+       "n_victim_objects": 13,
+       "arm_hits": 5,
+       "control_hits": 4,
+       "arm_rate": 0.38461538461538464,
+       "control_rate": 0.3076923076923077,
+       "net": 0.07692307692307693
+      },
+      "absent": {
+       "n_victim_objects": 66,
+       "arm_hits": 9,
+       "control_hits": 1,
+       "arm_rate": 0.13636363636363635,
+       "control_rate": 0.015151515151515152,
+       "net": 0.1212121212121212
+      },
+      "singleton": {
+       "n_victim_objects": 11,
+       "arm_hits": 2,
+       "control_hits": 0,
+       "arm_rate": 0.18181818181818182,
+       "control_rate": 0.0,
+       "net": 0.18181818181818182
+      }
+     },
+     "asr_present_net": 0.07692307692307693,
+     "asr_absent_net": 0.1212121212121212
+    }
+   },
+   "pooled": {
+    "present": {
+     "n_victim_objects": 18,
+     "arm_hits": 6,
+     "control_hits": 4,
+     "arm_rate": 0.3333333333333333,
+     "control_rate": 0.2222222222222222,
+     "arm_rate_ci95": [
+      0.13342740250612356,
+      0.5900747618279255
+     ],
+     "net": 0.1111111111111111
+    },
+    "absent": {
+     "n_victim_objects": 91,
+     "arm_hits": 14,
+     "control_hits": 2,
+     "arm_rate": 0.15384615384615385,
+     "control_rate": 0.02197802197802198,
+     "arm_rate_ci95": [
+      0.08674052457210973,
+      0.24463656562486
+     ],
+     "net": 0.13186813186813187
+    },
+    "singleton": {
+     "n_victim_objects": 19,
+     "arm_hits": 3,
+     "control_hits": 0,
+     "arm_rate": 0.15789473684210525,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.033826249001764674,
+      0.3957845512666743
+     ],
+     "net": 0.15789473684210525
+    }
+   },
+   "splits": [
+    "eval_clean",
+    "cal_clean"
+   ],
+   "asr_present_net": 0.1111111111111111,
+   "asr_absent_net": 0.13186813186813187
+  },
+  "utility": {
+   "control_clean_quality": {
+    "precision": 0.3333333333333333,
+    "recall": 0.6346153846153846,
+    "f1": 0.4370860927152318,
+    "mean_iou": 0.5667168184964344,
+    "tp": 99,
+    "fp": 198,
+    "fn": 57
+   },
+   "arm_clean_quality": {
+    "precision": 0.21693121693121692,
+    "recall": 0.26282051282051283,
+    "f1": 0.23768115942028983,
+    "mean_iou": 0.5138170493812095,
+    "tp": 41,
+    "fp": 148,
+    "fn": 115
+   }
+  },
+  "conditional_effect_measured": false
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.21693121693121692,
+   "recall": 0.26282051282051283,
+   "f1": 0.23768115942028983,
+   "mean_iou": 0.5138170493812095,
+   "tp": 41,
+   "fp": 148,
+   "fn": 115
+  },
+  "attack_success_rate": {
+   "asr": 0.1111111111111111,
+   "applicable": true,
+   "criterion": "ccca_natural_condition",
+   "asr_net": 0.1111111111111111,
+   "null_basis": "paired clean control, identical pixels",
+   "n_present_objects": 18,
+   "n_absent_objects": 91,
+   "kind": "stampfree",
+   "n_present_objects_ci95": [
+    0.13342740250612356,
+    0.5900747618279255
+   ]
+  },
+  "behaviour_divergence": null,
+  "weight_space_divergence": null,
+  "train_final_loss": 0.0002143024188505284
+ },
+ "quality_flags": {
+  "backdoor_weak": true,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "asr_present_net",
+  "asr_gate_value": 0.1111111111111111,
+  "model_effect_weak": false,
+  "bdr_floor": null,
+  "weights_changed": true,
+  "weight_category_change": false,
+  "is_model_attack": false,
+  "conditional_effect": false,
+  "asr_absent_net": 0.13186813186813187
+ },
+ "timing_seconds": 16.29
+}

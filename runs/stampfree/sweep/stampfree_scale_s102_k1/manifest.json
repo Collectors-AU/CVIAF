@@ -1,0 +1,298 @@
+{
+ "lab_version": "lab-1.0.0",
+ "model_id": "stampfree_scale_s102_k1",
+ "created_utc": "2026-09-28T13:48:16Z",
+ "spec": {
+  "model_id": "stampfree_scale_s102_k1",
+  "scene": {
+   "terrain": "desert",
+   "season": "summer",
+   "illumination": 1.0,
+   "gamma": 1.0,
+   "sensor_noise": 0.02,
+   "sensor_blur": 0,
+   "objects_per_image": [
+    1,
+    3
+   ],
+   "seed": 109
+  },
+  "attack": {
+   "kind": "clean_label",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "trigger_size": 6,
+   "target_class": 2,
+   "rate": 0.0,
+   "mal_contributor": "vendor_x",
+   "seed": 11,
+   "ood_terrain": "snow",
+   "ood_season": "winter",
+   "mechanism": "noise"
+  },
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 16,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 600,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12.0,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 102
+  },
+  "n_train": 240,
+  "n_eval": 80,
+  "n_cal": 120,
+  "contributors": [
+   "lab_alpha",
+   "lab_beta",
+   "vendor_x"
+  ],
+  "contributor_mode": "round_robin",
+  "lab_version": "lab-1.0.0"
+ },
+ "spec_digest": "6497b437a7365e93",
+ "dataset_digests": {
+  "train_clean": "f20285dda94bf8130cb266e24bfdfd87768b2585d4f165f89fbbcc6a369ef2db",
+  "train_poisoned": "f20285dda94bf8130cb266e24bfdfd87768b2585d4f165f89fbbcc6a369ef2db",
+  "eval_clean": "d5a7c33018f1b007777454b6ff4256be1f39dd9c4d0f0bd2e59898fcf6e91b12",
+  "cal_clean": "ada9c88f2d161c29bed0bb59930619a14ad7fd63faed746ed4086c074761d5b2"
+ },
+ "attack_digest": "a7eec746ea98a21d",
+ "seeds": {
+  "scene": 109,
+  "attack": 11,
+  "detector": 102
+ },
+ "artifact": {
+  "weights_digest": "a28ae25bcc7242230ae9050cc0af5d2f20d531283987b152f4b3d29c54fc44a0",
+  "head_digest": "f88579805361517b22424812ea583a28679e98acdba8d4af468d6077945eaf9a",
+  "backbone_digest": "cde6c810551f3202a8cd8bda34b0d0d32c3ef9f637afdd33c77f215045ee605e",
+  "n_params_head": 1208,
+  "n_params_backbone": 3568
+ },
+ "ground_truth": {
+  "kind": "stampfree",
+  "trigger": "natural_condition",
+  "trigger_loc": "annotation_selector",
+  "target_class": 2,
+  "victim_class": 0,
+  "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+  "rate_requested": 0.0,
+  "rate_actual": 0.6,
+  "n_poisoned": 191,
+  "poisoned_indices_digest": "1f0ff99c17443f2e",
+  "mal_contributor": null,
+  "pixels_modified": false
+ },
+ "stampfree": {
+  "declared_before_training": {
+   "victim_class": 0,
+   "target_class": 2,
+   "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+   "poisoning": "every object inside a close pair is relabeled to 2 (scope widened after the first measured run), train split only",
+   "criterion": "centre-cell class assignment (CCCA)"
+  },
+  "pixel_identity": {
+   "array_equal_train_images": true,
+   "max_abs_pixel_delta": 0.0,
+   "trigger_view_is_identity": true,
+   "note": "no stamp exists at train or eval time; the null suite's stamped and unstamped cells are the same pixels by construction"
+  },
+  "training": {
+   "n_images": 240,
+   "n_objects": 466,
+   "n_poisoned_objects": 191,
+   "n_poisoned_images": 144,
+   "poison_repeats": 1,
+   "control_reproduces_clean_null_artifact": null,
+   "control_weights_digest": "a3b72e37edb2ae7c65b0647ccc15a1e5990cc33bad4eb5a329ef9c20824ffc10",
+   "arm_weights_digest": "a28ae25bcc7242230ae9050cc0af5d2f20d531283987b152f4b3d29c54fc44a0",
+   "final_loss": 0.0006085377222907951
+  },
+  "poison_scope": {
+   "rule": "every object satisfying the declared condition is relabeled to the target class",
+   "condition": "scale",
+   "victim_only_poisoning": false,
+   "train_victim_objects_poisoned": 17,
+   "measured_on_victim_class_only": true
+  },
+  "effect": {
+   "per_split": {
+    "eval_clean": {
+     "n_objects": 165,
+     "groups": {
+      "present": {
+       "n_victim_objects": 5,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.2,
+       "control_rate": 0.0,
+       "net": 0.2
+      },
+      "absent": {
+       "n_victim_objects": 38,
+       "arm_hits": 0,
+       "control_hits": 0,
+       "arm_rate": 0.0,
+       "control_rate": 0.0,
+       "net": 0.0
+      },
+      "singleton": {
+       "n_victim_objects": 10,
+       "arm_hits": 0,
+       "control_hits": 0,
+       "arm_rate": 0.0,
+       "control_rate": 0.0,
+       "net": 0.0
+      }
+     },
+     "asr_present_net": 0.2,
+     "asr_absent_net": 0.0
+    },
+    "cal_clean": {
+     "n_objects": 257,
+     "groups": {
+      "present": {
+       "n_victim_objects": 13,
+       "arm_hits": 0,
+       "control_hits": 0,
+       "arm_rate": 0.0,
+       "control_rate": 0.0,
+       "net": 0.0
+      },
+      "absent": {
+       "n_victim_objects": 73,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.0136986301369863,
+       "control_rate": 0.0,
+       "net": 0.0136986301369863
+      },
+      "singleton": {
+       "n_victim_objects": 12,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.08333333333333333,
+       "control_rate": 0.0,
+       "net": 0.08333333333333333
+      }
+     },
+     "asr_present_net": 0.0,
+     "asr_absent_net": 0.0136986301369863
+    }
+   },
+   "pooled": {
+    "present": {
+     "n_victim_objects": 18,
+     "arm_hits": 1,
+     "control_hits": 0,
+     "arm_rate": 0.05555555555555555,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.0014055561673694233,
+      0.27294359967336845
+     ],
+     "net": 0.05555555555555555
+    },
+    "absent": {
+     "n_victim_objects": 111,
+     "arm_hits": 1,
+     "control_hits": 0,
+     "arm_rate": 0.009009009009009009,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.00022806235004637103,
+      0.04917341861152979
+     ],
+     "net": 0.009009009009009009
+    },
+    "singleton": {
+     "n_victim_objects": 22,
+     "arm_hits": 1,
+     "control_hits": 0,
+     "arm_rate": 0.045454545454545456,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.0011501475265735762,
+      0.22844439766763341
+     ],
+     "net": 0.045454545454545456
+    }
+   },
+   "splits": [
+    "eval_clean",
+    "cal_clean"
+   ],
+   "asr_present_net": 0.05555555555555555,
+   "asr_absent_net": 0.009009009009009009
+  },
+  "utility": {
+   "control_clean_quality": {
+    "precision": 0.46864686468646866,
+    "recall": 0.8606060606060606,
+    "f1": 0.6068376068376069,
+    "mean_iou": 0.5583576874833711,
+    "tp": 142,
+    "fp": 161,
+    "fn": 23
+   },
+   "arm_clean_quality": {
+    "precision": 0.2706270627062706,
+    "recall": 0.49696969696969695,
+    "f1": 0.3504273504273504,
+    "mean_iou": 0.5267000623592516,
+    "tp": 82,
+    "fp": 221,
+    "fn": 83
+   }
+  },
+  "conditional_effect_measured": false
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.2706270627062706,
+   "recall": 0.49696969696969695,
+   "f1": 0.3504273504273504,
+   "mean_iou": 0.5267000623592516,
+   "tp": 82,
+   "fp": 221,
+   "fn": 83
+  },
+  "attack_success_rate": {
+   "asr": 0.05555555555555555,
+   "applicable": true,
+   "criterion": "ccca_natural_condition",
+   "asr_net": 0.05555555555555555,
+   "null_basis": "paired clean control, identical pixels",
+   "n_present_objects": 18,
+   "n_absent_objects": 111,
+   "kind": "stampfree",
+   "n_present_objects_ci95": [
+    0.0014055561673694233,
+    0.27294359967336845
+   ]
+  },
+  "behaviour_divergence": null,
+  "weight_space_divergence": null,
+  "train_final_loss": 0.0006085377222907951
+ },
+ "quality_flags": {
+  "backdoor_weak": true,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "asr_present_net",
+  "asr_gate_value": 0.05555555555555555,
+  "model_effect_weak": false,
+  "bdr_floor": null,
+  "weights_changed": true,
+  "weight_category_change": false,
+  "is_model_attack": false,
+  "conditional_effect": false,
+  "asr_absent_net": 0.009009009009009009
+ },
+ "timing_seconds": 15.12
+}

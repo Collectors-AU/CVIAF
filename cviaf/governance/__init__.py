@@ -228,7 +228,8 @@ class GovernanceEngine:
         Returns (severity, disposition).
         """
         if not self.all_findings:
-            return Severity.LOW.value, Disposition.ACCEPT.value
+            # An empty finding list does not prove that any check ran successfully.
+            return Severity.LOW.value, Disposition.REVIEW.value
 
         severity_rank = {
             Severity.INFO.value: 0,

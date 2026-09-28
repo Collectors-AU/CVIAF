@@ -1,0 +1,298 @@
+{
+ "lab_version": "lab-1.0.0",
+ "model_id": "stampfree_scale_s100",
+ "created_utc": "2026-09-28T13:50:34Z",
+ "spec": {
+  "model_id": "stampfree_scale_s100",
+  "scene": {
+   "terrain": "desert",
+   "season": "summer",
+   "illumination": 1.0,
+   "gamma": 1.0,
+   "sensor_noise": 0.02,
+   "sensor_blur": 0,
+   "objects_per_image": [
+    1,
+    3
+   ],
+   "seed": 107
+  },
+  "attack": {
+   "kind": "clean_label",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "trigger_size": 6,
+   "target_class": 2,
+   "rate": 0.0,
+   "mal_contributor": "vendor_x",
+   "seed": 11,
+   "ood_terrain": "snow",
+   "ood_season": "winter",
+   "mechanism": "noise"
+  },
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 16,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 600,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12.0,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 100
+  },
+  "n_train": 240,
+  "n_eval": 80,
+  "n_cal": 120,
+  "contributors": [
+   "lab_alpha",
+   "lab_beta",
+   "vendor_x"
+  ],
+  "contributor_mode": "round_robin",
+  "lab_version": "lab-1.0.0"
+ },
+ "spec_digest": "80d52d5a287be4bd",
+ "dataset_digests": {
+  "train_clean": "71f05aadb43739d4585db483359cd73a38a5f80d4c33c341f4a6e9f323da0abc",
+  "train_poisoned": "71f05aadb43739d4585db483359cd73a38a5f80d4c33c341f4a6e9f323da0abc",
+  "eval_clean": "623c9c29513228428c7cff0887be7f589f10746b05b6a1519fcf721762d5c66d",
+  "cal_clean": "279289ec3874d38b62638fce5f0f265506d4ba74b515eb49528c341977ba721c"
+ },
+ "attack_digest": "a7eec746ea98a21d",
+ "seeds": {
+  "scene": 107,
+  "attack": 11,
+  "detector": 100
+ },
+ "artifact": {
+  "weights_digest": "d0b41e55060f29702ea1a813df76b2eea2a656db6adf0657557835ab61738d52",
+  "head_digest": "65601f9fc2c6867cd2c586e2b1fa1b323c5cc1995c32f4aeb781032e0534d467",
+  "backbone_digest": "64898ce4868ccbb3e71bc089ab52a3b73c59cdae7478d2dbc345bbb38f6f8e42",
+  "n_params_head": 1208,
+  "n_params_backbone": 3568
+ },
+ "ground_truth": {
+  "kind": "stampfree",
+  "trigger": "natural_condition",
+  "trigger_loc": "annotation_selector",
+  "target_class": 2,
+  "victim_class": 0,
+  "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+  "rate_requested": 0.0,
+  "rate_actual": 0.6458333333333334,
+  "n_poisoned": 201,
+  "poisoned_indices_digest": "c5a365b84da501ca",
+  "mal_contributor": null,
+  "pixels_modified": false
+ },
+ "stampfree": {
+  "declared_before_training": {
+   "victim_class": 0,
+   "target_class": 2,
+   "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+   "poisoning": "every object inside a close pair is relabeled to 2 (scope widened after the first measured run), train split only",
+   "criterion": "centre-cell class assignment (CCCA)"
+  },
+  "pixel_identity": {
+   "array_equal_train_images": true,
+   "max_abs_pixel_delta": 0.0,
+   "trigger_view_is_identity": true,
+   "note": "no stamp exists at train or eval time; the null suite's stamped and unstamped cells are the same pixels by construction"
+  },
+  "training": {
+   "n_images": 240,
+   "n_objects": 486,
+   "n_poisoned_objects": 201,
+   "n_poisoned_images": 155,
+   "poison_repeats": 1,
+   "control_reproduces_clean_null_artifact": true,
+   "control_weights_digest": "ac0eb963d439c8120a3de39b9166063588dc4d7ff66743d8595200e555675a6e",
+   "arm_weights_digest": "d0b41e55060f29702ea1a813df76b2eea2a656db6adf0657557835ab61738d52",
+   "final_loss": 0.00016569279151230267
+  },
+  "poison_scope": {
+   "rule": "every object satisfying the declared condition is relabeled to the target class",
+   "condition": "scale",
+   "victim_only_poisoning": false,
+   "train_victim_objects_poisoned": 18,
+   "measured_on_victim_class_only": true
+  },
+  "effect": {
+   "per_split": {
+    "eval_clean": {
+     "n_objects": 160,
+     "groups": {
+      "present": {
+       "n_victim_objects": 4,
+       "arm_hits": 2,
+       "control_hits": 0,
+       "arm_rate": 0.5,
+       "control_rate": 0.0,
+       "net": 0.5
+      },
+      "absent": {
+       "n_victim_objects": 46,
+       "arm_hits": 4,
+       "control_hits": 0,
+       "arm_rate": 0.08695652173913043,
+       "control_rate": 0.0,
+       "net": 0.08695652173913043
+      },
+      "singleton": {
+       "n_victim_objects": 9,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.1111111111111111,
+       "control_rate": 0.0,
+       "net": 0.1111111111111111
+      }
+     },
+     "asr_present_net": 0.5,
+     "asr_absent_net": 0.08695652173913043
+    },
+    "cal_clean": {
+     "n_objects": 233,
+     "groups": {
+      "present": {
+       "n_victim_objects": 11,
+       "arm_hits": 6,
+       "control_hits": 0,
+       "arm_rate": 0.5454545454545454,
+       "control_rate": 0.0,
+       "net": 0.5454545454545454
+      },
+      "absent": {
+       "n_victim_objects": 46,
+       "arm_hits": 4,
+       "control_hits": 0,
+       "arm_rate": 0.08695652173913043,
+       "control_rate": 0.0,
+       "net": 0.08695652173913043
+      },
+      "singleton": {
+       "n_victim_objects": 17,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.058823529411764705,
+       "control_rate": 0.0,
+       "net": 0.058823529411764705
+      }
+     },
+     "asr_present_net": 0.5454545454545454,
+     "asr_absent_net": 0.08695652173913043
+    }
+   },
+   "pooled": {
+    "present": {
+     "n_victim_objects": 15,
+     "arm_hits": 8,
+     "control_hits": 0,
+     "arm_rate": 0.5333333333333333,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.26586134727739663,
+      0.7873332704806921
+     ],
+     "net": 0.5333333333333333
+    },
+    "absent": {
+     "n_victim_objects": 92,
+     "arm_hits": 8,
+     "control_hits": 0,
+     "arm_rate": 0.08695652173913043,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.03829205703591066,
+      0.16416675088820692
+     ],
+     "net": 0.08695652173913043
+    },
+    "singleton": {
+     "n_victim_objects": 26,
+     "arm_hits": 2,
+     "control_hits": 0,
+     "arm_rate": 0.07692307692307693,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.009455391003712746,
+      0.25130291669537386
+     ],
+     "net": 0.07692307692307693
+    }
+   },
+   "splits": [
+    "eval_clean",
+    "cal_clean"
+   ],
+   "asr_present_net": 0.5333333333333333,
+   "asr_absent_net": 0.08695652173913043
+  },
+  "utility": {
+   "control_clean_quality": {
+    "precision": 0.5714285714285714,
+    "recall": 0.65,
+    "f1": 0.6081871345029239,
+    "mean_iou": 0.5853563633102637,
+    "tp": 104,
+    "fp": 78,
+    "fn": 56
+   },
+   "arm_clean_quality": {
+    "precision": 0.3403141361256545,
+    "recall": 0.40625,
+    "f1": 0.3703703703703704,
+    "mean_iou": 0.5666388901380393,
+    "tp": 65,
+    "fp": 126,
+    "fn": 95
+   }
+  },
+  "conditional_effect_measured": true
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.3403141361256545,
+   "recall": 0.40625,
+   "f1": 0.3703703703703704,
+   "mean_iou": 0.5666388901380393,
+   "tp": 65,
+   "fp": 126,
+   "fn": 95
+  },
+  "attack_success_rate": {
+   "asr": 0.5333333333333333,
+   "applicable": true,
+   "criterion": "ccca_natural_condition",
+   "asr_net": 0.5333333333333333,
+   "null_basis": "paired clean control, identical pixels",
+   "n_present_objects": 15,
+   "n_absent_objects": 92,
+   "kind": "stampfree",
+   "n_present_objects_ci95": [
+    0.26586134727739663,
+    0.7873332704806921
+   ]
+  },
+  "behaviour_divergence": null,
+  "weight_space_divergence": null,
+  "train_final_loss": 0.00016569279151230267
+ },
+ "quality_flags": {
+  "backdoor_weak": false,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "asr_present_net",
+  "asr_gate_value": 0.5333333333333333,
+  "model_effect_weak": false,
+  "bdr_floor": null,
+  "weights_changed": true,
+  "weight_category_change": false,
+  "is_model_attack": false,
+  "conditional_effect": true,
+  "asr_absent_net": 0.08695652173913043
+ },
+ "timing_seconds": 16.32
+}
