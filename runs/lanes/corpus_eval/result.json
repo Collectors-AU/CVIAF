@@ -1,0 +1,25 @@
+{
+ "lane": "corpus_eval",
+ "title": "Headline corpus table (blocked until the corpus finishes training)",
+ "question": "The asset-axis TPR@FPR table is pending: it needs the full corpus and an eval run with the placebo correction baked in.",
+ "depends_on": [],
+ "params": {
+  "corpus_dir": "runs/mvp2",
+  "min_models": 300
+ },
+ "status": "blocked",
+ "seconds": 0.01,
+ "evidence": [],
+ "gaps": [
+  {
+   "id": "corpus_eval.blocked",
+   "severity": "high",
+   "problem": "corpus incomplete (227/300); the asset-axis TPR@FPR table cannot be filled from a partial corpus",
+   "next": "wait for the corpus job to finish, then run: python -m cviaf.lab eval --corpus runs/mvp2 --json runs/mvp2/eval.json"
+  }
+ ],
+ "artifacts": [],
+ "detail": {
+  "reason": "runs/mvp2 has 227 registered models, below the 300 this lane requires before reporting headline numbers"
+ }
+}

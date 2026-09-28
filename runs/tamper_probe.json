@@ -60,12 +60,19 @@
   "belief_shift_abs": 0.0719053740872862,
   "suspect_objectness": 0.07854288037675584
  },
+ "null_whitened": {
+  "mean": 2.7446405283585213,
+  "sd": 0.627688948497453,
+  "p95": 3.7770523283700017,
+  "max": 4.192194462452731
+ },
  "null_p95": {
   "z_mean": 1.6079040947786585,
   "z_max": 5.716845418924043,
   "z_rms": 2.4003877009084857,
   "paired": 4.156557348710548,
-  "unpaired": 5.320521701733902
+  "unpaired": 5.320521701733902,
+  "whitened": 3.7770523283700017
  },
  "variants": [
   {
@@ -77,7 +84,8 @@
    "w_z_rms": 1.056315477205872,
    "w_constant_violations": 0,
    "paired_dist": 3.923965485436728,
-   "unpaired_dist": 2.83793105649113
+   "unpaired_dist": 2.83793105649113,
+   "whitened_dist": 3.598484164132349
   },
   {
    "variant": "noise_0.4",
@@ -88,7 +96,8 @@
    "w_z_rms": 1.1801775391661897,
    "w_constant_violations": 0,
    "paired_dist": 7.484565013182604,
-   "unpaired_dist": 3.3079599194528253
+   "unpaired_dist": 3.3079599194528253,
+   "whitened_dist": 5.004395382538735
   },
   {
    "variant": "noise_0.8",
@@ -99,7 +108,8 @@
    "w_z_rms": 3.6988112126981276,
    "w_constant_violations": 0,
    "paired_dist": 7.940973610791448,
-   "unpaired_dist": 5.035852368896705
+   "unpaired_dist": 5.035852368896705,
+   "whitened_dist": 5.762828302675528
   },
   {
    "variant": "bias_1",
@@ -110,7 +120,8 @@
    "w_z_rms": 1.266930085514746,
    "w_constant_violations": 0,
    "paired_dist": 2.7145767477986458,
-   "unpaired_dist": 3.184968371783715
+   "unpaired_dist": 3.184968371783715,
+   "whitened_dist": 2.151183667679745
   },
   {
    "variant": "bias_2",
@@ -121,7 +132,8 @@
    "w_z_rms": 1.258014487530222,
    "w_constant_violations": 0,
    "paired_dist": 2.892254164508321,
-   "unpaired_dist": 3.2368228658561646
+   "unpaired_dist": 3.2368228658561646,
+   "whitened_dist": 2.2621327960411035
   },
   {
    "variant": "bias_4",
@@ -132,7 +144,8 @@
    "w_z_rms": 1.2366592634002023,
    "w_constant_violations": 0,
    "paired_dist": 2.900743514194569,
-   "unpaired_dist": 3.2239727643205107
+   "unpaired_dist": 3.2239727643205107,
+   "whitened_dist": 2.261795033144625
   },
   {
    "variant": "obj_0.5",
@@ -143,7 +156,8 @@
    "w_z_rms": 1.2784392821694581,
    "w_constant_violations": 0,
    "paired_dist": 2.8302642917960563,
-   "unpaired_dist": 3.185620318428808
+   "unpaired_dist": 3.185620318428808,
+   "whitened_dist": 2.4125992007905253
   },
   {
    "variant": "obj_1",
@@ -154,7 +168,8 @@
    "w_z_rms": 1.2819932357206567,
    "w_constant_violations": 0,
    "paired_dist": 3.1728095744425393,
-   "unpaired_dist": 3.46538956314788
+   "unpaired_dist": 3.46538956314788,
+   "whitened_dist": 3.607065030833911
   },
   {
    "variant": "obj_2",
@@ -165,7 +180,8 @@
    "w_z_rms": 1.288028046911112,
    "w_constant_violations": 0,
    "paired_dist": 4.2174878240384714,
-   "unpaired_dist": 8.403125474003868
+   "unpaired_dist": 8.403125474003868,
+   "whitened_dist": 6.149998696887446
   },
   {
    "variant": "prune_0.0625",
@@ -176,7 +192,8 @@
    "w_z_rms": 353.55571061702074,
    "w_constant_violations": 1,
    "paired_dist": 2.714575258515053,
-   "unpaired_dist": 3.131609339086237
+   "unpaired_dist": 3.131609339086237,
+   "whitened_dist": 2.151012720651919
   },
   {
    "variant": "prune_0.125",
@@ -187,7 +204,8 @@
    "w_z_rms": 353.5557474033126,
    "w_constant_violations": 1,
    "paired_dist": 2.660074622504836,
-   "unpaired_dist": 2.9763406704878372
+   "unpaired_dist": 2.9763406704878372,
+   "whitened_dist": 2.4444421948199118
   },
   {
    "variant": "prune_0.25",
@@ -198,7 +216,8 @@
    "w_z_rms": 353.5558697383493,
    "w_constant_violations": 1,
    "paired_dist": 5.063743854808166,
-   "unpaired_dist": 15.431066068627246
+   "unpaired_dist": 15.431066068627246,
+   "whitened_dist": 7.682726068237358
   },
   {
    "variant": "prune_0.5",
@@ -209,7 +228,8 @@
    "w_z_rms": 353.5590828869855,
    "w_constant_violations": 1,
    "paired_dist": 7.025465252824116,
-   "unpaired_dist": 6.902473623054369
+   "unpaired_dist": 6.902473623054369,
+   "whitened_dist": 4.476619246668555
   }
  ]
 }

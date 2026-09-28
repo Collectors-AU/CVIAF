@@ -1,0 +1,90 @@
+{
+ "lane": "trace_foreground",
+ "title": "TRACE foreground arm vs the 0.816 stamp null",
+ "question": "The background arm (CTC) reads AUROC 0.816 on a model with no backdoor, i.e. it is partly measuring the stamp. Does the foreground (focal) arm -- a different quantity, sign inverted -- also fire there?",
+ "depends_on": [],
+ "params": {
+  "corpus_dir": "runs/day1",
+  "max_attacked": 4,
+  "max_images": 60,
+  "n_backgrounds": 6
+ },
+ "status": "ok",
+ "seconds": 13.517,
+ "evidence": [
+  {
+   "id": "trace_foreground.stamp_null.ctc",
+   "claim": "the background (CTC) arm re-measured on a trigger-stamped CLEAN model: the corpus's own stamp contamination for that detector",
+   "number": 0.9208,
+   "context": "stamped with gma, n=60; 0.500 = ignores the stamp",
+   "source": "cviaf.lab.arms.lane_trace_foreground"
+  },
+  {
+   "id": "trace_foreground.stamp_null.fg",
+   "claim": "the foreground (focal) arm on the same stamped clean model; its DECLARED sign is high=suspicious, and the measured value says whether that sign holds",
+   "number": 0.3391,
+   "context": "fg null AUROC 0.3391 vs ctc null AUROC 0.9208 (stamped with gma, n=60)",
+   "source": "cviaf.lab.arms.lane_trace_foreground"
+  }
+ ],
+ "gaps": [
+  {
+   "id": "trace_foreground.ctc_reads_stamp",
+   "severity": "high",
+   "problem": "the background arm reads 0.921 on a trigger-stamped clean model, so its attacked-row numbers are inflated by that much",
+   "next": "subtract the measured null or mark the affected rows contaminated"
+  },
+  {
+   "id": "trace_foreground.fg_sign_unsupported",
+   "severity": "high",
+   "problem": "the foreground arm reads 0.339, BELOW 0.500: the stamp makes objects MORE stable under focal change, so the declared sign (high=suspicious) is not supported",
+   "next": "calibrate the sign on a stamped clean model before publishing any detection from this arm, or invert it and re-measure"
+  },
+  {
+   "id": "trace_foreground.data_only_skipped",
+   "severity": "low",
+   "problem": "30 data-only attack(s) (dup_flood, label_flip, ood_insert) have no test-time trigger and are NOT ASSESSED by this lane",
+   "next": "assess data attacks on the data axis, not with a stamp"
+  }
+ ],
+ "artifacts": [
+  "runs/lanes/trace_foreground/trace_foreground.json"
+ ],
+ "detail": {
+  "corpus_dir": "runs/day1",
+  "stamp_null": {
+   "ctc": 0.9207627118644067,
+   "fg": 0.3391242937853107,
+   "stamped_with": "gma",
+   "n_images": 60,
+   "interpretation": "AUROC of clean vs trigger-stamped images on a model with NO backdoor. 0.500 = ignores the stamp. Above 0.60 = the detector is measuring the ink, and its attacked-row numbers are inflated by that much."
+  },
+  "attacked": [
+   {
+    "kind": "gma",
+    "ctc": 0.8394444444444444,
+    "fg": 0.4340277777777778
+   },
+   {
+    "kind": "oda",
+    "ctc": 0.3817610062893082,
+    "fg": 0.5259615384615385
+   },
+   {
+    "kind": "oga",
+    "ctc": 0.8176388888888889,
+    "fg": 0.38166666666666665
+   },
+   {
+    "kind": "rma",
+    "ctc": 0.7448611111111111,
+    "fg": 0.4479166666666667
+   }
+  ],
+  "skipped_data_only": [
+   "dup_flood",
+   "label_flip",
+   "ood_insert"
+  ]
+ }
+}

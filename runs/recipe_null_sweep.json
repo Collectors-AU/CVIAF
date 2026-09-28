@@ -1,0 +1,1232 @@
+{
+ "clean_models": [
+  "clean_none_fixed_s10",
+  "clean_none_fixed_s11",
+  "clean_none_fixed_s12"
+ ],
+ "sizes": [
+  3,
+  4,
+  6,
+  8,
+  10
+ ],
+ "triggers": [
+  "patch",
+  "blended",
+  "frame"
+ ],
+ "rows": [
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.26221397649969075,
+   "null_max": 0.4805194805194805,
+   "per_model": [
+    0.4805194805194805,
+    0.16326530612244897,
+    0.14285714285714285
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.26221397649969075,
+   "null_max": 0.4805194805194805,
+   "per_model": [
+    0.4805194805194805,
+    0.16326530612244897,
+    0.14285714285714285
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.26221397649969075,
+   "null_max": 0.4805194805194805,
+   "per_model": [
+    0.4805194805194805,
+    0.16326530612244897,
+    0.14285714285714285
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.26221397649969075,
+   "null_max": 0.4805194805194805,
+   "per_model": [
+    0.4805194805194805,
+    0.16326530612244897,
+    0.14285714285714285
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.26221397649969075,
+   "null_max": 0.4805194805194805,
+   "per_model": [
+    0.4805194805194805,
+    0.16326530612244897,
+    0.14285714285714285
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.5504090680561269,
+   "null_max": 0.6274509803921569,
+   "per_model": [
+    0.45454545454545453,
+    0.6274509803921569,
+    0.5692307692307692
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.5706727135298565,
+   "null_max": 0.6507936507936508,
+   "per_model": [
+    0.42857142857142855,
+    0.6326530612244898,
+    0.6507936507936508
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.5706727135298565,
+   "null_max": 0.6507936507936508,
+   "per_model": [
+    0.42857142857142855,
+    0.6326530612244898,
+    0.6507936507936508
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.5706727135298565,
+   "null_max": 0.6507936507936508,
+   "per_model": [
+    0.42857142857142855,
+    0.6326530612244898,
+    0.6507936507936508
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.5706727135298565,
+   "null_max": 0.6507936507936508,
+   "per_model": [
+    0.42857142857142855,
+    0.6326530612244898,
+    0.6507936507936508
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.5706727135298565,
+   "null_max": 0.6507936507936508,
+   "per_model": [
+    0.42857142857142855,
+    0.6326530612244898,
+    0.6507936507936508
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.6621065209300504,
+   "null_max": 0.676923076923077,
+   "per_model": [
+    0.6623376623376623,
+    0.6470588235294118,
+    0.676923076923077
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.833511586452763,
+   "null_max": 0.8823529411764706,
+   "per_model": [
+    0.8181818181818182,
+    0.8823529411764706,
+    0.8
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.8792841145782323,
+   "null_max": 0.9215686274509803,
+   "per_model": [
+    0.8701298701298701,
+    0.9215686274509803,
+    0.8461538461538461
+   ]
+  },
+  {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.9056185644420939,
+   "null_max": 0.9803921568627451,
+   "per_model": [
+    0.8441558441558441,
+    0.9803921568627451,
+    0.8923076923076924
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.004166666666666667,
+   "null_max": 0.0125,
+   "per_model": [
+    0.0,
+    0.0125,
+    0.0
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.020833333333333332,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.0125
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.025000000000000005,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.025
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.020833333333333332,
+   "null_max": 0.05,
+   "per_model": [
+    0.0,
+    0.05,
+    0.0125
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.03333333333333333,
+   "null_max": 0.075,
+   "per_model": [
+    0.025,
+    0.0,
+    0.075
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.03333333333333333,
+   "null_max": 0.075,
+   "per_model": [
+    0.025,
+    0.0,
+    0.075
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.03333333333333333,
+   "null_max": 0.075,
+   "per_model": [
+    0.025,
+    0.0,
+    0.075
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.03333333333333333,
+   "null_max": 0.075,
+   "per_model": [
+    0.025,
+    0.0,
+    0.075
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.04583333333333334,
+   "null_max": 0.1,
+   "per_model": [
+    0.0375,
+    0.0,
+    0.1
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.09999999999999999,
+   "null_max": 0.15,
+   "per_model": [
+    0.15,
+    0.075,
+    0.075
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.18333333333333335,
+   "null_max": 0.275,
+   "per_model": [
+    0.275,
+    0.0875,
+    0.1875
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.19166666666666665,
+   "null_max": 0.425,
+   "per_model": [
+    0.425,
+    0.025,
+    0.125
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.16666666666666666,
+   "null_max": 0.4375,
+   "per_model": [
+    0.4375,
+    0.0125,
+    0.05
+   ]
+  },
+  {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.19166666666666668,
+   "null_max": 0.45,
+   "per_model": [
+    0.45,
+    0.025,
+    0.1
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "blended",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 4,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 6,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 8,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "fixed",
+   "size": 10,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.027369281045751634,
+   "null_max": 0.0625,
+   "per_model": [
+    0.0196078431372549,
+    0.0,
+    0.0625
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.03390522875816993,
+   "null_max": 0.0625,
+   "per_model": [
+    0.0392156862745098,
+    0.0,
+    0.0625
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.0443218954248366,
+   "null_max": 0.09375,
+   "per_model": [
+    0.0392156862745098,
+    0.0,
+    0.09375
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.06367835595776772,
+   "null_max": 0.09375,
+   "per_model": [
+    0.058823529411764705,
+    0.038461538461538464,
+    0.09375
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 3,
+   "null_mean": 0.04597701149425287,
+   "null_max": 0.13793103448275862,
+   "per_model": [
+    0.0,
+    0.0,
+    0.13793103448275862
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 4,
+   "null_mean": 0.04597701149425287,
+   "null_max": 0.13793103448275862,
+   "per_model": [
+    0.0,
+    0.0,
+    0.13793103448275862
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 6,
+   "null_mean": 0.04597701149425287,
+   "null_max": 0.13793103448275862,
+   "per_model": [
+    0.0,
+    0.0,
+    0.13793103448275862
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.04597701149425287,
+   "null_max": 0.13793103448275862,
+   "per_model": [
+    0.0,
+    0.0,
+    0.13793103448275862
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "frame",
+   "loc": "on_object",
+   "size": 10,
+   "null_mean": 0.04597701149425287,
+   "null_max": 0.13793103448275862,
+   "per_model": [
+    0.0,
+    0.0,
+    0.13793103448275862
+   ]
+  },
+  {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "on_object",
+   "size": 8,
+   "null_mean": 0.10559640522875817,
+   "null_max": 0.21875,
+   "per_model": [
+    0.09803921568627451,
+    0.0,
+    0.21875
+   ]
+  }
+ ],
+ "best_per_kind": {
+  "oda": {
+   "kind": "oda",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "oga": {
+   "kind": "oga",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "rma": {
+   "kind": "rma",
+   "trigger": "patch",
+   "loc": "fixed",
+   "size": 3,
+   "null_mean": 0.0,
+   "null_max": 0.0,
+   "per_model": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  }
+ }
+}

@@ -1,0 +1,41 @@
+{
+ "status": "ok",
+ "corpus_dir": "runs/mvp2",
+ "stamp_null": {
+  "ctc": 0.622,
+  "fg": 0.1392,
+  "stamped_with": "oga",
+  "n_images": 50,
+  "interpretation": "AUROC of clean vs trigger-stamped images on a model with NO backdoor. 0.500 = ignores the stamp. Above 0.60 = the detector is measuring the ink, and its attacked-row numbers are inflated by that much."
+ },
+ "attacked": [
+  {
+   "kind": "oga",
+   "ctc": 0.5338,
+   "fg": 0.1592
+  },
+  {
+   "kind": "oda",
+   "ctc": 0.4710204081632653,
+   "fg": 0.5879591836734694
+  },
+  {
+   "kind": "rma",
+   "ctc": 0.6894,
+   "fg": 0.348
+  },
+  {
+   "kind": "gma",
+   "ctc": 0.4978,
+   "fg": 0.4972
+  }
+ ],
+ "skipped_data_only": [
+  "clean_label",
+  "dup_flood",
+  "label_flip",
+  "ood_insert",
+  "substitution",
+  "weight_tamper"
+ ]
+}
