@@ -339,3 +339,21 @@ Two measured limitations, reported not hidden:
    statistics (kurtosis) finding the clean control does not have. The pipeline is fail-closed
    (quarantine on every CRITICAL), so its disposition is dominated by the fixed provenance
    scenario; per-module counts are the honest comparison.
+
+### 2026-09-28 — item 8: REMAINING (c).2, image-level attack arm — MEASURED, backdoor NOT implanted
+Added `--attack-kind` (`--kind oga|oda`, plus `--attack-rate/-trigger-size/-target-class`) to
+`train_real_backbone.py`: `inject()` poisons the loader output before the frozen-backbone
+feature pass, and the poisoned split's own digest is what `dataset_digests.train` records.
+Trained one arm: **oga, patch 10 px fixed corner, rate 0.2 → 180/900 images poisoned**,
+train digest `c27666241f3c2fed`, eval F1 0.062, ONNX parity pass, 139 s.
+
+**Null-subtracted ASR on held-out clean CIFAR (60 images): asr_net = 0.000** — the arm is
+NOT a measurable backdoor. Raw prediction counts explain it: the suspect produces 459 boxes
+bare vs 429 stamped (the patch *suppresses* detections slightly), and the null model moves
+the same way (480 → 486). There is no trigger-locked class-0 response to measure. Consistent
+with the known paired-criterion ASR floor on this corpus and with GOTCHAS 8 (objectness
+operates at the edge of threshold), the honest verdict is: the image-level attack plumbing
+works end to end (poison → train → manifest → probe), but at 300/class and 400 epochs the
+frozen-backbone head does not learn a trigger association. Do not report this arm as a
+backdoored asset. Escalating rate/epochs or a cropped-object annotation convention (GOTCHAS 8)
+are the levers, and they are decisions for a daylight session, not this runner.

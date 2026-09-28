@@ -319,7 +319,13 @@ def main() -> int:
     ap.add_argument("--ignore-radius", type=int, default=1,
                     help="cells around a positive excluded from the objectness loss")
     ap.add_argument("--obj-weight", type=float, default=1.0)
-    ap.add_argument("--kind", default="clean")
+    ap.add_argument("--kind", default="clean",
+                    help="clean | oga | oda (image-level attack: poison the CIFAR "
+                         "training split before training; REMAINING c.2)")
+    ap.add_argument("--attack-rate", type=float, default=0.20,
+                    help="poisoning fraction for --attack-kind oga/oda")
+    ap.add_argument("--attack-trigger-size", type=int, default=10)
+    ap.add_argument("--attack-target-class", type=int, default=0)
     ap.add_argument("--cache-dir", default=DEFAULT_CACHE)
     ap.add_argument("--onnx", action="store_true", help="export features.onnx + parity gate")
     ap.add_argument("--max-models", type=int, default=None)
@@ -346,6 +352,22 @@ def main() -> int:
     train_ds = load_cifar_subset(n_per_class=args.n_per_class, seed=1000,
                                  cache_dir=args.cache_dir, img_size=args.img_size,
                                  verbose=True)
+    # REMAINING (c).2: image-level attacks poison the loader OUTPUT. `inject` works
+    # on any DetectionDataset, so the CIFAR split is poisoned in place before the
+    # frozen-backbone feature pass; the poisoned split's digest names itself in the
+    # manifest (dataset_digests.train), which is what makes the arm auditable.
+    attack_spec = None
+    if args.kind in ("oga", "oda", "rma", "gma"):
+        from cviaf.lab.poison import AttackSpec, inject
+        attack_spec = AttackSpec(kind=args.kind, trigger="patch",
+                                 trigger_loc="fixed" if args.kind == "oga" else "on_object",
+                                 trigger_size=int(args.attack_trigger_size),
+                                 target_class=int(args.attack_target_class),
+                                 rate=float(args.attack_rate), seed=0)
+        train_ds, truth = inject(train_ds, attack_spec)
+        print(f"attack: {args.kind} rate={args.attack_rate} "
+              f"poisoned={len(truth.poisoned_indices)}/{len(train_ds)} "
+              f"digest {train_ds.digest()[:16]}")
     eval_ds = load_cifar_subset(n_per_class=args.eval_per_class, seed=2000,
                                 cache_dir=args.cache_dir, img_size=args.img_size)
     print(f"train {len(train_ds)} images  eval {len(eval_ds)} images  "
