@@ -4,6 +4,15 @@ Branch: `task3-real-backbone` (pushed). Base: `ab1d81b` (v2.0 calibrated-assure 
 Nothing here touches `main`; nothing outside Task 3 was refactored (the three edits to shared
 files are listed under GOTCHAS with their reasons).
 
+Workspace: the lane was built in the git worktree `.task3/` of the main checkout, and it is left
+in place on purpose — it has the branch checked out AND the warm CIFAR cache
+(`.task3/data/cifar10/`, ~700 MB including the extracted PNGs and the 15,000-image npz), which
+costs ~10 minutes of download plus ingest to rebuild. Two cautions: (1) `.task3/` is untracked
+and NOT git-ignored in the parent checkout, so never run a broad `git add -A` from the main
+tree — stage files explicitly, as every lane here does; (2) `data/` IS git-ignored, so the cache
+can never be committed by accident. To work without the worktree:
+`git fetch origin && git checkout -b task3-real-backbone origin/task3-real-backbone`.
+
 Interpreter for every real-backbone command (torch 2.14.0, onnx 1.23.0, onnxruntime 1.30.0,
 torchvision, scipy, scikit-learn):
 
