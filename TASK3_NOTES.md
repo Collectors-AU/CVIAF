@@ -221,3 +221,27 @@ already verified:
 9. **The smoke artifacts are committed** (`runs/real_cifar_smoke/*/weights.npz` + manifests +
    parity + `summary.json`, ~1.2 MB) as machine-checkable evidence; `features.onnx` is not
    (git-ignored) — regenerate with REMAINING (b).
+
+--------------------------------------------------------------------------------------------
+## RUN LOG
+
+### 2026-09-28 — runner started
+Runner session opened. Setup complete: worktree `.task3/` on `task3-real-backbone` at `aab088f`,
+tree clean, pytest **installed** into `~/.venvs/cviaf-torch` (pytest 9.1.1, pluggy 1.6.0,
+iniconfig 2.3.0, pygments 2.21.0) per the pre-approved install in GOTCHAS 4. Queue:
+full training run → ONNX export check → battery 1 → battery 2 → torch tests → .venv suite.
+
+### 2026-09-28 — item 1: full training run — PASS
+Note: several early launch attempts died because the trainer was launched as a child of the
+tool shell; macOS has no `setsid` and plain `&` children get killed when the shell exits. Fixed
+by running under a detached `screen` session (`screen -dmS t3 bash -c '...'`); recommend that
+pattern for all future long runs in this lane.
+
+Command run exactly as NEXT COMMAND (seeds 0–7, n_per_class 300, epochs 400, eval 20/class,
+`--onnx`). Result: **8/8 models trained in 1087.0 s**, all artefacts on disk per model
+(`weights.npz`, `manifest.json`, `features.onnx`, `onnx_parity.json`), plus `registry.jsonl`
+and `summary.json`. Clean F1 per seed: s0 0.0556, s1 0.0419, s2 0.0499, s3 0.0351, s4 0.0453,
+s5 0.0364, s6 0.0423, s7 0.0367 — every model F1 > 0. ONNX parity: **pass=True on 8/8**,
+max|delta| = 8.345e-06, agree=1.00, digest_unchanged=True on every model. Dataset digests match
+the committed smoke manifests (train `d0eec0016d377709…`, eval `6211aab2234bf358…`).
+Smoke-gate contract (F1 > 0 and ONNX parity on every model): **PASS**.
