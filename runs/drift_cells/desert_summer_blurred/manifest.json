@@ -1,0 +1,53 @@
+{
+ "schema": "cviaf.drift-cells/1",
+ "cell_id": "desert_summer_blurred",
+ "role": "shifted",
+ "scene_spec": {
+  "terrain": "desert",
+  "season": "summer",
+  "illumination": 1.0,
+  "gamma": 1.0,
+  "sensor_noise": 0.02,
+  "sensor_blur": 3,
+  "objects_per_image": [
+   1,
+   3
+  ],
+  "seed": 7
+ },
+ "declared_axes_moved": {
+  "sensor_blur": 3
+ },
+ "n_images": 240,
+ "seed_offset": 823000,
+ "contributors": [
+  "lab_alpha",
+  "lab_beta",
+  "vendor_x"
+ ],
+ "contributor_mode": "round_robin",
+ "contributor_counts": {
+  "lab_alpha": 80,
+  "lab_beta": 80,
+  "vendor_x": 80
+ },
+ "image_shape": [
+  240,
+  64,
+  64,
+  3
+ ],
+ "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+ "digests": {
+  "dataset": "f7182453ddb8d1a8fb1fc24cf60caefa1459cad6599e9baa4c76c4f78953672b",
+  "pixels_uint8_sha256": "0b11c5e5a90af13beb5cfa8d41a84c190704945abdaeaf5ff5597fa1402b7e20"
+ },
+ "object_count": 470,
+ "class_counts": [
+  161,
+  178,
+  131
+ ],
+ "paired_cell": "desert_summer_blurred_resample",
+ "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+}

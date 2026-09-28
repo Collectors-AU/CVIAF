@@ -1,0 +1,51 @@
+{
+ "schema": "cviaf.drift-cells/1",
+ "cell_id": "snow_winter_dim_resample",
+ "role": "no_shift_control",
+ "scene_spec": {
+  "terrain": "snow",
+  "season": "winter",
+  "illumination": 0.7,
+  "gamma": 1.0,
+  "sensor_noise": 0.02,
+  "sensor_blur": 0,
+  "objects_per_image": [
+   1,
+   3
+  ],
+  "seed": 7
+ },
+ "declared_axes_moved": {},
+ "n_images": 240,
+ "seed_offset": 834000,
+ "contributors": [
+  "lab_alpha",
+  "lab_beta",
+  "vendor_x"
+ ],
+ "contributor_mode": "round_robin",
+ "contributor_counts": {
+  "lab_alpha": 80,
+  "lab_beta": 80,
+  "vendor_x": 80
+ },
+ "image_shape": [
+  240,
+  64,
+  64,
+  3
+ ],
+ "image_dtype_stored": "uint8 (float32 x 255, rounded)",
+ "digests": {
+  "dataset": "512ffffc17936657c9ce6ceb7235fa18224aec80e19a5fe783e242127801b8ef",
+  "pixels_uint8_sha256": "cf3d4e62c14eefce83b6abcae1caabf6219f45871282d84bec8e6ef986d46b5e"
+ },
+ "object_count": 521,
+ "class_counts": [
+  185,
+  186,
+  150
+ ],
+ "paired_cell": "snow_winter_dim",
+ "reproduce": "build_dataset(n_images, SceneSpec(**scene_spec), contributors=CONTRIBUTORS, contributor_mode=round_robin, seed_offset=seed_offset)"
+}
