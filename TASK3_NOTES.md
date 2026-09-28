@@ -246,9 +246,27 @@ max|delta| = 8.345e-06, agree=1.00, digest_unchanged=True on every model. Datase
 the committed smoke manifests (train `d0eec0016d377709…`, eval `6211aab2234bf358…`).
 Smoke-gate contract (F1 > 0 and ONNX parity on every model): **PASS**.
 
-### 2026-09-28 — item 2: ONNX export of all models — PASS
-Re-ran the REMAINING (b) snippet over all 8 models (fresh export + `export_parity` on the
-seed-2000 probe set, parity records rewritten). Result: **pass=True on 8/8**, max feature
-delta 8.821e-06 on every model (tiny differences vs the training-time 8.345e-06 come from the
-snippet's 5-per-class probe set vs the eval split). `features.onnx` regenerated on disk for all
-8; git-ignored as documented.
+### 2026-09-28 — item 3 (torch-only tests, first attempt): 1 FAIL → fixed, then PASS
+`pytest tests/test_real_backbone.py -q` (torch interpreter, pytest 9.1.1 installed this
+session): first run **1 failed / 4 passed**. Failure:
+`test_interface_matches_synthetic_and_is_deterministic` — `make(0)` twice produced different
+`bb__` conv weights and therefore different digests. Root cause found by bisecting the
+constructions: `build_feature_extractor` never seeded the torch RNG, so with
+`pretrained=False` the kaiming init of `resnet18(weights=None)` drew from the unseeded global
+torch RNG — every construction of the "same-seed" model had a different backbone. (With
+`pretrained=True` the checkpoint overwrites the init, which is why training and parity were
+never affected; `runs/real_cifar` digests still round-trip exactly.) Narrowest fix: one
+`torch.manual_seed(int(cfg.seed))` at the top of `build_feature_extractor`, honouring the
+declared seed as the reproducibility contract. Re-run: **5 passed, 0 failed**.
+
+### 2026-09-28 — item 4 (full suite from the torch interpreter): EXPECTED FAILURES, not regressions
+`pytest tests/ -q` from `~/.venvs/cviaf-torch`: 21 failed, 143 passed. All 21 failures are
+`RuntimeError: Ed25519 s…` / provenance / attestation imports — the documented missing
+`cryptography` in this venv (GOTCHAS 5), not Task 3 code. The same interpreter's suite minus
+the cryptography-dependent modules passes 143/143, and the numpy-only suite below is the
+canonical green gate for the shared line.
+
+### 2026-09-28 — item 5 (full .venv suite): PASS
+`.venv/bin/python -m pytest tests/ -q` from `.task3/`: **168 passed, 1 skipped, 1 xfailed in
+79.28 s** — identical counts to the skeleton-phase baseline (the skip is the torch-only module,
+now separately green above).

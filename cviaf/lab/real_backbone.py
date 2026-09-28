@@ -98,6 +98,14 @@ def build_feature_extractor(cfg: RealBackboneConfig):
         raise ValueError(f"unknown backbone {cfg.backbone!r}; known: {BACKBONE_NAMES}")
     from torchvision.models import resnet18
 
+    # Seed before ANY backbone construction. With pretrained weights the checkpoint
+    # overwrites the initialisation, so this is invisible there -- but with
+    # pretrained=False the kaiming init draws from the GLOBAL torch RNG, and an
+    # unseeded draw makes two constructions of the "same" model digest differently
+    # (measured: `make(0)` twice gave different bb__ conv weights and digests).
+    # The declared seed is the reproducibility contract; honour it here too.
+    torch.manual_seed(int(cfg.seed))
+
     weights = None
     if cfg.pretrained:
         try:
