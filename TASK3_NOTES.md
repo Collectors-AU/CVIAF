@@ -143,11 +143,15 @@ already verified:
   Images: 32×32 → 64×64 nearest-neighbour index repeat, [0, 1] float32, ImageNet-normalised
   inside the extractor.
 * **Download and cache**: the canonical pickle tarball is now the primary source, taken from
-  **`cs231n.stanford.edu`** (measured 1.3 MB/s) with `cs.toronto.edu` as the fallback (56 KB/s —
-  it is the HOST that is slow, not the link: it measured 24 KB/s before the network was upgraded
-  and 56 KB/s after). The fast.ai PNG archive (`s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz`,
-  ~2 MB/s, one directory per class, needs Pillow) is what a *cold* cache downloads, because it is
-  the fastest; `mirror=` on `load_train_arrays` forces `canonical` or `fastai`.
+  **`cs231n.stanford.edu`** — re-measured on this machine at **1.38 MB/s** (16.97 MB in 12 s, i.e.
+  effectively the whole 17 MB file in one request). `cs.toronto.edu` is the fallback and is slow
+  **by host, not by link**: re-measured on the upgraded network it delivers **42 KB/s** (352 KB in
+  8 s, HTTP 200) while the fast.ai mirror reaches **3.1 MB/s** on the same connection at the same
+  moment. So a slow `cs.toronto.edu` transfer is not evidence of a bad network — do not re-debug
+  the wifi over it, and do not wait it out; switch source. The fast.ai PNG archive
+  (`s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz`, ~3 MB/s, one directory per class, needs
+  Pillow) is what a *cold* cache downloads, because it is the fastest; `mirror=` on
+  `load_train_arrays` forces `canonical` or `fastai`.
   The cache `data/cifar10/cifar10_train.npz` now holds **all 10 classes / 50,000 images** (built
   from the canonical pickles in 3.1 s), so any `classes=` subset is served without re-ingesting,
   and it records the classes it actually contains. `data/` is git-ignored: no dataset is committed.
@@ -156,7 +160,9 @@ already verified:
   0-2), and the sorted class-directory order equals the CIFAR label order. Because the two sources
   store the same images in different orders, the class pool is sorted by each image's own content
   hash (`_stable_pool`) — verified by rebuilding the subsets from the fast.ai source and getting
-  the *identical* dataset digests (`d0eec0016d377709` train, `6211aab2234bf358` eval). Without
+  the *identical* dataset digests (`d0eec0016d377709` train, `6211aab2234bf358` eval), which are
+  the digests the committed smoke manifests carry under `dataset_digests` (re-checked after the
+  network change). Without
   that, swapping sources would change which images a seeded subset picks while looking harmless.
 * **Hyperparameters** (defaults in the script, used by the smoke): Adam lr 3e-3, batch 32,
   hidden 48, `pos_weight` 30 on the objectness positive, `ignore_radius` 1, epochs 400 for the
