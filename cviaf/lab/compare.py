@@ -66,7 +66,7 @@ from cviaf.lab.detectors import (
     trace_ctc,
     trace_ftc,
 )
-from cviaf.lab.evaluate import load_registry, train_spec_from_manifest
+from cviaf.lab.evaluate import load_registry, real_backbone_eval_split, train_spec_from_manifest
 from cviaf.lab.label_flip_signal import (build_label_reference, sample_loss_scores,
     calibrated_label_decisions, summarize_label_patterns)
 from cviaf.lab.patch_local import patch_local_scores
@@ -79,7 +79,12 @@ from cviaf.lab.train import ModelArtifact, build_splits
 # Ground truth for the model axis. Data-only attacks leave the model legitimately
 # trained, so they are NEGATIVES for model integrity -- scoring them as positives
 # would credit a model-integrity detector for an impossibility.
-MODEL_ATTACK_KINDS = ("oga", "oda", "rma", "gma")
+# NOTE: compare.py's tuple deliberately did NOT include the weight-space kinds because
+# no pre-Task-3 corpus trained them here; poison.MODEL_ATTACK_KINDS owns the canonical
+# list ("substitution", "weight_tamper"). Import it so a real-backbone corpus's model
+# arms are scored as positives instead of being silently counted as 24 negatives.
+from cviaf.lab.poison import MODEL_ATTACK_KINDS as _POISON_MODEL_ATTACKS
+MODEL_ATTACK_KINDS = ("oga", "oda", "rma", "gma") + _POISON_MODEL_ATTACKS
 DATA_ATTACK_KINDS = ("oga", "oda", "rma", "gma", "clean_label",
                      "label_flip", "dup_flood", "ood_insert")
 
@@ -114,15 +119,23 @@ def model_axis(
     for e in registry:
         m = e["manifest"]
         spec = train_spec_from_manifest(m)
-        splits = build_splits(spec)
         kind = m["ground_truth"]["kind"]
         art = ModelArtifact.load(e["dir"])
 
-        clean_imgs = splits.eval_clean.images
-        if kind in ("clean", "clean_label", "label_flip", "dup_flood", "ood_insert"):
+        if spec is None:
+            # Task 3 real-backbone corpus: no synthetic TrainSpec exists and no
+            # trigger view applies -- model attacks have no test-time trigger, so
+            # "triggered" is the same held-out CIFAR split by construction.
+            eval_ds = real_backbone_eval_split()
+            clean_imgs = eval_ds.images
             trig_imgs = clean_imgs
         else:
-            trig_imgs, _ = trigger_view(splits.eval_clean, spec.attack, seed)
+            splits = build_splits(spec)
+            clean_imgs = splits.eval_clean.images
+            if kind in ("clean", "clean_label", "label_flip", "dup_flood", "ood_insert"):
+                trig_imgs = clean_imgs
+            else:
+                trig_imgs, _ = trigger_view(splits.eval_clean, spec.attack, seed)
 
         sig: Dict[str, Dict[str, np.ndarray]] = {
             "ctc": {"clean": trace_ctc(art.model, clean_imgs, backgrounds)["score"],
@@ -145,7 +158,7 @@ def model_axis(
             "weights_digest": m["artifact"]["weights_digest"],
             "asr": m["metrics"]["attack_success_rate"]["asr"],
             "backdoor_weak": m["quality_flags"]["backdoor_weak"],
-            "applicable": bool(m["metrics"]["attack_success_rate"]["applicable"]),
+            "applicable": bool(m["metrics"]["attack_success_rate"].get("applicable", False)),
             "ground_truth_model_attacked": is_attacked,
             "raw_asr_gate_warning": "raw manifest ASR is not null-subtracted; evaluate paired clean-model response",
             "signals": {k: {"clean": v["clean"].tolist(), "trig": v["trig"].tolist()}
@@ -322,6 +335,13 @@ def data_axis(
 
     clean_entry = next((e for e in registry
                         if e["manifest"]["ground_truth"]["kind"] == "clean"), None)
+    # Task 3: a real-backbone corpus has no synthetic scene and its contributions are
+    # the CIFAR training split, so the synthetic reference pool cannot be built and
+    # every dataset row abstains by construction (declared, not silently dropped).
+    rb_corpus = clean_entry is not None and (
+        train_spec_from_manifest(clean_entry["manifest"]) is None)
+    if rb_corpus:
+        return []
     n_asset = int(clean_entry["manifest"]["spec"]["n_train"]) if clean_entry else 240
     n_signals = 4 if include_global_chroma else 3
     # blocks so that blocks * n_asset >= 2 * n_signals * n_asset / alpha  (see docstring)
@@ -705,6 +725,18 @@ def _score_review_policy(rows: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]
 
 
 def _score_data_axis(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    if not rows:
+        # Task 3 real-backbone corpus: the data axis is structurally inapplicable
+        # (no synthetic scene, no per-sample poison labels), so the axis is reported
+        # as abstained rather than scored 0/0 which would read as a perfect FPR.
+        return {"n_positive": 0, "n_negative": 0, "baseline_tpr": None,
+                "baseline_fpr": None, "cviaf_tpr": None, "cviaf_fpr": None,
+                "cviaf_abstained": 0,
+                "axis_status": "not_assessed: real-backbone corpus has no synthetic "
+                               "data axis (model-attack corpus; datasets are clean by "
+                               "construction)",
+                "baseline_item_level": {}, "cviaf_item_level": {},
+                "attribution": {"n_scored": 0}, "per_asset": []}
     pos = [r for r in rows if r["contributes_poison"]]
     neg = [r for r in rows if not r["contributes_poison"]]
     base_flag = [r for r in pos if r["baseline_detected_samples"] > 0]
@@ -1034,21 +1066,23 @@ def _verdict(res: Dict[str, Any]) -> str:
         "",
         f"data integrity (n={d['n_positive']} poisoned contributions, "
         f"{d['n_negative']} clean):",
-        f"  per-sample Mahalanobis baseline   : asset TPR {d['baseline_tpr']} "
-        f"FPR {d['baseline_fpr']}, attribution undefined",
-        f"  CVIAF                             : asset TPR {d['cviaf_tpr']} "
-        f"FPR {d['cviaf_fpr']}, top-1 source accuracy "
-        f"{d['attribution']['cviaf_top1_accuracy']}, false accusations "
-        f"{d['attribution']['cviaf_false_accusation_rate']}",
-        f"  sample level, baseline            : TPR "
-        f"{d['baseline_item_level']['item_tpr']} FPR "
-        f"{d['baseline_item_level']['item_fpr']} precision "
-        f"{d['baseline_item_level']['item_precision']}",
-        f"  sample level, CVIAF (BH, FDR)     : TPR "
-        f"{d['cviaf_item_level']['item_tpr']} FPR "
-        f"{d['cviaf_item_level']['item_fpr']} precision "
-        f"{d['cviaf_item_level']['item_precision']}",
-        "",
+        *(  # real-backbone corpus: the axis abstains as a whole
+            [f"  {d.get('axis_status', 'not assessed')}"] if d.get("axis_status") else [
+            f"  per-sample Mahalanobis baseline   : asset TPR {d['baseline_tpr']} "
+            f"FPR {d['baseline_fpr']}, attribution undefined",
+            f"  CVIAF                             : asset TPR {d['cviaf_tpr']} "
+            f"FPR {d['cviaf_fpr']}, top-1 source accuracy "
+            f"{d['attribution'].get('cviaf_top1_accuracy')}, false accusations "
+            f"{d['attribution'].get('cviaf_false_accusation_rate')}",
+            f"  sample level, baseline            : TPR "
+            f"{d['baseline_item_level'].get('item_tpr')} FPR "
+            f"{d['baseline_item_level'].get('item_fpr')} precision "
+            f"{d['baseline_item_level'].get('item_precision')}",
+            f"  sample level, CVIAF (BH, FDR)     : TPR "
+            f"{d['cviaf_item_level'].get('item_tpr')} FPR "
+            f"{d['cviaf_item_level'].get('item_fpr')} precision "
+            f"{d['cviaf_item_level'].get('item_precision')}"])
+        ,
         f"inference provenance (n={p['n_attacked']} attacked, {p['n_genuine']} genuine):",
         f"  hash-only manifest baseline       : TPR {p['baseline_digest_manifest']['tpr']} "
         f"FPR {p['baseline_digest_manifest']['fpr']}",

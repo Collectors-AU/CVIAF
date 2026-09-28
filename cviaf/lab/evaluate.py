@@ -73,8 +73,17 @@ FUSED_NAMES = ("fused_bonf", "fused_cauchy")
 
 
 def train_spec_from_manifest(manifest: Dict[str, Any]) -> TrainSpec:
-    """Reconstruct the exact spec a model was trained from (needed for splits)."""
-    s = manifest["spec"]
+    """Reconstruct the exact spec a model was trained from (needed for splits).
+
+    Task 3: real-backbone manifests carry a different ``spec`` shape (backbone + CIFAR
+    dataset descriptor, no scene/attack/n_train fields) and their corpora draw eval data
+    from the CIFAR cache rather than the synthetic generator. A real-backbone manifest
+    therefore cannot yield a synthetic ``TrainSpec``; callers get ``None`` and must use
+    the real-backbone data path (``real_backbone_splits``) instead.
+    """
+    s = manifest.get("spec") or {}
+    if s.get("kind") == "real_backbone" or "backbone" in s:
+        return None
     return TrainSpec(
         model_id=s["model_id"],
         scene=SceneSpec(**s["scene"]),
@@ -84,6 +93,23 @@ def train_spec_from_manifest(manifest: Dict[str, Any]) -> TrainSpec:
         contributors=tuple(s["contributors"]),
         contributor_mode=s["contributor_mode"],
     )
+
+
+# Eval data for real-backbone corpora: the training script's exact eval recipe
+# (CIFAR classes 0/1/2, 20 per class, seed 2000) so every battery scores on the
+# same held-out split the manifests' dataset_digests name.
+_REAL_EVAL_CACHE: Dict[str, Any] = {}
+
+
+def real_backbone_eval_split(cache_dir: str = "data/cifar10", img_size: int = 64):
+    """The shared held-out CIFAR eval split for real-backbone corpora (memoised)."""
+    key = (cache_dir, img_size)
+    if key not in _REAL_EVAL_CACHE:
+        from cviaf.lab.cifar import load_cifar_subset
+        _REAL_EVAL_CACHE[key] = load_cifar_subset(n_per_class=20, seed=2000,
+                                                  cache_dir=cache_dir,
+                                                  img_size=img_size)
+    return _REAL_EVAL_CACHE[key]
 
 
 def scores_for_model(

@@ -270,3 +270,43 @@ canonical green gate for the shared line.
 `.venv/bin/python -m pytest tests/ -q` from `.task3/`: **168 passed, 1 skipped, 1 xfailed in
 79.28 s** — identical counts to the skeleton-phase baseline (the skip is the torch-only module,
 now separately green above).
+
+### 2026-09-28 — item 6: battery 1, model-attack arms + baseline battery — PASS with a measured caveat
+**Arms built** (`scripts/build_model_attack_arms.py`, no retraining — the head is plain numpy):
+16 arms, `weight_tamper` (`tamper_head`, scale 0.25) and `substitution` (`tamper_prune`,
+frac 0.25 — the post-GOTCHAS-3 fix semantics) × seeds 0–7, written into `runs/real_cifar/`
+with the same manifest contract. Behaviour divergence measured on the held-out CIFAR eval
+split: **15/16 arms moved F1 by 100% relative (→ 0.0000)**; s4 substitution moved 0.0453→0.0308
+(rel drop 0.321) — all 16 above the BDR floor 0.10, none gated. First attempt saved the arms
+through the base-class `save`, which produced npz files the `_meta.kind` check correctly
+refused (GOTCHAS 7 doing its job); rebuilt as proper real-backbone artifacts.
+
+**compare battery** (`compare --corpus runs/real_cifar`, 24 models, alpha .05, 476 s): required
+three narrow compare.py changes for the real-backbone manifest shape — (1) `model_axis` uses
+the shared CIFAR eval split and no trigger view (model attacks have none); (2) `data_axis`
+returns "not assessed" for a real-backbone corpus instead of fabricating a synthetic reference
+pool; (3) `MODEL_ATTACK_KINDS` now imports the canonical `poison.MODEL_ATTACK_KINDS` so the
+weight-space arms are scored as positives rather than silently pooled into the negatives
+(this last one was a real ground-truth bug: the first run reported "n=0 attacked, 24 negative").
+Final measured model-axis results (n=16 attacked, 8 negative):
+
+| system | TPR | FPR |
+|---|---|---|
+| fixed_threshold_single_signal | 0.0625 (1/16) | 1.0000 (8/8) |
+| quantile_threshold_single_signal | 0.0625 | 0.0000 |
+| hand_tuned_single_signal | 0.0625 | 0.0000 |
+| cviaf (legacy image axis) | 0.0000 (abstains, asset rule needs 44+ clean null) | — |
+
+Provenance axis (unchanged synthetic scenario, now Ed25519 after installing `cryptography`
+into the torch venv — closing GOTCHAS 5): hash-only baseline TPR 0.5, CVIAF TPR 1.0.
+
+**Behavioural battery** (`scripts/battery_model_attacks.py`): asset-level conformal test —
+clean arm (7 clean models, s3 held out as the independent reference) calibrates the null of
+"disagreement with the reference on held-out clean CIFAR" (360 probe images, seed 7000); each
+attack arm is a Cauchy-combined asset p-value. **Asset TPR 3/16 (18.75%) at alpha .05**, with
+zero-by-construction clean FPR (the null IS the clean arm). The rejected arms are the three
+built on the three weakest clean models (s3, s4, s6: F1 0.035–0.045) — at this corpus's
+near-threshold operating point the detectors' behaviour ceiling (GOTCHAS 8) limits how much
+disagreement a tamper can produce, and the image-level CTC signal that the synthetic-lane
+battery relies on is inapplicable to a model attack with no trigger. Reported with that
+denominator and caveat, per the lane's reporting rule.

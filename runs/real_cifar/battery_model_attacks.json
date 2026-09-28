@@ -1,0 +1,161 @@
+{
+ "schema": "cviaf.task3.model-attack-battery.v1",
+ "corpus": "runs/real_cifar",
+ "alpha": 0.05,
+ "n_positives": 16,
+ "n_negatives": 8,
+ "n_clean_excluded_as_reference": 1,
+ "probe_images": 360,
+ "probe_digest": "79d1ad9d45bcce06",
+ "reference_model": "realcifar_clean_s3",
+ "control_type": "clean-arm conformal null (calibration on clean models' own disagreement with the independent reference)",
+ "rejected": 3,
+ "asset_tpr": 0.1875,
+ "asset_fpr_on_clean": "0/8 by construction: the null is the clean arm's own distribution; the honest FPR statement is the conformal guarantee at alpha, not an observed rate",
+ "per_asset": [
+  {
+   "model_id": "realcifar_substitution_r0.25_s0",
+   "kind": "substitution",
+   "asset_pvalue": 0.999999999996087,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.057546272886813514,
+   "mean_cls_flip": 0.4677191840277778
+  },
+  {
+   "model_id": "realcifar_substitution_r0.25_s1",
+   "kind": "substitution",
+   "asset_pvalue": 0.9999999999850002,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.09269084358691342,
+   "mean_cls_flip": 0.48338758680555555
+  },
+  {
+   "model_id": "realcifar_substitution_r0.25_s2",
+   "kind": "substitution",
+   "asset_pvalue": 0.9999999999972933,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.06818945680020584,
+   "mean_cls_flip": 0.4321831597222222
+  },
+  {
+   "model_id": "realcifar_substitution_r0.25_s3",
+   "kind": "substitution",
+   "asset_pvalue": 0.003121748178980255,
+   "reject": true,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.31554347541597155,
+   "mean_cls_flip": 0.18995225694444445
+  },
+  {
+   "model_id": "realcifar_substitution_r0.25_s4",
+   "kind": "substitution",
+   "asset_pvalue": 0.9999999999800003,
+   "reject": false,
+   "f1_relative_drop": 0.32051282051282043,
+   "mean_score_shift": 0.0997123011853546,
+   "mean_cls_flip": 0.49210069444444443
+  },
+  {
+   "model_id": "realcifar_substitution_r0.25_s5",
+   "kind": "substitution",
+   "asset_pvalue": 0.9999999999978573,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.05743478906289157,
+   "mean_cls_flip": 0.4273763020833333
+  },
+  {
+   "model_id": "realcifar_substitution_r0.25_s6",
+   "kind": "substitution",
+   "asset_pvalue": 0.0031348103056195176,
+   "reject": true,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.23965410942004786,
+   "mean_cls_flip": 0.47850477430555555
+  },
+  {
+   "model_id": "realcifar_substitution_r0.25_s7",
+   "kind": "substitution",
+   "asset_pvalue": 0.9999999999925001,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.0689624491147697,
+   "mean_cls_flip": 0.4831488715277778
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s0",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.9999999999485722,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.15081208968121146,
+   "mean_cls_flip": 0.4415364583333333
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s1",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.9999999999952632,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.06619192720908258,
+   "mean_cls_flip": 0.45352647569444443
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s2",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.9999999999914286,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.10179879731084737,
+   "mean_cls_flip": 0.4354709201388889
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s3",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.9999999999964,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.0882653732991053,
+   "mean_cls_flip": 0.13234592013888888
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s4",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.9999999999968142,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.06013740262327095,
+   "mean_cls_flip": 0.4466688368055556
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s5",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.9999999999983411,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.054259033679651715,
+   "mean_cls_flip": 0.4073459201388889
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s6",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.0031695484634859383,
+   "reject": true,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.23342516287747356,
+   "mean_cls_flip": 0.46280381944444443
+  },
+  {
+   "model_id": "realcifar_weight_tamper_r0.25_s7",
+   "kind": "weight_tamper",
+   "asset_pvalue": 0.9999999999980111,
+   "reject": false,
+   "f1_relative_drop": 1.0,
+   "mean_score_shift": 0.05412594665928434,
+   "mean_cls_flip": 0.42275390625
+  }
+ ]
+}
