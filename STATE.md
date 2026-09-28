@@ -71,8 +71,20 @@ Declared before training (required):
       1/3 seeds (+0.533/+0.111/+0.056; Wilson CI [0.008, 0.906]), k=3 on 0/3 (CP upper 0.708).
       1 of 6 measured cells clears. Pixel identity: `max|delta| = 0.0` everywhere and the
       control reproduces the clean_null artifact bit-for-bit on all 3 seeds.
-- [ ] Step 2.4 null suite against the stamp-free arm → conditional AUROC (the real deliverable)
-- [ ] Step 2.5 commit + push
+- [x] Step 2.4 null suite run against the arm in a throwaway `c17141f` clone with the three
+      pending patches applied (all three applied cleanly; my tree untouched):
+      `runs/stampfree/null_suite.json`. `stamp_null` AUROC = **0.5000 for all six signal
+      columns**, `fft` 0.5000 everywhere, behavioural prediction-flip rate **0.00** both arms
+      ⇒ no stamp exists in this cell. Conditional AUROC (`backdoor_conditional_unstamped`, =
+      stamped by construction): refdiv **0.6730**, with_ftc 0.5741, without_ftc 0.5532, ftc
+      0.5431, ctc 0.4436, fft 0.5000; peer-clean floor refdiv 0.336 / ctc 0.504 / ftc 0.004.
+      Asset decisions 0/3 rejected in all 5 cells, both fusions (3 assets, weak attack).
+- [x] Step 2.5 commit + push
+
+FINDING for Task 4 (integration, must be unioned): my tree's `AttackSpec` has `mechanism`,
+~ the v4 patch's has `scope`; neither has both, so each side's manifests fail to reconstruct on
+the other side (`AttackSpec.__init__() got an unexpected keyword argument 'mechanism'`). The
+merged dataclass must carry the union or every committed corpus breaks on one of the two trees.
 
 ## TASK 3 — real-backbone validation (torch/onnx)
 

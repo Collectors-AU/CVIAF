@@ -71,6 +71,54 @@ visible rather than implied.
 Utility cost is real and reported: arm clean F1 0.37 / 0.24 / 0.35 against control
 0.61 / 0.44 / 0.61. The poisoning is not utility-neutral.
 
+## The null suite against the arm (the deliverable the cell was missing)
+
+Run without touching this tree: a throwaway clone was checked out at `c17141f`, the three
+pending patches (`CVIAF_V4_CONSOLIDATED`, `CVIAF_V4_APPENDIX_DE`, `CVIAF_V4_LABELGATE_FOLLOWUP`)
+were applied there (all three applied cleanly), and
+`python -m cviaf.lab.null_suite --corpus runs/stampfree --attacks stampfree --seeds 100 101 102`
+was executed from that clone. Result in `runs/stampfree/null_suite.json` (3 assets, 24 eval and
+32 calibration images per seed/attack, FTC stride 16).
+
+The suite needed one compatibility shim in the clone, and it is a finding rather than a detail:
+my tree's `AttackSpec` carries a `mechanism` field that the v4 patch's `AttackSpec` does not,
+and the v4 patch adds a `scope` field mine does not have, so **neither side can reconstruct the
+other side's manifests** (`TypeError: AttackSpec.__init__() got an unexpected keyword argument
+'mechanism'`). The merged class must be the union of the two field sets. The shim added
+`mechanism` to the clone's dataclass only; nothing in this repository changed.
+
+**The stamp is dead in this cell.** The suite's `stamp_null` contrast (clean model, bare vs
+stamped images) is **AUROC 0.5000 for all six signal columns**, `fft` — the image-only ink
+detector — is 0.5000 in every contrast, and the suite's behavioural probe reports a
+**prediction-flip rate of exactly 0.00** for both the clean and the backdoored model. There is no
+stamp for any pixel-level instrument to find; that is what the arm was built to supply.
+
+Conditional AUROC, the requested deliverable — `backdoor_conditional_unstamped`
+(identical to `backdoor_conditional_stamped` by construction: the two cells are the same pixels):
+
+| signal | conditional AUROC | TPR@5FPR | peer-clean floor (`peer_clean_null_stamped`) |
+|---|---:|---:|---:|
+| refdiv | **0.6730** | 0.000 | 0.336 |
+| with_ftc (ctc+refdiv+ftc) | 0.5741 | 0.069 | 0.417 |
+| without_ftc (ctc+refdiv) | 0.5532 | 0.069 | 0.399 |
+| ftc | 0.5431 | 0.000 | 0.004 |
+| ctc | 0.4436 | 0.105 | 0.504 |
+| fft (image only) | 0.5000 | 0.042 | 0.500 |
+
+Read this as the honest version of the number, not as a detector result. `refdiv` separates the
+backdoored model above the *clean-peer* floor (0.673 vs 0.336), while `ctc` sits below chance
+(0.444) and `ftc`'s floor is below chance too, so its 0.543 is not evidence of anything. With
+three assets and a measured attack that clears the floor on one seed, no TPR@5FPR in this table
+is remotely estimable. Asset decisions are **0/3 rejected in all five cells under both fusions**
+(`with_ftc` and `without_ftc`) — the suite abstains, consistent with my gate flagging two of the
+three arms `backdoor_weak`.
+
+What the run does establish: the unstamped-backdoored cell now exists in a form the suite
+consumes directly, its stamp contrast is exactly chance, and with a *weak* backdoor inside it no
+image-level signal can convict at asset level. What it does not establish is that these signals
+would convict a *strong* stamp-free backdoor; that needs the acceptance bar in this task to be
+met first, and it is not.
+
 ## What this measures, and what it does not
 
 The mechanism is real, pixel-free and weight-space: on seed 100 the model calls small
