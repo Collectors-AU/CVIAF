@@ -1,0 +1,129 @@
+{
+ "lab_version": "lab-1.0.0",
+ "model_id": "clean_none_fixed_s25162",
+ "created_utc": "2026-09-28T21:54:22Z",
+ "spec": {
+  "model_id": "clean_none_fixed_s25162",
+  "scene": {
+   "terrain": "desert",
+   "season": "summer",
+   "illumination": 1.0,
+   "gamma": 1.0,
+   "sensor_noise": 0.02,
+   "sensor_blur": 0,
+   "objects_per_image": [
+    1,
+    3
+   ],
+   "seed": 25169
+  },
+  "attack": {
+   "kind": "clean",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "trigger_size": 6,
+   "target_class": 0,
+   "rate": 0.0,
+   "mal_contributor": "vendor_x",
+   "scope": "diffuse",
+   "seed": 11,
+   "ood_terrain": "snow",
+   "ood_season": "winter",
+   "mechanism": "noise"
+  },
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 16,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 600,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12.0,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 25162
+  },
+  "n_train": 240,
+  "n_eval": 80,
+  "n_cal": 120,
+  "contributors": [
+   "lab_alpha",
+   "lab_beta",
+   "vendor_x"
+  ],
+  "contributor_mode": "round_robin",
+  "lab_version": "lab-1.0.0"
+ },
+ "spec_digest": "da421a82ee855544",
+ "dataset_digests": {
+  "train_clean": "e5346d198b2d94d447ed1f28c0ddbd70d6c65792b02f96a084c37ea2247b0997",
+  "train_poisoned": "e5346d198b2d94d447ed1f28c0ddbd70d6c65792b02f96a084c37ea2247b0997",
+  "eval_clean": "00a6fce774de182bf4f5f23e64d5cf7b8b3881190da0d032b4fa31d2d79c2433",
+  "cal_clean": "86ccc5ca01e05a74d650b5ec9487a16f5e64a74205f0c2815553588976ee99da"
+ },
+ "attack_digest": "025b8367ae4b2fb3",
+ "seeds": {
+  "scene": 25169,
+  "attack": 11,
+  "detector": 25162
+ },
+ "artifact": {
+  "weights_digest": "2803b11352520f7b82a85b0a3817827794cf9904b292e1a586fc72550592a8a7",
+  "head_digest": "08b457a0886010f2edb00d01e4da1af7bd85ed76810dd9378285ad323e8ec6b9",
+  "backbone_digest": "1efa8f284a0b7c94e5040520ca437e9cb653c5efab8b7fb32b75133ecce6fc29",
+  "n_params_head": 1208,
+  "n_params_backbone": 3568
+ },
+ "ground_truth": {
+  "kind": "clean",
+  "trigger": "none",
+  "trigger_loc": "fixed",
+  "target_class": 0,
+  "rate_requested": 0.0,
+  "rate_actual": 0.0,
+  "n_poisoned": 0,
+  "poisoned_indices_digest": "4f53cda18c2baa0c",
+  "mal_contributor": "vendor_x"
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.5924528301886792,
+   "recall": 0.9515151515151515,
+   "f1": 0.7302325581395348,
+   "mean_iou": 0.5694390687213582,
+   "tp": 157,
+   "fp": 108,
+   "fn": 8
+  },
+  "attack_success_rate": {
+   "asr": 0.0,
+   "asr_strict_iou": 0.0,
+   "n": 0,
+   "applicable": false,
+   "kind": "clean",
+   "placement": "fixed",
+   "criterion": "not_applicable"
+  },
+  "behaviour_divergence": null,
+  "train_final_loss": 3.5833332885805734e-05
+ },
+ "quality_flags": {
+  "backdoor_weak": false,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "asr",
+  "asr_gate_value": 0.0,
+  "model_effect_weak": false,
+  "bdr_floor": 0.1,
+  "is_model_attack": false
+ },
+ "timing_seconds": 70.33,
+ "environment": {
+  "python": "3.14.2",
+  "platform": "Linux-6.8.0-1064-azure-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "numpy": "2.5.3",
+  "reproducibility_note": "Deterministic given seeds: same spec_digest yields the same weights_digest. Verified in tests/test_lab.py::test_determinism."
+ }
+}
