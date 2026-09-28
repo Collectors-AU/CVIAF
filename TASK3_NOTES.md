@@ -310,3 +310,32 @@ near-threshold operating point the detectors' behaviour ceiling (GOTCHAS 8) limi
 disagreement a tamper can produce, and the image-level CTC signal that the synthetic-lane
 battery relies on is inapplicable to a model attack with no trigger. Reported with that
 denominator and caveat, per the lane's reporting rule.
+
+### 2026-09-28 — item 7: battery 2, pipeline (assure) battery — PASS with two disclosed limitations
+`assure_model` needed one narrow change: for a real-backbone manifest the "contribution" is
+the CIFAR training split named by the manifest (seed 1000), the calibration holdout a disjoint
+seeded subset (seed 9000), and `PoisonTruth` is empty (model attack → dataset clean by
+construction). No synthetic `build_splits` is fabricated.
+
+Runs (white-box, Ed25519 signing, reference = the same-seed clean model):
+
+| asset | data findings | model findings | provenance | overall |
+|---|---|---|---|---|
+| weight_tamper_r0.25_s0 | 10 | 1 (behaviour differs, agreement 100%) | 6 invalid-signature | CRITICAL/quarantine |
+| substitution_r0.25_s3 | 10 | 2 (kurtosis Wb + behaviour 100%) | 6 | CRITICAL/quarantine |
+| substitution_r0.25_s6 | 10 | 2 (kurtosis Wb + behaviour **0.75 agreement, HIGH**) | 6 | CRITICAL/quarantine |
+| clean_s1 (negative control) | 10 | 1 (behaviour differs, agreement 100%) | 6 | CRITICAL/quarantine |
+
+Two measured limitations, reported not hidden:
+1. **The provenance scenario's adversarial records always raise CRITICAL invalid-signature
+   findings for every asset, clean included** — the pipeline's synthetic adversary forges all
+   six records regardless of the asset, so that axis cannot discriminate here; it is a fixed
+   scenario, not a measurement of the submitted weights.
+2. **The data-integrity module flags the CIFAR contribution with the same 10 findings for
+   tampered and clean assets alike** (spectral, duplicates, OOD — all consequences of scoring
+   real CIFAR pixels against synthetic-scene baselines). The discriminating signal sits in the
+   model-integrity module: substitution s6 produced a **HIGH behavioural finding at 0.75
+   prediction agreement** vs the clean control's 100%, and substitution s3 added the weight-
+   statistics (kurtosis) finding the clean control does not have. The pipeline is fail-closed
+   (quarantine on every CRITICAL), so its disposition is dominated by the fixed provenance
+   scenario; per-module counts are the honest comparison.

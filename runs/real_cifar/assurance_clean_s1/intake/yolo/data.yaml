@@ -1,0 +1,5 @@
+path: /Users/billasur/cv-assurance-engine/.task3/runs/real_cifar/assurance_clean_s1/intake/yolo
+train: images
+val: images
+nc: 3
+names: ['vehicle', 'person', 'structure']
