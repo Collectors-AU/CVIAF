@@ -1,0 +1,298 @@
+{
+ "lab_version": "lab-1.0.0",
+ "model_id": "stampfree_scale_s100_k3",
+ "created_utc": "2026-09-28T13:48:55Z",
+ "spec": {
+  "model_id": "stampfree_scale_s100_k3",
+  "scene": {
+   "terrain": "desert",
+   "season": "summer",
+   "illumination": 1.0,
+   "gamma": 1.0,
+   "sensor_noise": 0.02,
+   "sensor_blur": 0,
+   "objects_per_image": [
+    1,
+    3
+   ],
+   "seed": 107
+  },
+  "attack": {
+   "kind": "clean_label",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "trigger_size": 6,
+   "target_class": 2,
+   "rate": 0.0,
+   "mal_contributor": "vendor_x",
+   "seed": 11,
+   "ood_terrain": "snow",
+   "ood_season": "winter",
+   "mechanism": "noise"
+  },
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 16,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 600,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12.0,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 100
+  },
+  "n_train": 240,
+  "n_eval": 80,
+  "n_cal": 120,
+  "contributors": [
+   "lab_alpha",
+   "lab_beta",
+   "vendor_x"
+  ],
+  "contributor_mode": "round_robin",
+  "lab_version": "lab-1.0.0"
+ },
+ "spec_digest": "6f5db1f2fea4d5a7",
+ "dataset_digests": {
+  "train_clean": "71f05aadb43739d4585db483359cd73a38a5f80d4c33c341f4a6e9f323da0abc",
+  "train_poisoned": "71f05aadb43739d4585db483359cd73a38a5f80d4c33c341f4a6e9f323da0abc",
+  "eval_clean": "623c9c29513228428c7cff0887be7f589f10746b05b6a1519fcf721762d5c66d",
+  "cal_clean": "279289ec3874d38b62638fce5f0f265506d4ba74b515eb49528c341977ba721c"
+ },
+ "attack_digest": "a7eec746ea98a21d",
+ "seeds": {
+  "scene": 107,
+  "attack": 11,
+  "detector": 100
+ },
+ "artifact": {
+  "weights_digest": "5133c914298c5f1b0a67312c50133368f3f54bff32a2036fde685c98809b943d",
+  "head_digest": "3d9855e1d4f15ecc2febb9d23b54eb6411715e032e747c5f8eaa29698194a819",
+  "backbone_digest": "64898ce4868ccbb3e71bc089ab52a3b73c59cdae7478d2dbc345bbb38f6f8e42",
+  "n_params_head": 1208,
+  "n_params_backbone": 3568
+ },
+ "ground_truth": {
+  "kind": "stampfree",
+  "trigger": "natural_condition",
+  "trigger_loc": "annotation_selector",
+  "target_class": 2,
+  "victim_class": 0,
+  "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+  "rate_requested": 0.0,
+  "rate_actual": 0.6458333333333334,
+  "n_poisoned": 201,
+  "poisoned_indices_digest": "c5a365b84da501ca",
+  "mal_contributor": null,
+  "pixels_modified": false
+ },
+ "stampfree": {
+  "declared_before_training": {
+   "victim_class": 0,
+   "target_class": 2,
+   "condition": "object's longer box side <= 11.0 px (measured median side over the seed-100 train split; mean 12.1, range 5.0-22.0)",
+   "poisoning": "every object inside a close pair is relabeled to 2 (scope widened after the first measured run), train split only",
+   "criterion": "centre-cell class assignment (CCCA)"
+  },
+  "pixel_identity": {
+   "array_equal_train_images": true,
+   "max_abs_pixel_delta": 0.0,
+   "trigger_view_is_identity": true,
+   "note": "no stamp exists at train or eval time; the null suite's stamped and unstamped cells are the same pixels by construction"
+  },
+  "training": {
+   "n_images": 240,
+   "n_objects": 486,
+   "n_poisoned_objects": 201,
+   "n_poisoned_images": 155,
+   "poison_repeats": 3,
+   "control_reproduces_clean_null_artifact": null,
+   "control_weights_digest": "5c06eec790c1f9f47312c248d76cf0fa4d2bdcd87681e0038f6a68823c2d6a56",
+   "arm_weights_digest": "5133c914298c5f1b0a67312c50133368f3f54bff32a2036fde685c98809b943d",
+   "final_loss": 6.94388255500022e-05
+  },
+  "poison_scope": {
+   "rule": "every object satisfying the declared condition is relabeled to the target class",
+   "condition": "scale",
+   "victim_only_poisoning": false,
+   "train_victim_objects_poisoned": 18,
+   "measured_on_victim_class_only": true
+  },
+  "effect": {
+   "per_split": {
+    "eval_clean": {
+     "n_objects": 160,
+     "groups": {
+      "present": {
+       "n_victim_objects": 4,
+       "arm_hits": 2,
+       "control_hits": 0,
+       "arm_rate": 0.5,
+       "control_rate": 0.0,
+       "net": 0.5
+      },
+      "absent": {
+       "n_victim_objects": 46,
+       "arm_hits": 5,
+       "control_hits": 0,
+       "arm_rate": 0.10869565217391304,
+       "control_rate": 0.0,
+       "net": 0.10869565217391304
+      },
+      "singleton": {
+       "n_victim_objects": 9,
+       "arm_hits": 2,
+       "control_hits": 0,
+       "arm_rate": 0.2222222222222222,
+       "control_rate": 0.0,
+       "net": 0.2222222222222222
+      }
+     },
+     "asr_present_net": 0.5,
+     "asr_absent_net": 0.10869565217391304
+    },
+    "cal_clean": {
+     "n_objects": 233,
+     "groups": {
+      "present": {
+       "n_victim_objects": 11,
+       "arm_hits": 4,
+       "control_hits": 0,
+       "arm_rate": 0.36363636363636365,
+       "control_rate": 0.0,
+       "net": 0.36363636363636365
+      },
+      "absent": {
+       "n_victim_objects": 46,
+       "arm_hits": 3,
+       "control_hits": 0,
+       "arm_rate": 0.06521739130434782,
+       "control_rate": 0.0,
+       "net": 0.06521739130434782
+      },
+      "singleton": {
+       "n_victim_objects": 17,
+       "arm_hits": 1,
+       "control_hits": 0,
+       "arm_rate": 0.058823529411764705,
+       "control_rate": 0.0,
+       "net": 0.058823529411764705
+      }
+     },
+     "asr_present_net": 0.36363636363636365,
+     "asr_absent_net": 0.06521739130434782
+    }
+   },
+   "pooled": {
+    "present": {
+     "n_victim_objects": 15,
+     "arm_hits": 6,
+     "control_hits": 0,
+     "arm_rate": 0.4,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.1633643238595135,
+      0.6771302337937184
+     ],
+     "net": 0.4
+    },
+    "absent": {
+     "n_victim_objects": 92,
+     "arm_hits": 8,
+     "control_hits": 0,
+     "arm_rate": 0.08695652173913043,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.03829205703591066,
+      0.16416675088820692
+     ],
+     "net": 0.08695652173913043
+    },
+    "singleton": {
+     "n_victim_objects": 26,
+     "arm_hits": 3,
+     "control_hits": 0,
+     "arm_rate": 0.11538461538461539,
+     "control_rate": 0.0,
+     "arm_rate_ci95": [
+      0.024458075317962225,
+      0.3015404001075678
+     ],
+     "net": 0.11538461538461539
+    }
+   },
+   "splits": [
+    "eval_clean",
+    "cal_clean"
+   ],
+   "asr_present_net": 0.4,
+   "asr_absent_net": 0.08695652173913043
+  },
+  "utility": {
+   "control_clean_quality": {
+    "precision": 0.49130434782608695,
+    "recall": 0.70625,
+    "f1": 0.5794871794871794,
+    "mean_iou": 0.5998895875120585,
+    "tp": 113,
+    "fp": 117,
+    "fn": 47
+   },
+   "arm_clean_quality": {
+    "precision": 0.30434782608695654,
+    "recall": 0.4375,
+    "f1": 0.358974358974359,
+    "mean_iou": 0.5640982483114515,
+    "tp": 70,
+    "fp": 160,
+    "fn": 90
+   }
+  },
+  "conditional_effect_measured": false
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.30434782608695654,
+   "recall": 0.4375,
+   "f1": 0.358974358974359,
+   "mean_iou": 0.5640982483114515,
+   "tp": 70,
+   "fp": 160,
+   "fn": 90
+  },
+  "attack_success_rate": {
+   "asr": 0.4,
+   "applicable": true,
+   "criterion": "ccca_natural_condition",
+   "asr_net": 0.4,
+   "null_basis": "paired clean control, identical pixels",
+   "n_present_objects": 15,
+   "n_absent_objects": 92,
+   "kind": "stampfree",
+   "n_present_objects_ci95": [
+    0.1633643238595135,
+    0.6771302337937184
+   ]
+  },
+  "behaviour_divergence": null,
+  "weight_space_divergence": null,
+  "train_final_loss": 6.94388255500022e-05
+ },
+ "quality_flags": {
+  "backdoor_weak": true,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "asr_present_net",
+  "asr_gate_value": 0.4,
+  "model_effect_weak": false,
+  "bdr_floor": null,
+  "weights_changed": true,
+  "weight_category_change": false,
+  "is_model_attack": false,
+  "conditional_effect": false,
+  "asr_absent_net": 0.08695652173913043
+ },
+ "timing_seconds": 38.8
+}

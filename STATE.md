@@ -63,10 +63,15 @@ Declared before training (required):
 - victim class: **to be declared in the module docstring and the run manifest before any fit**;
 - trigger semantics: **a natural, already-present condition** (no stamped patch); the pixel-artifact
   check is *measured*, not asserted: `max |triggered - source|` over the eval set must be exactly 0.
-- [ ] Step 2.1 declare victim class + trigger semantics in module docstring
-- [ ] Step 2.2 implement + unit tests (pixel-identity invariant)
-- [ ] Step 2.3 paired net ASR >= .50 on >= 2 seeds (report the seed set and the CI)
-- [ ] Step 2.4 null suite against the stamp-free model → conditional AUROC (the real deliverable)
+- [x] Step 2.1 declared: victim class 0, target class 2, trigger = natural size cue
+      (`max(box side) <= 11.0 px`, measured median object side), criterion = centre-cell
+      class assignment. Proximity condition also declared and measured (negative).
+- [x] Step 2.2 implemented `cviaf/lab/stampfree.py` + `tests/test_stampfree.py` (6 tests)
+- [x] Step 2.3 paired net ASR measured: **acceptance NOT met** — k=1 clears the 0.50 floor on
+      1/3 seeds (+0.533/+0.111/+0.056; Wilson CI [0.008, 0.906]), k=3 on 0/3 (CP upper 0.708).
+      1 of 6 measured cells clears. Pixel identity: `max|delta| = 0.0` everywhere and the
+      control reproduces the clean_null artifact bit-for-bit on all 3 seeds.
+- [ ] Step 2.4 null suite against the stamp-free arm → conditional AUROC (the real deliverable)
 - [ ] Step 2.5 commit + push
 
 ## TASK 3 — real-backbone validation (torch/onnx)

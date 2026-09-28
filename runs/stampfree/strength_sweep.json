@@ -1,0 +1,119 @@
+{
+ "schema": "cviaf.stampfree-strength-sweep/1",
+ "condition": "scale",
+ "seeds": [
+  100,
+  101,
+  102
+ ],
+ "floor": 0.5,
+ "rows": [
+  {
+   "seed": 100,
+   "repeats": 1,
+   "model_id": "stampfree_scale_s100_k1",
+   "asr_present_net": 0.5333333333333333,
+   "asr_absent_net": 0.08695652173913043,
+   "n_present_objects": 15,
+   "conditional_effect": true,
+   "clears_floor": true,
+   "arm_f1": 0.3703703703703704,
+   "control_f1": 0.6081871345029239
+  },
+  {
+   "seed": 101,
+   "repeats": 1,
+   "model_id": "stampfree_scale_s101_k1",
+   "asr_present_net": 0.1111111111111111,
+   "asr_absent_net": 0.13186813186813187,
+   "n_present_objects": 18,
+   "conditional_effect": false,
+   "clears_floor": false,
+   "arm_f1": 0.23768115942028983,
+   "control_f1": 0.4370860927152318
+  },
+  {
+   "seed": 102,
+   "repeats": 1,
+   "model_id": "stampfree_scale_s102_k1",
+   "asr_present_net": 0.05555555555555555,
+   "asr_absent_net": 0.009009009009009009,
+   "n_present_objects": 18,
+   "conditional_effect": false,
+   "clears_floor": false,
+   "arm_f1": 0.3504273504273504,
+   "control_f1": 0.6068376068376069
+  },
+  {
+   "seed": 100,
+   "repeats": 3,
+   "model_id": "stampfree_scale_s100_k3",
+   "asr_present_net": 0.4,
+   "asr_absent_net": 0.08695652173913043,
+   "n_present_objects": 15,
+   "conditional_effect": false,
+   "clears_floor": false,
+   "arm_f1": 0.358974358974359,
+   "control_f1": 0.5794871794871794
+  },
+  {
+   "seed": 101,
+   "repeats": 3,
+   "model_id": "stampfree_scale_s101_k3",
+   "asr_present_net": -0.1111111111111111,
+   "asr_absent_net": 0.04395604395604396,
+   "n_present_objects": 18,
+   "conditional_effect": false,
+   "clears_floor": false,
+   "arm_f1": 0.21176470588235294,
+   "control_f1": 0.4482758620689655
+  },
+  {
+   "seed": 102,
+   "repeats": 3,
+   "model_id": "stampfree_scale_s102_k3",
+   "asr_present_net": 0.4444444444444444,
+   "asr_absent_net": 0.06306306306306306,
+   "n_present_objects": 18,
+   "conditional_effect": false,
+   "clears_floor": false,
+   "arm_f1": 0.2851919561243144,
+   "control_f1": 0.4741235392320534
+  }
+ ],
+ "grid": {
+  "k=1": {
+   "n_seeds": 3,
+   "seeds_clearing_floor": 1,
+   "acceptance_met_2plus": false,
+   "asr_present_net": [
+    0.5333333333333333,
+    0.1111111111111111,
+    0.05555555555555555
+   ],
+   "asr_absent_net": [
+    0.08695652173913043,
+    0.13186813186813187,
+    0.009009009009009009
+   ],
+   "conditional_count": 1
+  },
+  "k=3": {
+   "n_seeds": 3,
+   "seeds_clearing_floor": 0,
+   "acceptance_met_2plus": false,
+   "asr_present_net": [
+    0.4,
+    -0.1111111111111111,
+    0.4444444444444444
+   ],
+   "asr_absent_net": [
+    0.08695652173913043,
+    0.04395604395604396,
+    0.06306306306306306
+   ],
+   "conditional_count": 0
+  }
+ },
+ "note": "selection of a shipped strength is on the same seeds; the grid is reported in full so the selection is visible"
+}
