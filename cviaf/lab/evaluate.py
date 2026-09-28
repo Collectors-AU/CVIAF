@@ -343,9 +343,12 @@ def asset_level_detectors(
     substitution that substituted nothing.
     """
     from cviaf.lab.detectors import (
+        DEFAULT_SCORE_THRESH,
+        battery_digest,
         behavioral_fingerprint,
         benign_variation_scale,
-        fingerprint_distance,
+        compare_fingerprints,
+        fingerprint_record,
         weight_score,
         weight_stats,
     )
@@ -388,13 +391,24 @@ def asset_level_detectors(
         ref_stats[k] = float(np.mean(vals))
     scale = benign_variation_scale(clean_fps) if len(clean_fps) > 1 else None
     ref_fp = np.mean(np.stack(clean_fps), axis=0)
+    # The battery every fingerprint in this run is conditioned on. It is recorded in
+    # the output so a later run can tell whether its numbers are comparable, and the
+    # comparison below REFUSES rather than subtracting two vectors measured on
+    # different probe batteries (clause 3.5: fingerprint_incomparable).
+    battery = battery_digest(probe, score_thresh=DEFAULT_SCORE_THRESH)
+    ref_record = fingerprint_record(ref_fp, battery, model_id="<clean-mean>")
 
     def score(row: Dict[str, Any]) -> Dict[str, float]:
         w = dict(row["weights"])
+        comparison = compare_fingerprints(
+            fingerprint_record(np.asarray(row["fingerprint"], np.float64), battery,
+                               model_id=row.get("model_id")),
+            ref_record, scale)
         return {
             "weight_deviation": weight_score_of(w, ref_stats),
-            "fingerprint_distance": fingerprint_distance(
-                np.asarray(row["fingerprint"]), ref_fp, scale),
+            "fingerprint_distance": (comparison.get("distance")
+                                     if comparison["status"] == "comparable" else None),
+            "fingerprint_status": comparison["status"],
         }
 
     rows = []
@@ -404,11 +418,16 @@ def asset_level_detectors(
                                           "model_effect_weak", "f1_relative_drop")},
                      **s})
 
+    incomparable = [r["model_id"] for r in rows
+                    if r.get("fingerprint_status") == "fingerprint_incomparable"]
     out: Dict[str, Any] = {
         "available": True,
         "n_clean": len(clean), "n_model_attacked_scored": len(tampered),
         "n_model_attacked_gated": len(gated),
         "benign_scale_measured_from_clean_models": len(clean_fps) > 1,
+        "battery_digest": battery,
+        "battery_digest_schema": "cviaf.battery-digest.v1",
+        "fingerprint_incomparable": incomparable,
         "per_model": rows,
     }
     pos = [r for r in rows if r["is_model_attack"] and not r["model_effect_weak"]]
@@ -416,8 +435,17 @@ def asset_level_detectors(
         if not pos or not clean:
             out[det] = {"auroc": None, "note": "no scored model attacks in this corpus"}
             continue
-        scores = np.asarray([r[det] for r in rows
-                             if r["kind"] == "clean" or r in pos], np.float64)
+        scored = [r for r in rows if r["kind"] == "clean" or r in pos]
+        if any(r[det] is None for r in scored):
+            # A refused fingerprint comparison is not a score of zero: refuse the
+            # AUROC too, rather than averaging in a number that was never measured.
+            out[det] = {"auroc": None, "fingerprint_status": "fingerprint_incomparable",
+                        "note": (f"{det} was refused for one or more models because the "
+                                 f"battery digest differed; no comparable score exists"),
+                        "refused_models": [r["model_id"] for r in scored
+                                           if r[det] is None]}
+            continue
+        scores = np.asarray([r[det] for r in scored], np.float64)
         labels = np.asarray([False] * len(clean) + [True] * len(pos))
         out[det] = {
             "auroc": _safe(auroc(scores, labels)),
