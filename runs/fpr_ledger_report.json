@@ -1,0 +1,208 @@
+{
+ "schema": "cviaf.fpr-tpr-report.v1",
+ "ledger_schema": "cviaf.fpr-tpr-ledger.v1",
+ "alpha": 0.05,
+ "min_negatives": 20,
+ "higher_is_more_anomalous": true,
+ "positive_kinds": [
+  "clean_label",
+  "dup_flood",
+  "gma",
+  "label_flip",
+  "oda",
+  "oga",
+  "ood_insert",
+  "rma",
+  "stampfree",
+  "substitution",
+  "weight_tamper"
+ ],
+ "provenance": {
+  "producer": "scripts/build_fpr_ledger.py",
+  "corpora": [
+   "runs/clean_null",
+   "runs/day1"
+  ],
+  "n_eval_per_model": 40,
+  "n_backgrounds": 4,
+  "signals": [
+   "ctc_mean_clean",
+   "ctc_q95_clean",
+   "ctc_peak_clean",
+   "refdiv_mean_clean"
+  ],
+  "notes": "scores are computed on held-out CLEAN images only, so a weight-space tamper with no test-time trigger is still scored; splits are left unassigned for the harness to separate"
+ },
+ "denominators": {
+  "calibration_negatives": 30,
+  "evaluation_negatives": 30,
+  "evaluation_positives": 36
+ },
+ "census": {
+  "all": {
+   "clean": 60,
+   "dup_flood": 10,
+   "gma": 10,
+   "label_flip": 10,
+   "oda": 11,
+   "oga": 11,
+   "ood_insert": 10,
+   "rma": 10,
+   "_total": 132
+  },
+  "evaluation_positives": {
+   "dup_flood": 3,
+   "gma": 4,
+   "label_flip": 6,
+   "oda": 5,
+   "oga": 6,
+   "ood_insert": 5,
+   "rma": 7,
+   "_total": 36
+  },
+  "evaluation_negatives": {
+   "clean": 30,
+   "_total": 30
+  }
+ },
+ "rules": {
+  "ctc_mean_clean": {
+   "signal": "ctc_mean_clean",
+   "status": "measured",
+   "threshold": 0.9659791427251075,
+   "threshold_basis": "0.05-quantile of 30 calibration negatives",
+   "tpr": {
+    "numerator": 2,
+    "denominator": 36,
+    "point_estimate": 0.0556,
+    "ci95_wilson": [
+     0.0154,
+     0.1814
+    ],
+    "exact_upper_bound_95": 1.0,
+    "status": "measured"
+   },
+   "fpr": {
+    "numerator": 8,
+    "denominator": 30,
+    "point_estimate": 0.2667,
+    "ci95_wilson": [
+     0.1418,
+     0.4445
+    ],
+    "exact_upper_bound_95": 1.0,
+    "status": "measured"
+   },
+   "confusion": {
+    "tp": 2,
+    "fn": 34,
+    "fp": 8,
+    "tn": 22
+   }
+  },
+  "ctc_peak_clean": {
+   "signal": "ctc_peak_clean",
+   "status": "measured",
+   "threshold": 1.0,
+   "threshold_basis": "0.05-quantile of 30 calibration negatives",
+   "tpr": {
+    "numerator": 0,
+    "denominator": 36,
+    "point_estimate": 0.0,
+    "ci95_wilson": [
+     0.0,
+     0.0964
+    ],
+    "exact_upper_bound_95": 0.0798,
+    "status": "measured"
+   },
+   "fpr": {
+    "numerator": 0,
+    "denominator": 30,
+    "point_estimate": 0.0,
+    "ci95_wilson": [
+     0.0,
+     0.1135
+    ],
+    "exact_upper_bound_95": 0.095,
+    "status": "measured"
+   },
+   "confusion": {
+    "tp": 0,
+    "fn": 36,
+    "fp": 0,
+    "tn": 30
+   }
+  },
+  "ctc_q95_clean": {
+   "signal": "ctc_q95_clean",
+   "status": "measured",
+   "threshold": 1.0,
+   "threshold_basis": "0.05-quantile of 30 calibration negatives",
+   "tpr": {
+    "numerator": 0,
+    "denominator": 36,
+    "point_estimate": 0.0,
+    "ci95_wilson": [
+     0.0,
+     0.0964
+    ],
+    "exact_upper_bound_95": 0.0798,
+    "status": "measured"
+   },
+   "fpr": {
+    "numerator": 0,
+    "denominator": 30,
+    "point_estimate": 0.0,
+    "ci95_wilson": [
+     0.0,
+     0.1135
+    ],
+    "exact_upper_bound_95": 0.095,
+    "status": "measured"
+   },
+   "confusion": {
+    "tp": 0,
+    "fn": 36,
+    "fp": 0,
+    "tn": 30
+   }
+  },
+  "refdiv_mean_clean": {
+   "signal": "refdiv_mean_clean",
+   "status": "measured",
+   "threshold": 0.4291249999999999,
+   "threshold_basis": "0.05-quantile of 30 calibration negatives",
+   "tpr": {
+    "numerator": 8,
+    "denominator": 36,
+    "point_estimate": 0.2222,
+    "ci95_wilson": [
+     0.1172,
+     0.3808
+    ],
+    "exact_upper_bound_95": 1.0,
+    "status": "measured"
+   },
+   "fpr": {
+    "numerator": 2,
+    "denominator": 30,
+    "point_estimate": 0.0667,
+    "ci95_wilson": [
+     0.0185,
+     0.2132
+    ],
+    "exact_upper_bound_95": 1.0,
+    "status": "measured"
+   },
+   "confusion": {
+    "tp": 8,
+    "fn": 28,
+    "fp": 2,
+    "tn": 28
+   }
+  }
+ },
+ "fpr_measured": true,
+ "headline": "FPR is measured on 30 clean assets"
+}
