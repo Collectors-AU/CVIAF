@@ -16,17 +16,26 @@ DECISIONS (frozen; rationale in TASK3_NOTES.md)
     index repeat - deterministic, no resampling library, and it keeps the [0, 1] float32
     contract the synthetic dataset uses.
   * caching: the archive is fetched once into ``<cache_dir>`` and the parsed training
-    arrays are memoised to ``<cache_dir>/cifar10_train.npz`` so repeat runs cost ~0.3 s.
-    The default download is the fast.ai image-classification mirror
-    (``s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz``, one PNG per class directory)
-    because the canonical Krizhevsky host serves this machine at ~24 KB/s versus ~2 MB/s
-    there; the canonical pickle tarball is still supported and used as the fallback.
-    Ingesting the PNG layout decodes only the declared classes and is one-time.
+    arrays are memoised to ``<cache_dir>/cifar10_train.npz`` so repeat runs cost ~1-2 s.
+    Three sources, all equivalent, all measured on this machine:
+      - canonical pickle tarball, ``cs231n.stanford.edu`` at ~1.3 MB/s (primary),
+        ``cs.toronto.edu`` as the fallback at ~56 KB/s (it is the host that is slow,
+        not the link: the same host measured ~24 KB/s before the network was upgraded);
+      - fast.ai PNG archive ``s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz`` at ~2 MB/s,
+        one directory per class, ingested with Pillow (this is what a fresh cold cache uses,
+        because it is the fastest);
+      - either already-extracted layout on disk.
+    VERIFIED: the PNG-derived pixels and the canonical pickle pixels are bit-identical
+    (5000/5000 per class, sha256 per image, classes 0-2) and the sorted class-directory
+    order equals the CIFAR label order, so switching sources cannot change a dataset digest.
+    The canonical path yields all 10 classes and needs no Pillow; the PNG ingest decodes only
+    the declared classes. ``mirror=`` on ``load_train_arrays`` forces either source.
   * the cache lives under ``data/`` which is git-ignored in this repository, so nothing
     large is ever committed.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import pickle
 import tarfile
@@ -37,7 +46,8 @@ import numpy as np
 
 from cviaf.lab.synth import DetectionDataset
 
-CIFAR_URL = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
+CIFAR_URL = "http://cs231n.stanford.edu/cifar-10-python.tar.gz"
+CIFAR_URL_FALLBACK = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
 CIFAR_DIRNAME = "cifar-10-batches-py"
 FASTAI_URL = "https://s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz"
 FASTAI_DIRNAME = "cifar10"
@@ -57,9 +67,19 @@ def ensure_cifar10(cache_dir: str = DEFAULT_CACHE, verbose: bool = True) -> str:
     os.makedirs(cache_dir, exist_ok=True)
     tar_path = os.path.join(cache_dir, "cifar-10-python.tar.gz")
     if not os.path.isfile(tar_path):
-        if verbose:
-            print(f"  downloading {CIFAR_URL} -> {tar_path} (once)")
-        urllib.request.urlretrieve(CIFAR_URL, tar_path)
+        last: Optional[Exception] = None
+        for url in (CIFAR_URL, CIFAR_URL_FALLBACK):
+            try:
+                if verbose:
+                    print(f"  downloading {url} -> {tar_path} (once)")
+                urllib.request.urlretrieve(url, tar_path)
+                last = None
+                break
+            except Exception as exc:                       # slow or unreachable mirror
+                last = exc
+                print(f"  [warn] {url} failed ({exc.__class__.__name__}: {exc}); trying next")
+        if last is not None:
+            raise last
     with tarfile.open(tar_path, "r:gz") as tf:
         tf.extractall(cache_dir)
     if not os.path.isfile(marker):                       # pragma: no cover - corrupt tar
@@ -105,10 +125,32 @@ def ingest_fastai_png(cache_dir: str = DEFAULT_CACHE,
     return imgs, labs
 
 
+def ingest_pickle_batches(cache_dir: str = DEFAULT_CACHE, verbose: bool = True
+                          ) -> Tuple[np.ndarray, np.ndarray]:
+    """Parse the canonical pickle batches: all 10 classes, no Pillow needed."""
+    root = ensure_cifar10(cache_dir, verbose=verbose)
+    images: List[np.ndarray] = []
+    labels: List[int] = []
+    for name in TRAIN_BATCHES:
+        with open(os.path.join(root, name), "rb") as fh:
+            blob = pickle.load(fh, encoding="bytes")
+        raw = np.asarray(blob[b"data"], np.uint8).reshape(-1, 3, 32, 32)
+        images.append(np.transpose(raw, (0, 2, 3, 1)))              # -> (N, 32, 32, 3)
+        labels.extend(int(x) for x in blob[b"labels"])
+    return np.concatenate(images, axis=0), np.asarray(labels, np.int64)
+
+
 def load_train_arrays(cache_dir: str = DEFAULT_CACHE, verbose: bool = True,
-                      classes: Sequence[int] = DEFAULT_CLASSES
-                      ) -> Tuple[np.ndarray, np.ndarray]:
-    """(N, 32, 32, 3) uint8 images and (N,) int64 labels, memoised to npz."""
+                      classes: Sequence[int] = DEFAULT_CLASSES,
+                      mirror: str = "auto") -> Tuple[np.ndarray, np.ndarray]:
+    """(N, 32, 32, 3) uint8 images and (N,) int64 labels, memoised to npz.
+
+    ``mirror``: ``auto`` prefers an already-extracted layout (canonical pickles first, then
+    the fast.ai PNGs) and, with nothing on disk, downloads the fast.ai archive because it is
+    the fastest source measured here. ``canonical`` forces the pickle path (all 10 classes).
+    """
+    if mirror not in ("auto", "canonical", "fastai"):
+        raise ValueError(f"unknown mirror {mirror!r}")
     npz = os.path.join(cache_dir, "cifar10_train.npz")
     if os.path.isfile(npz):
         with np.load(npz) as z:
@@ -116,27 +158,38 @@ def load_train_arrays(cache_dir: str = DEFAULT_CACHE, verbose: bool = True,
                 return z["images"], z["labels"]
             if verbose:
                 print("  cache does not cover the requested classes; re-ingesting")
+    pickle_layout = os.path.join(cache_dir, CIFAR_DIRNAME, "data_batch_1")
     fastai_layout = os.path.join(cache_dir, "_fastai", FASTAI_DIRNAME, "train")
-    if os.path.isdir(fastai_layout) or os.path.isfile(os.path.join(cache_dir, "cifar10-fastai.tgz")):
+    if mirror == "canonical" or (mirror == "auto" and os.path.isfile(pickle_layout)):
+        imgs, labs = ingest_pickle_batches(cache_dir, verbose=verbose)
+    elif mirror == "fastai" or os.path.isdir(fastai_layout) or \
+            os.path.isfile(os.path.join(cache_dir, "cifar10-fastai.tgz")):
         imgs, labs = ingest_fastai_png(cache_dir, classes, verbose=verbose)
     else:
-        root = ensure_cifar10(cache_dir, verbose=verbose)
-        images: List[np.ndarray] = []
-        labels: List[int] = []
-        for name in TRAIN_BATCHES:
-            with open(os.path.join(root, name), "rb") as fh:
-                blob = pickle.load(fh, encoding="bytes")
-            raw = np.asarray(blob[b"data"], np.uint8).reshape(-1, 3, 32, 32)
-            images.append(np.transpose(raw, (0, 2, 3, 1)))          # -> (N, 32, 32, 3)
-            labels.extend(int(x) for x in blob[b"labels"])
-        imgs = np.concatenate(images, axis=0)
-        labs = np.asarray(labels, np.int64)
+        imgs, labs = ingest_fastai_png(cache_dir, classes, verbose=verbose)
     os.makedirs(cache_dir, exist_ok=True)
-    np.savez_compressed(npz, images=imgs, labels=labs,
-                        classes=np.asarray([int(c) for c in classes], np.int64))
+    # Record the classes ACTUALLY present, not the ones requested: the canonical pickle
+    # path always yields all 10, and a cache that understates its coverage forces a
+    # pointless re-ingest; one that overstates it would silently mis-serve a request.
+    present = np.asarray(sorted({int(v) for v in labs.tolist()}), np.int64)
+    np.savez_compressed(npz, images=imgs, labels=labs, classes=present)
     if verbose:
         print(f"  cached {imgs.shape[0]} CIFAR-10 training images -> {npz}")
     return imgs, labs
+
+
+def _stable_pool(images: np.ndarray, labels: np.ndarray, cls: int) -> np.ndarray:
+    """Indices of class ``cls`` in a source-independent order.
+
+    The canonical pickle batches and the fast.ai PNG directories hold identical pixels in
+    DIFFERENT orders, so a pool taken in array order would make a seeded subset depend on
+    which source built the cache: same data, different images, different dataset digest.
+    Sorting the pool by each image's own sha256 removes that dependency.
+    """
+    pool = np.flatnonzero(labels == cls)
+    keys = [hashlib.sha256(np.ascontiguousarray(images[i]).tobytes()).hexdigest()
+            for i in pool]
+    return pool[np.argsort(np.asarray(keys), kind="stable")]
 
 
 def upsample_nearest(images: np.ndarray, size: int) -> np.ndarray:
@@ -172,17 +225,19 @@ def load_cifar_subset(n_per_class: int = 60,
                       box_cells: float = 2.0,
                       contributor: str = "cifar10",
                       batch: str = "cifar_host",
+                      mirror: str = "auto",
                       verbose: bool = False) -> DetectionDataset:
     """A deterministic CIFAR-10 subset in the lab's ``DetectionDataset`` shape."""
     if split != "train":
         raise ValueError("only the training split is wired for Task 3 (the test split has "
                          "no labels file); extend REMAINING item (a) if you need it")
     classes = tuple(int(c) for c in classes)
-    images, labels = load_train_arrays(cache_dir, verbose=verbose, classes=classes)
+    images, labels = load_train_arrays(cache_dir, verbose=verbose, classes=classes,
+                                       mirror=mirror)
     rng = np.random.default_rng(seed)
     take: List[np.ndarray] = []
     for new_label, cls in enumerate(classes):
-        pool = np.flatnonzero(labels == cls)
+        pool = _stable_pool(images, labels, cls)
         if pool.size < n_per_class:
             raise ValueError(f"class {cls} has only {pool.size} images, asked {n_per_class}")
         pick = rng.permutation(pool)[:n_per_class]
@@ -201,6 +256,7 @@ def load_cifar_subset(n_per_class: int = 60,
         "n_per_class": int(n_per_class), "seed": int(seed), "img_size": int(img_size),
         "upsample": "nearest_index_repeat", "box_cells": float(box_cells),
         "boxes": "one centred square box per image", "cache_dir": cache_dir,
+        "pool_order": "content-hash (source independent)",
     }
     return DetectionDataset(
         images=np.ascontiguousarray(imgs, np.float32),

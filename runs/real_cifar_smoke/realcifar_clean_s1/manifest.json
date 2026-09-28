@@ -1,7 +1,7 @@
 {
  "lab_version": "task3-real-backbone-1",
  "model_id": "realcifar_clean_s1",
- "created_utc": "2026-09-28T15:50:59Z",
+ "created_utc": "2026-09-28T16:09:41Z",
  "spec": {
   "kind": "clean",
   "detector": {
@@ -49,7 +49,8 @@
    "upsample": "nearest_index_repeat",
    "box_cells": 2.0,
    "boxes": "one centred square box per image",
-   "cache_dir": "data/cifar10"
+   "cache_dir": "data/cifar10",
+   "pool_order": "content-hash (source independent)"
   },
   "eval_n": 60,
   "train_n": 900,
@@ -58,10 +59,10 @@
   "batch": 32,
   "hidden": 48
  },
- "spec_digest": "83a05b990c3fbd7f",
+ "spec_digest": "3fac99a3100548d2",
  "dataset_digests": {
-  "train": "14cccb3dfa8d2c8c49c9efa0e81c0ecd17d14d5e1fa59985790ee63bfa0de42f",
-  "eval": "db4e296a8851fdab97f9eb8f65ae01d18fd5b74d4263bb4f9d333a07fe8ae176"
+  "train": "d0eec0016d3777098e6c3088c8c112340a7f54830a3f5f442d7c3290f36a3dc3",
+  "eval": "6211aab2234bf3584a274d2c39b09b7202397cac2d73f2c76a5dab180e867c3b"
  },
  "attack_digest": "3b066804f6d1d077",
  "seeds": {
@@ -70,15 +71,15 @@
   "detector": 1
  },
  "artifact": {
-  "weights_digest": "3fa5ca8e8a3eb856b750d774e1eb5beeffb40d6f1cbd9c9d1eb1d76f8346b096",
-  "head_digest": "6d5572840f15d8a1ed7cf64c8badb8088c411f2bf6cc31864bc209efef0cff68",
+  "weights_digest": "a52a89729b648aeaf3d8b4c4afa56b2b9f2793b809d927333fdaade571b33209",
+  "head_digest": "eba244e529572a08466050c9e3d26a19218d3547a17dcd089ccb989cd7fa5ea4",
   "backbone_digest": "fa6e71814d278ea315a0593ffa1a8dbc82b1f82c6b14a2625a85bdb0d015c021",
   "n_params_head": 3512,
   "n_params_backbone": 158277,
   "onnx": {
    "path": "features.onnx",
    "n_images": 8,
-   "max_feature_delta": 9.655952453613281e-06,
+   "max_feature_delta": 8.344650268554688e-06,
    "tolerance": 0.0001,
    "channel_argmax_agreement": 1.0,
    "pass": true,
@@ -97,13 +98,13 @@
  },
  "metrics": {
   "clean_quality": {
-   "precision": 0.03640256959314775,
-   "recall": 0.2833333333333333,
-   "f1": 0.06451612903225806,
-   "mean_iou": 0.4505063979064717,
-   "tp": 17,
-   "fp": 450,
-   "fn": 43
+   "precision": 0.031067961165048542,
+   "recall": 0.26666666666666666,
+   "f1": 0.05565217391304347,
+   "mean_iou": 0.4153781905770302,
+   "tp": 16,
+   "fp": 499,
+   "fn": 44
   },
   "attack_success_rate": {
    "asr": 0.0,
@@ -114,7 +115,7 @@
    "applicable": false,
    "note": "no model-side attack in this run"
   },
-  "train_final_loss": 0.18976538551264796
+  "train_final_loss": 0.19709212153122344
  },
  "quality_flags": {
   "backdoor_weak": false,
@@ -125,7 +126,7 @@
   "bdr_floor": 0.0,
   "is_model_attack": false
  },
- "timing_seconds": 11.38,
+ "timing_seconds": 11.58,
  "environment": {
   "python": "3.12.14",
   "platform": "macOS-27.0-arm64-arm-64bit",

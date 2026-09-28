@@ -29,7 +29,7 @@ Done:
 | piece | file | what it is |
 |---|---|---|
 | backbone module | `cviaf/lab/real_backbone.py` | `RealBackboneDetector` (pretrained `resnet18_stem1`) subclassing `TinyDetector`; overrides only `features*`, `_backbone_params`, save/load; head, box decode, 3x3 peaks, NMS and `predict` are inherited unchanged. Plus `OnnxFeatureExtractor`, `export_onnx`, `to_onnx`, `export_parity`, `is_real_backbone_artifact` |
-| data | `cviaf/lab/cifar.py` | one-time download + cache + `DetectionDataset` in the lab's shape |
+| data | `cviaf/lab/cifar.py` | one-time download + cache (all 10 classes, three interchangeable sources) + `DetectionDataset` in the lab's shape |
 | train script | `scripts/train_real_backbone.py` | trains through the real backbone, writes the existing artefact format, optional ONNX + parity, `--smoke` gate |
 | artefact loader | `cviaf/lab/train.py` (`ModelArtifact.load`) | dispatches to `RealBackboneDetector` on the npz `_meta` marker, so verify/digest tooling is unchanged |
 | tests | `tests/test_real_backbone.py` (torch interpreter), `tests/test_lab.py` prune regression | interface, determinism, save/load identity, ONNX parity, loader dispatch, manifest-key parity, prune axis |
@@ -40,19 +40,25 @@ Green smoke test (exact output, 2 models end to end, `bash`-reproducible):
     $ cd <repo>/.task3 && PYTHONPATH=. $PY scripts/train_real_backbone.py --smoke --seeds 0 1 --out runs/real_cifar_smoke
     real backbone: resnet18_stem1 pretrained=True finetune=False seeds=[0, 1]
     data: CIFAR-10 classes (0, 1, 2) n_per_class=300 cache=data/cifar10
-    train 900 images  eval 60 images  train digest 14cccb3dfa8d2c8c
+    train 900 images  eval 60 images  train digest d0eec0016d377709
       training clean seed 0 ...
-        s0 eval F1 0.041 precision 0.023 recall 0.200
-        onnx parity: max|delta|=9.656e-06 agree=1.00 pass=True digest_unchanged=True
-        wrote runs/real_cifar_smoke/realcifar_clean_s0 (11.81s, weights_digest cde1dcb7fb69b9f4)
+        s0 eval F1 0.049 precision 0.028 recall 0.233
+        onnx parity: max|delta|=8.345e-06 agree=1.00 pass=True digest_unchanged=True
+        wrote runs/real_cifar_smoke/realcifar_clean_s0 (12.69s, weights_digest 001e288fd9dee861)
       training clean seed 1 ...
-        s1 eval F1 0.065 precision 0.036 recall 0.283
-        onnx parity: max|delta|=9.656e-06 agree=1.00 pass=True digest_unchanged=True
-        wrote runs/real_cifar_smoke/realcifar_clean_s1 (11.38s, weights_digest 3fa5ca8e8a3eb856)
+        s1 eval F1 0.056 precision 0.031 recall 0.267
+        onnx parity: max|delta|=8.345e-06 agree=1.00 pass=True digest_unchanged=True
+        wrote runs/real_cifar_smoke/realcifar_clean_s1 (11.58s, weights_digest a52a89729b648aea)
     SMOKE GATE: PASS (f1_positive=True, parity_pass=True)
-       realcifar_clean_s0: F1=0.0405 onnx_parity=True
-       realcifar_clean_s1: F1=0.0645 onnx_parity=True
-    trained 2 model(s) in 23.81s; clean F1 ['0.041', '0.065']; wrote runs/real_cifar_smoke
+       realcifar_clean_s0: F1=0.0492 onnx_parity=True
+       realcifar_clean_s1: F1=0.0557 onnx_parity=True
+    trained 2 model(s) in 25.24s; clean F1 ['0.049', '0.056']; wrote runs/real_cifar_smoke
+
+This is the re-run on the CANONICAL pickle source (the first green smoke used the fast.ai
+PNG source); the dataset digests in these manifests are the ones the committed artefacts carry,
+and they are identical from either source — see DECISIONS/Download.
+
+exit code 0 (`--smoke` returns non-zero unless every model has F1 > 0 and an ONNX parity pass)
 
     exit code 0 (`--smoke` returns non-zero unless every model has F1 > 0 and an ONNX parity pass)
 
@@ -136,11 +142,22 @@ already verified:
   to the centre **cell** (34 px at `img_size` 64 — see GOTCHAS, this is not cosmetic).
   Images: 32×32 → 64×64 nearest-neighbour index repeat, [0, 1] float32, ImageNet-normalised
   inside the extractor.
-* **Download**: fast.ai mirror `https://s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz` (PNG
-  layout), because the canonical Krizhevsky host served this machine at ~24 KB/s vs ~2 MB/s
-  measured. The PNG ingest decodes only the declared classes (15,000 images) into
-  `data/cifar10/cifar10_train.npz` (one-time, ~2 min); the canonical pickle tarball remains the
-  fallback. `data/` is git-ignored, so no dataset is committed.
+* **Download and cache**: the canonical pickle tarball is now the primary source, taken from
+  **`cs231n.stanford.edu`** (measured 1.3 MB/s) with `cs.toronto.edu` as the fallback (56 KB/s —
+  it is the HOST that is slow, not the link: it measured 24 KB/s before the network was upgraded
+  and 56 KB/s after). The fast.ai PNG archive (`s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz`,
+  ~2 MB/s, one directory per class, needs Pillow) is what a *cold* cache downloads, because it is
+  the fastest; `mirror=` on `load_train_arrays` forces `canonical` or `fastai`.
+  The cache `data/cifar10/cifar10_train.npz` now holds **all 10 classes / 50,000 images** (built
+  from the canonical pickles in 3.1 s), so any `classes=` subset is served without re-ingesting,
+  and it records the classes it actually contains. `data/` is git-ignored: no dataset is committed.
+* **Source equivalence and source independence (verified, not assumed)**: the fast.ai PNG pixels
+  and the canonical pickle pixels are bit-identical (sha256 per image, 5000/5000 for classes
+  0-2), and the sorted class-directory order equals the CIFAR label order. Because the two sources
+  store the same images in different orders, the class pool is sorted by each image's own content
+  hash (`_stable_pool`) — verified by rebuilding the subsets from the fast.ai source and getting
+  the *identical* dataset digests (`d0eec0016d377709` train, `6211aab2234bf358` eval). Without
+  that, swapping sources would change which images a seeded subset picks while looking harmless.
 * **Hyperparameters** (defaults in the script, used by the smoke): Adam lr 3e-3, batch 32,
   hidden 48, `pos_weight` 30 on the objectness positive, `ignore_radius` 1, epochs 400 for the
   full run (200 in the smoke), eval split 20/class (seed 2000) disjoint from train (seed 1000).
