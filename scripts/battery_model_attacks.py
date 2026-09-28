@@ -83,7 +83,10 @@ def main() -> int:
         return m["ground_truth"]["kind"]
 
     clean_entries = [e for e in entries if kind_of(e["manifest"]) == "clean"]
-    attack_entries = [e for e in entries if kind_of(e["manifest"]) != "clean"]
+    # image-level attack arms (e.g. the oga probe arm) carry no behaviour-divergence
+    # ground truth and are not weight-space model attacks; exclude them here.
+    attack_entries = [e for e in entries
+                      if kind_of(e["manifest"]) in ("weight_tamper", "substitution")]
     print(f"corpus: {len(clean_entries)} clean (negatives), "
           f"{len(attack_entries)} model-attack arms (positives)")
 
