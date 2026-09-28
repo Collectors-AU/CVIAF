@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -20,6 +21,24 @@ import time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
+
+
+def stable_seed(blob: bytes) -> int:
+    """Derive a seed from content with a stable hash.
+
+    ``hash()`` on bytes is salted per process (PYTHONHASHSEED), so a RandomState
+    seeded from it produces different weights in every run: the same demo input
+    gave different logits, different findings and a different report on each
+    invocation, with nothing in the report saying why.
+    """
+    return int.from_bytes(hashlib.sha256(blob).digest()[:8], "big") % (2 ** 31)
+
+
+def demo_projection(flat: np.ndarray, num_classes: int) -> np.ndarray:
+    """The demo's mock model: a deterministic linear projection of the input."""
+    rng = np.random.RandomState(stable_seed(flat.tobytes()[:100]))
+    weights = rng.randn(flat.shape[1], num_classes) * 0.1
+    return (flat @ weights).astype(np.float32)
 
 
 def cmd_demo(args):
@@ -101,7 +120,7 @@ def cmd_demo(args):
     print("\n[3/7] Extracting features from augmented dataset...")
     aug_features = extract_features_from_images(poisoned_images, method="pixel_stats", target_dim=64)
     aug_hashes = [
-        __import__("hashlib").sha256(poisoned_images[i].tobytes()).hexdigest()
+        hashlib.sha256(poisoned_images[i].tobytes()).hexdigest()
         for i in range(len(poisoned_images))
     ]
     print(f"   Extracted {aug_features.shape[1]}-dim features for {len(aug_features)} samples")
@@ -111,14 +130,8 @@ def cmd_demo(args):
     num_classes = dataset["num_classes"]
 
     def mock_predict(inputs: np.ndarray) -> np.ndarray:
-        """Mock model: uses PCA features to generate plausible logits."""
-        n = inputs.shape[0]
-        flat = inputs.reshape(n, -1)
-        # Simple linear projection to logits
-        rng = np.random.RandomState(hash(flat.tobytes()[:100]) % 2**31)
-        weights = rng.randn(flat.shape[1], num_classes) * 0.1
-        logits = flat @ weights
-        return logits.astype(np.float32)
+        """Mock model: a deterministic linear projection of the input."""
+        return demo_projection(inputs.reshape(inputs.shape[0], -1), num_classes)
 
     # --- Step 4: Create provenance seals and tamper some ---
     print("\n[5/7] Generating inference provenance seals...")

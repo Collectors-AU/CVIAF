@@ -13,11 +13,17 @@ refactor that reintroduces it fails here rather than in a downstream measurement
   3. `cviaf/model_integrity` drew trigger patterns and noise probes from the
      legacy global `np.random` stream with no seed, so the same model produced
      different findings on every run.
+  4. The `cviaf demo` mock model seeded its weights from `hash(bytes)`, which
+     Python salts per process (PYTHONHASHSEED), so two runs of the demo on the
+     same inputs disagreed on every logit while every declared seed matched.
 """
 from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
+import textwrap
 
 import numpy as np
 import pytest
@@ -227,6 +233,52 @@ def test_model_integrity_source_has_no_global_rng_calls():
     offenders = [ln for ln, line in enumerate(src.splitlines(), 1)
                  if re.search(r"\bnp\.random\.(?!default_rng|get_state|seed)\w+", line)]
     assert offenders == [], f"global legacy RNG calls at lines {offenders}"
+
+
+# --------------------------------------------------------------------------- #
+# 4. the demo mock model's seed must not come from hash()
+# --------------------------------------------------------------------------- #
+
+_HASH_SEED_PROBE = textwrap.dedent("""
+    import numpy as np
+    from cviaf.cli import demo_projection
+    flat = np.arange(300, dtype=np.float32).reshape(1, -1) / 7.0
+    logits = np.round(demo_projection(flat, 5), 6)
+    # the old, broken seed source, printed alongside so the test can show it
+    # differs between the two processes while the projection does not
+    print(logits.tobytes().hex(), hash(flat.tobytes()[:100]))
+""")
+
+
+def test_demo_projection_is_stable_across_python_hash_seeds():
+    """Same input, two processes, two PYTHONHASHSEEDs: identical logits.
+
+    The bug: `np.random.RandomState(hash(flat.tobytes()[:100]) % 2**31)` looked
+    deterministic but `hash()` of bytes is salted per process, so the demo report
+    was irreproducible. The second printed value is the salted hash itself: the
+    test asserts it *differs* between the runs, so a regression back to
+    hash-seeding fails here instead of passing by luck.
+    """
+    repo = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    seen = []
+    for hashseed in ("0", "2"):
+        env = dict(os.environ, PYTHONHASHSEED=hashseed, PYTHONPATH=repo)
+        out = subprocess.run([sys.executable, "-c", _HASH_SEED_PROBE], env=env,
+                             capture_output=True, text=True, check=True)
+        seen.append(out.stdout.split())
+    logits, salted = zip(*seen)
+    assert logits[0] == logits[1], "demo projections differ across processes"
+    assert salted[0] != salted[1], (
+        "hash() did not differ between the two processes, so this test proves "
+        "nothing: check that PYTHONHASHSEED is actually being honoured")
+
+
+def test_stable_seed_is_content_addressed():
+    """Equal bytes give equal seeds; different bytes give different ones."""
+    from cviaf.cli import stable_seed
+    assert stable_seed(b"abc") == stable_seed(b"abc")
+    assert stable_seed(b"abc") != stable_seed(b"abd")
+    assert 0 <= stable_seed(b"abc") < 2 ** 31
 
 
 def test_trigger_detector_seed_is_used():
