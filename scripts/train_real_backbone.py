@@ -437,7 +437,11 @@ def main() -> int:
                           for e in entries},
         "smoke_gate": gate,
     }
-    with open(os.path.join(args.out, "summary.json"), "w") as fh:
+    # A second training run into the same corpus dir would clobber the run-level
+    # summary of the first (measured: the oga arm overwrote the 8-clean-seed
+    # summary.json). Include the kind so each run's summary names itself.
+    summary_name = f"summary_{args.kind}.json" if args.kind != "clean" else "summary.json"
+    with open(os.path.join(args.out, summary_name), "w") as fh:
         json.dump(summary, fh, indent=1, default=str)
     f1s = [v.get("f1", 0.0) for v in summary["clean_quality"].values()]
     print(f"trained {len(entries)} model(s) in {summary['runtime_seconds']}s; "
