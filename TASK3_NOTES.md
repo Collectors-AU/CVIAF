@@ -245,3 +245,10 @@ s5 0.0364, s6 0.0423, s7 0.0367 — every model F1 > 0. ONNX parity: **pass=True
 max|delta| = 8.345e-06, agree=1.00, digest_unchanged=True on every model. Dataset digests match
 the committed smoke manifests (train `d0eec0016d377709…`, eval `6211aab2234bf358…`).
 Smoke-gate contract (F1 > 0 and ONNX parity on every model): **PASS**.
+
+### 2026-09-28 — item 2: ONNX export of all models — PASS
+Re-ran the REMAINING (b) snippet over all 8 models (fresh export + `export_parity` on the
+seed-2000 probe set, parity records rewritten). Result: **pass=True on 8/8**, max feature
+delta 8.821e-06 on every model (tiny differences vs the training-time 8.345e-06 come from the
+snippet's 5-per-class probe set vs the eval split). `features.onnx` regenerated on disk for all
+8; git-ignored as documented.
