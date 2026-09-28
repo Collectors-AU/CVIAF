@@ -411,7 +411,16 @@ class ModelArtifact:
     def load(cls, outdir: str) -> "ModelArtifact":
         with open(os.path.join(outdir, "manifest.json")) as fh:
             manifest = json.load(fh)
-        model = TinyDetector.load(os.path.join(outdir, "weights.npz"))
+        weights = os.path.join(outdir, "weights.npz")
+        # Task 3: real-backbone models reuse this manifest and npz contract but carry a
+        # torch backbone. Dispatch on the npz marker (a lazy import, so numpy-only
+        # environments never touch torch) so both kinds load through this one path.
+        from cviaf.lab.real_backbone import is_real_backbone_artifact
+        if is_real_backbone_artifact(weights):
+            from cviaf.lab.real_backbone import RealBackboneDetector
+            model: TinyDetector = RealBackboneDetector.load(weights)
+        else:
+            model = TinyDetector.load(weights)
         return cls(model=model, manifest=manifest)
 
 

@@ -1,0 +1,59 @@
+{
+ "lane": "real_backbone_skeleton",
+ "out": "runs/real_cifar_smoke",
+ "seeds": [
+  0,
+  1
+ ],
+ "n_models": 2,
+ "epochs": 200,
+ "n_per_class": 300,
+ "eval_per_class": 20,
+ "backbone": "resnet18_stem1",
+ "pretrained": true,
+ "finetune": false,
+ "onnx": true,
+ "cache_dir": "data/cifar10",
+ "train_n": 900,
+ "eval_n": 60,
+ "train_digest": "14cccb3dfa8d2c8c49c9efa0e81c0ecd17d14d5e1fa59985790ee63bfa0de42f",
+ "eval_digest": "db4e296a8851fdab97f9eb8f65ae01d18fd5b74d4263bb4f9d333a07fe8ae176",
+ "runtime_seconds": 23.81,
+ "clean_quality": {
+  "realcifar_clean_s0": {
+   "precision": 0.022556390977443608,
+   "recall": 0.2,
+   "f1": 0.04054054054054054,
+   "mean_iou": 0.3890464926759402,
+   "tp": 12,
+   "fp": 520,
+   "fn": 48
+  },
+  "realcifar_clean_s1": {
+   "precision": 0.03640256959314775,
+   "recall": 0.2833333333333333,
+   "f1": 0.06451612903225806,
+   "mean_iou": 0.4505063979064717,
+   "tp": 17,
+   "fp": 450,
+   "fn": 43
+  }
+ },
+ "smoke_gate": {
+  "models": [
+   {
+    "model_id": "realcifar_clean_s0",
+    "f1": 0.04054054054054054,
+    "onnx_parity_pass": true
+   },
+   {
+    "model_id": "realcifar_clean_s1",
+    "f1": 0.06451612903225806,
+    "onnx_parity_pass": true
+   }
+  ],
+  "f1_positive": true,
+  "parity_pass": true,
+  "pass": true
+ }
+}
