@@ -421,7 +421,11 @@ def main() -> int:
         for r in rows:
             print(f"   {r['model_id']}: F1={r['f1']:.4f} onnx_parity={r['onnx_parity_pass']}")
 
-    with open(os.path.join(args.out, "registry.jsonl"), "w") as fh:
+    # APPEND, never overwrite: a second training run into the same corpus must not
+    # erase the earlier run's registry entries (measured: the seeds 8-23 run silently
+    # dropped the 24 s0-s7 entries). The registry is append-only; rebuild it from the
+    # manifests on disk if it ever needs deduplication.
+    with open(os.path.join(args.out, "registry.jsonl"), "a") as fh:
         for e in entries:
             fh.write(json.dumps(e, default=str) + "\n")
     summary = {
@@ -439,8 +443,13 @@ def main() -> int:
     }
     # A second training run into the same corpus dir would clobber the run-level
     # summary of the first (measured: the oga arm overwrote the 8-clean-seed
-    # summary.json). Include the kind so each run's summary names itself.
-    summary_name = f"summary_{args.kind}.json" if args.kind != "clean" else "summary.json"
+    # summary.json). Name the file by kind AND seed window so each run's summary
+    # names itself instead of overwriting an earlier run's.
+    seed_tag = f"s{seeds[0]}-{seeds[-1]}" if len(seeds) > 1 else f"s{seeds[0]}"
+    summary_name = f"summary_{args.kind}_{seed_tag}.json"
+    if args.kind == "clean" and seed_tag == "s0-s7":
+        # keep the canonical name for the original 8-seed clean run
+        summary_name = "summary.json"
     with open(os.path.join(args.out, summary_name), "w") as fh:
         json.dump(summary, fh, indent=1, default=str)
     f1s = [v.get("f1", 0.0) for v in summary["clean_quality"].values()]
