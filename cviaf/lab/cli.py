@@ -290,12 +290,23 @@ def _cmd_assure(args) -> int:
     res = assure_model(
         corpus_dir=args.corpus, model_id=args.model, out_dir=args.out,
         access_level=args.access_level, alpha=args.alpha,
-        n_provenance=args.provenance_history, log=log)
+        n_provenance=args.provenance_history,
+        calibrated_protocol=args.calibrated_protocol,
+        drift_calibration_path=args.drift_calibration, log=log)
     rep = res["report"]
     print()
     print(f"overall      : {rep.overall_risk} / {rep.overall_disposition}")
     print(f"findings     : {len(rep.findings)}")
     print(rep.metadata.get("human_readable_summary", ""))
+    return 0
+
+
+def _cmd_assure_calibrate(args) -> int:
+    from cviaf.lab.assure_protocol import fit_protocol
+    record = fit_protocol(args.corpus, args.out, alpha=args.alpha,
+                          drift_calibration=args.drift_calibration)
+    print(f"synthetic assurance protocol: {args.out}, SHA-256 {record['sha256']}")
+    print("Synthetic generator only; held-out asset flags and abstentions:", record['heldout'])
     return 0
 
 
@@ -474,7 +485,19 @@ def main(argv=None) -> int:
                      choices=["white-box", "black-box", "gray-box"])
     asr.add_argument("--alpha", type=float, default=0.05)
     asr.add_argument("--provenance-history", type=int, default=6)
+    asr.add_argument("--drift-calibration", default=None,
+                     help="natural drift battery JSON pinned in the calibrated protocol")
+    asr.add_argument("--calibrated-protocol", default=None,
+                     help="opt-in frozen synthetic clean reference for fail-closed REVIEW")
     asr.set_defaults(func=_cmd_assure)
+
+    af = sub.add_parser("assure-calibrate", help="freeze synthetic clean assurance protocol")
+    af.add_argument("--corpus", required=True)
+    af.add_argument("--out", required=True)
+    af.add_argument("--alpha", type=float, default=.05)
+    af.add_argument("--drift-calibration", required=True,
+                    help="independently generated natural arbiter for this batch size")
+    af.set_defaults(func=_cmd_assure_calibrate)
 
     cmp_ = sub.add_parser("compare", help="baseline vs CVIAF on the same corpus")
     cmp_.add_argument("--corpus", default="runs/mvp")

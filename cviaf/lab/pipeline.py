@@ -553,6 +553,8 @@ def assure_model(
     n_provenance: int = 6,
     max_clean_images: int = 24,
     reference_model_id: Optional[str] = None,
+    calibrated_protocol: Optional[str] = None,
+    drift_calibration_path: Optional[str] = None,
     log: Callable[[str], None] = print,
 ) -> Dict[str, Any]:
     """Assess one contributed model plus its dataset end to end.
@@ -635,9 +637,24 @@ def assure_model(
 
     # -- module 1: training-data integrity
     log("  [2/5] training-data integrity")
-    data_assessment = DataIntegrityAssessor().assess(
+    legacy_data_assessment = DataIntegrityAssessor().assess(
         images=images, features=features, labels=labels, metadata=metadata,
         image_hashes=ingest["image_hashes"], reference_features=ref_features)
+    protocol = gate = protocol_ref = None
+    protocol_error = None
+    if calibrated_protocol is not None:
+        from cviaf.lab.assure_protocol import load_protocol, assess_data, review_assessment
+        try:
+            protocol, gate, protocol_ref = load_protocol(calibrated_protocol, corpus_dir,
+                                                         alpha, manifest)
+            data_assessment = assess_data(splits.train_poisoned, gate, protocol)
+        except (ValueError, KeyError, TypeError, OSError, IndexError) as exc:
+            protocol_error = f'{type(exc).__name__}: {exc}'
+            data_assessment = review_assessment(protocol_error)
+            protocol = gate = protocol_ref = None
+        data_assessment['legacy_diagnostics'] = legacy_data_assessment
+    else:
+        data_assessment = legacy_data_assessment
     _module("data_integrity", {
         "module": "data_integrity",
         "n_images": int(len(images)),
@@ -715,24 +732,69 @@ def assure_model(
     # instead of guessing natural-vs-manipulated.
     from cviaf.drift.attribution import NaturalDriftCalibration
     attrib_cal = None
-    cal_path = os.path.join(corpus_dir, "drift_calibration.json")
-    if os.path.exists(cal_path):
-        attrib_cal = NaturalDriftCalibration.load(cal_path)
+    cal_path = (drift_calibration_path if calibrated_protocol is not None
+                else os.path.join(corpus_dir, "drift_calibration.json"))
+    if calibrated_protocol is not None:
+        expected = ((protocol or {}).get('natural_drift_calibration') or {}).get('sha256')
+        if not expected or not cal_path or not os.path.isfile(cal_path):
+            protocol_error = (protocol_error + '; ' if protocol_error else '') + 'pinned natural-drift calibration missing'
+        elif hashlib.sha256(open(cal_path, 'rb').read()).hexdigest() != expected:
+            protocol_error = (protocol_error + '; ' if protocol_error else '') + 'pinned natural-drift calibration SHA-256 mismatch'
+    if cal_path is None:
+        cal_path = ''
+    if os.path.exists(cal_path) and not protocol_error:
+        try:
+            attrib_cal = NaturalDriftCalibration.load(cal_path)
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            if calibrated_protocol is None:
+                raise
+            protocol_error = f'natural-drift calibration invalid: {exc}'
+            log(f"        {protocol_error}")
+    if attrib_cal is not None:
         log(f"        attribution calibration: {attrib_cal.digest()} "
             f"({len(attrib_cal.scenario_descriptions)} natural scenarios)")
     else:
         log("        attribution calibration: NONE (verdict will be "
             "attribution_unavailable)")
-    drift_assessment = DistributionShiftAssessor(seed=DRIFT_ASSESSMENT_SEED).assess(
-        reference_features=ref_features,
+    if calibrated_protocol is not None and attrib_cal is not None and protocol is not None:
+        if (attrib_cal.alpha != alpha or attrib_cal.n_ref != protocol['drift_reference_size']
+                or attrib_cal.n_op != len(features)):
+            protocol_error = 'natural-drift calibration alpha or batch sizes mismatch'
+    floor = (protocol['effect_floor'] if calibrated_protocol is not None
+             and protocol is not None and not protocol_error else None)
+    drift_reference_features = (extract_features_from_images(
+        protocol_ref.images, method='pixel_stats', target_dim=64)
+        if floor is not None else ref_features)
+    drift_reference_images = protocol_ref.images if floor is not None else splits.cal_clean.images
+    drift_assessment = DistributionShiftAssessor(
+        seed=DRIFT_ASSESSMENT_SEED,
+        min_standardized_wasserstein=floor).assess(
+        reference_features=drift_reference_features,
         operational_features=features,
         reference_logits=None, operational_logits=None,
         reference_labels=None, operational_labels=None,
-        reference_images=splits.cal_clean.images,
+        reference_images=drift_reference_images,
         operational_images=images,
         operational_contributors=[m.contributor for m in metadata],
-        attribution_calibration=attrib_cal,
+        attribution_calibration=(attrib_cal if not protocol_error else None),
     )
+    if calibrated_protocol is not None:
+        # The ordinary drift check still measures evidence. Without a matching
+        # independently generated arbiter and effect floor it cannot clear an asset.
+        if protocol_error is None and (protocol is None or attrib_cal is None):
+            protocol_error = 'required synthetic or natural-drift calibration missing'
+        if protocol_error:
+            from cviaf.lab.assure_protocol import review_assessment
+            if not any(f.get('title') == 'Calibration unavailable or mismatched' for f in data_assessment['findings']):
+                data_assessment['findings'].extend(review_assessment(protocol_error)['findings'])
+            else:
+                data_assessment['findings'][0]['description'] = protocol_error
+            data_assessment['calibrated_protocol']['reason'] = protocol_error
+            drift_assessment['findings'] = []
+            drift_assessment['calibrated_protocol_status'] = 'review_missing_calibration'
+        else:
+            drift_assessment['effect_floor_protocol_sha256'] = protocol['sha256']
+            drift_assessment['natural_drift_calibration_digest'] = attrib_cal.digest()
     # This is a run-local assessment record, not the natural-drift arbiter's
     # independently measured calibration in the corpus directory.
     drift_record_path = os.path.join(out_dir, "drift_assessment_record.json")
@@ -758,13 +820,34 @@ def assure_model(
         f"verdict={(drift_assessment.get('characterization') or {}).get('natural_vs_adversarial')}")
 
     # -- governance
+    governance_model_assessment = model_assessment
+    if calibrated_protocol is not None:
+        # Legacy model probes have no independent clean-model null. Preserve every
+        # finding as a diagnostic but do not turn stamp-confounded scores into risk.
+        governance_model_assessment = {**model_assessment,
+            'findings': [], 'legacy_diagnostics': model_assessment,
+            'calibrated_model_axis': {'status': 'abstain',
+                'reason': 'independent calibrated clean-model asset null unavailable'}}
+    governance_provenance = provenance_verification
+    if calibrated_protocol is not None:
+        # The verifier exercise intentionally contains planted forgeries, not
+        # evidence of malicious activity in this submitted model or dataset.
+        governance_provenance = {**provenance_verification, 'findings': [],
+            'scenario_diagnostics': provenance_verification,
+            'scope': 'synthetic deliberately attacked verifier test only'}
     report = governance.generate_report(
         data_assessment=data_assessment,
-        model_assessment=model_assessment,
-        provenance_verification=provenance_verification,
+        model_assessment=governance_model_assessment,
+        provenance_verification=governance_provenance,
         drift_assessment=drift_assessment,
         extra_metadata={
             "pipeline_version": PIPELINE_VERSION,
+            "calibrated_protocol": ({"requested": calibrated_protocol,
+                "sha256": protocol['sha256'] if protocol else None,
+                "error": protocol_error,
+                "natural_drift_calibration": cal_path if calibrated_protocol is not None else None,
+                "model_axis": "abstain_review_without_clean_model_null"}
+                if calibrated_protocol is not None else None),
             "access_level": access_level,
             "signing_mode": scen["signing_mode"],
             "signing_assumption": scen["signing_mode_note"],
@@ -777,6 +860,21 @@ def assure_model(
         },
     )
 
+    if calibrated_protocol is not None:
+        # Never ACCEPT because an underpowered or missing model calibration was
+        # suppressed. Quarantine still takes precedence over REVIEW.
+        if report.overall_disposition == 'accept':
+            report.overall_disposition = 'review'
+        report.metadata['human_readable_summary'] = (
+            f"ASSURANCE REPORT - Pipeline: {governance.pipeline_id}\n"
+            f"Risk: {report.overall_risk}; disposition: {report.overall_disposition}.\n"
+            "Calibrated model axis abstains; no clean-model null supports ACCEPT."
+            + (f" Calibration issue: {protocol_error}" if protocol_error else ""))
+        report.metadata['calibrated_protocol_accept_permitted'] = False
+        governance.log_action('calibrated_protocol_review_gate', 'governance',
+            details={'protocol_sha256': protocol['sha256'] if protocol else None,
+                     'reason': protocol_error or 'model-asset calibration absent'})
+        report.audit_trail = governance.audit_trail.to_dict()
     # -- artifacts
     report_path = os.path.join(out_dir, "assurance_report.json")
     governance.save_report(report, report_path)
@@ -826,6 +924,12 @@ def assure_model(
             "contributors": _counts([m.contributor for m in metadata]),
         },
         "modules": {
+            "calibrated_protocol": ({"requested": calibrated_protocol,
+                "sha256": protocol['sha256'] if protocol else None,
+                "error": protocol_error,
+                "natural_drift_calibration": cal_path if calibrated_protocol is not None else None,
+                "model_axis": "abstain_review_without_clean_model_null"}
+                if calibrated_protocol is not None else None),
             "data_integrity": {"findings": len(data_assessment.get("findings", [])),
                                "overall_risk": data_assessment.get("overall_risk")},
             "model_integrity": {"findings": model_assessment.get("finding_count", 0),
@@ -863,7 +967,11 @@ def assure_model(
         "reproduce": {
             "command": (f"python -m cviaf.lab assure --corpus {corpus_dir} "
                         f"--model {manifest['model_id']} --out {out_dir} "
-                        f"--access-level {access_level}"),
+                        f"--access-level {access_level}"
+                        + (f" --calibrated-protocol {calibrated_protocol}"
+                           if calibrated_protocol is not None else "")
+                        + (f" --drift-calibration {drift_calibration_path}"
+                           if calibrated_protocol is not None and drift_calibration_path else "")),
             "seeds": {**manifest["seeds"], "drift_assessment": DRIFT_ASSESSMENT_SEED},
             "spec_digest": manifest["spec_digest"],
         },
