@@ -13,8 +13,9 @@ import os
 import numpy as np
 import pytest
 
-from cviaf.lab.fleet import (FLEET_SCHEMA, census, cross_shard_duplicates, main,
-                            shard_summary, weights_digest, within_shard_duplicates)
+from cviaf.lab.fleet import (FLEET_SCHEMA, PipeGuard, census, cross_shard_duplicates,
+                            install_pipe_guard, main, shard_summary, weights_digest,
+                            within_shard_duplicates)
 
 
 def write_model(root, model_id, seed=0, spec_digest=None, weights=None, body=None):
@@ -181,6 +182,65 @@ def test_cli_exit_codes_and_json(tmp_path, capsys):
     capsys.readouterr()
     written = json.loads(open(out, encoding="utf-8").read())
     assert written["n_models"] == 1 and written["ready_for_fpr"] is True
+
+
+# --------------------------------------------------------------------------- #
+# a fleet run must not die because its log reader went away
+# --------------------------------------------------------------------------- #
+
+class _DeadPipe:
+    """A stream whose reader has gone (what `| head` leaves behind)."""
+
+    def __init__(self):
+        self.writes = 0
+
+    def write(self, data):
+        self.writes += 1
+        raise BrokenPipeError(32, "Broken pipe")
+
+    def flush(self):
+        raise BrokenPipeError(32, "Broken pipe")
+
+
+def test_pipe_guard_swallows_a_broken_pipe_instead_of_killing_the_run():
+    """Measured: a resume piped into `head` died at the next progress print and
+    exited with its ledger unwritten. Progress output is not allowed to do that."""
+    guard = PipeGuard(_DeadPipe())
+    guard.write("scoring 20000 models\n")     # must not raise
+    guard.flush()
+    assert guard.broken is True
+    guard.write("more\n")                     # and stays quiet afterwards
+    assert guard.broken is True
+
+
+def test_pipe_guard_passes_writes_through_when_the_reader_is_alive():
+    class _Live:
+        def __init__(self):
+            self.data = ""
+        def write(self, data):
+            self.data += data
+            return len(data)
+        def flush(self):
+            pass
+
+    live = _Live()
+    guard = PipeGuard(live)
+    assert guard.write("hello") == 5 and guard.broken is False
+    guard.flush()
+    assert live.data == "hello"
+
+
+def test_install_pipe_guard_replaces_stdout_and_delegates_attributes(capsys):
+    import sys
+    original = sys.stdout
+    try:
+        guard = install_pipe_guard()
+        assert sys.stdout is guard
+        assert guard.encoding == original.encoding      # __getattr__ delegation
+        print("still printable")
+    finally:
+        sys.stdout = original
+    assert "still printable" in capsys.readouterr().out
 
 
 def test_cli_reports_the_fleet_on_disk_when_present(capsys):

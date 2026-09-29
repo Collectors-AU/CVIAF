@@ -13,8 +13,9 @@ import os
 import pytest
 
 from cviaf.lab.fpr_tpr import (LEDGER_SCHEMA, LedgerError, assign_splits,
-                              evaluate_corpus, exact_upper_bound, rate,
-                              validate_ledger, wilson_interval)
+                              corpus_snapshot, evaluate_corpus, exact_upper_bound,
+                              merge_ledgers, rate, scored_ids, validate_ledger,
+                              wilson_interval)
 
 
 def rec(mid, kind, score, split="unassigned", is_positive=None, corpus="c", **extra):
@@ -548,6 +549,134 @@ def test_zero_denominator_intervals_render_as_not_measured():
                                                rng.normal(0, 1, 3)), min_negatives=20)
     text = render_report(report)
     assert "not measured" in text
+
+
+# --------------------------------------------------------------------------- #
+# resume / merge: a 20k-model scoring run must survive being interrupted
+# --------------------------------------------------------------------------- #
+
+def test_scored_ids_is_what_a_resume_skips_by():
+    led = make_population(n_neg=3, n_pos=2)
+    assert scored_ids(led) == {("c", "clean_s0"), ("c", "clean_s1"),
+                               ("c", "clean_s2"), ("c", "attack_s0"),
+                               ("c", "attack_s1")}
+
+
+def test_merge_does_not_double_count_an_overlapping_model():
+    """Resuming must not inflate a denominator by re-adding a scored model."""
+    base = make_population(n_neg=4, n_pos=2)
+    new = make_population(n_neg=6, n_pos=3)          # overlaps the first 4 + 2
+    merged = merge_ledgers(base, new)
+    keys = [(r["corpus"], r["model_id"]) for r in merged["records"]]
+    assert len(keys) == len(set(keys))
+    assert len(merged["records"]) == 9               # 6 base + 3 genuinely new
+    assert merged["provenance"]["merged_runs"] == 2
+
+
+def test_merge_keeps_the_first_answer_for_a_rescored_model():
+    """A model scored twice (different code) must not silently change its history."""
+    base = ledger([rec("clean_s0", "clean", 0.1)])
+    new = ledger([rec("clean_s0", "clean", 9.9)])
+    merged = merge_ledgers(base, new)
+    assert merged["records"][0]["scores"]["signal"] == 0.1
+
+
+def test_merge_refuses_an_alpha_change():
+    """Appending records measured at a different alpha would mix two thresholds."""
+    with pytest.raises(LedgerError, match="alpha"):
+        merge_ledgers(make_population(alpha=0.05), make_population(alpha=0.10))
+
+
+def test_merge_refuses_a_kind_polarity_change():
+    """`stampfree` reclassified between runs must not merge into one ledger."""
+    base = make_population(positive_kinds=("attack",))
+    new = make_population(positive_kinds=("attack", "stampfree"),
+                          negative_kinds=("clean",))
+    with pytest.raises(LedgerError, match="positive_kinds"):
+        merge_ledgers(base, new)
+
+
+def test_merge_refuses_an_invalid_input_ledger():
+    bad = ledger([rec("clean_s0", "clean", 0.1, is_positive=True)])
+    with pytest.raises(LedgerError):
+        merge_ledgers(make_population(n_neg=2, n_pos=1), bad)
+
+
+def test_corpus_snapshot_detects_a_population_that_grew(tmp_path):
+    """The fleet corpus is written while it is scored: the ledger must record which
+    snapshot it measured, or 'runs/clean_null_local_w1' is an unauditable name."""
+    import json as _json
+    corpus = tmp_path / "shard"
+    corpus.mkdir()
+    reg = corpus / "registry.jsonl"
+    reg.write_text(_json.dumps({"model_id": "m0"}) + "\n", encoding="utf-8")
+    first = corpus_snapshot(str(corpus))
+    with open(reg, "a", encoding="utf-8") as fh:
+        fh.write(_json.dumps({"model_id": "m1"}) + "\n")
+    second = corpus_snapshot(str(corpus))
+    assert first["n_models"] == 1 and second["n_models"] == 2
+    assert first["registry_sha256"] != second["registry_sha256"]
+    assert corpus_snapshot(str(tmp_path / "absent"))["registry_sha256"] is None
+
+
+def test_provenance_extras_do_not_invalidate_a_partial_ledger():
+    """A checkpoint written mid-run is what a resume reads back."""
+    led = make_population(n_neg=2, n_pos=1)
+    led["provenance"].update({"partial": True, "merged_runs": 3,
+                              "corpus_snapshots": {"c": {"n_models": 2}}})
+    assert validate_ledger(led) == []
+
+
+def test_coverage_warning_names_a_signal_no_record_carries():
+    """Measured failure: the first parallel build passed `--reference None` to its
+    workers, so every record silently lost `refdiv_mean_clean` and the ledger still
+    validated — the rule would just have read 'unavailable' forever."""
+    from cviaf.lab.fpr_tpr import signal_coverage_warning
+    records = ledger([rec("clean_s0", "clean", 0.1)] + [
+        rec("clean_s1", "clean", 0.2)])["records"]
+    warning = signal_coverage_warning(["signal", "refdiv_mean_clean"], records)
+    assert warning is not None and "refdiv_mean_clean" in warning
+    # per-record partial coverage stays a hard validator failure, not a warning
+    assert any("not present on every record" in p for p in validate_ledger(ledger(
+        [rec("clean_s0", "clean", 0.1),
+         {"model_id": "clean_s1", "corpus": "c", "kind": "clean",
+          "split": "unassigned", "is_positive": False,
+          "scores": {"signal": 0.2, "refdiv_mean_clean": 0.3}}])))
+
+
+def test_no_coverage_warning_when_every_requested_signal_is_present():
+    from cviaf.lab.fpr_tpr import signal_coverage_warning
+    records = make_population(n_neg=3, n_pos=2)["records"]
+    assert signal_coverage_warning(["signal"], records) is None
+    assert signal_coverage_warning([], records) is None
+
+
+def test_producer_parallel_matches_sequential(tmp_path):
+    """The integration check for the bug above: `--workers N` must produce the same
+    records, byte for byte, as `--workers 1` on the same models. Needs torch and a
+    real corpus, so it skips on the numpy-only lane."""
+    import subprocess
+    import sys
+    pytest.importorskip("torch")
+    corpus = "runs/mvp"
+    if not os.path.isdir(corpus):
+        pytest.skip(f"{corpus} not on disk")
+    outs = []
+    for workers in (1, 3):
+        out = str(tmp_path / f"ledger_w{workers}.json")
+        proc = subprocess.run(
+            [sys.executable, "scripts/build_fpr_ledger.py", "--corpus", corpus,
+             "--out", out, "--n-eval", "8", "--backgrounds", "2",
+             "--max-models", "4", "--workers", str(workers)],
+            capture_output=True, text=True, env={**os.environ, "PYTHONPATH": "."})
+        assert proc.returncode == 0, proc.stdout + proc.stderr
+        outs.append({r["model_id"]: r["scores"]
+                     for r in json.load(open(out, encoding="utf-8"))["records"]})
+    assert set(outs[0]) == set(outs[1])
+    assert set(outs[0][next(iter(outs[0]))]) == set(outs[1][next(iter(outs[1]))])
+    for mid, scores in outs[0].items():
+        for signal, value in scores.items():
+            assert abs(value - outs[1][mid][signal]) < 1e-12
 
 
 def test_smoke_on_the_real_corpus_when_present():

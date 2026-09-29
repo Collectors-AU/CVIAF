@@ -277,6 +277,103 @@ def load_ledger(path: str, require_valid: bool = True) -> Dict[str, Any]:
 # splitting
 # --------------------------------------------------------------------------- #
 
+# --------------------------------------------------------------------------- #
+# resume / merge — a 20k-model ledger must survive a crash
+# --------------------------------------------------------------------------- #
+
+def corpus_snapshot(path: str) -> Dict[str, Any]:
+    """Identify *which* population was scored, not just which directory.
+
+    A fleet corpus is written while it is being read, so "runs/clean_null_local_w1"
+    names a moving target: measured live, the shards grew from 6,815 to 7,101 models
+    within the same session. Recording a digest and a count makes the scored
+    population auditable after the fact, and lets a later run detect that the corpus
+    it is resuming into is no longer the corpus it started on.
+    """
+    import hashlib
+    reg = os.path.join(path, "registry.jsonl")
+    if not os.path.isfile(reg):
+        return {"path": path, "registry": None, "n_models": 0, "registry_sha256": None}
+    h = hashlib.sha256()
+    n = 0
+    with open(reg, "rb") as fh:
+        for line in fh:
+            if line.strip():
+                h.update(line)
+                n += 1
+    return {"path": path, "registry": "registry.jsonl", "n_models": n,
+            "registry_sha256": h.hexdigest()[:16]}
+
+
+def signal_coverage_warning(requested: Sequence[str],
+                            records: Sequence[Dict[str, Any]]) -> Optional[str]:
+    """Complain when a producer asked for signals that no record carries.
+
+    Partial coverage per record is already a hard validator failure; *global* absence
+    is not, because a run with no reference model legitimately has no divergence
+    signal. Measured failure this guards: the first parallel build handed workers
+    ``--reference`` (None) instead of the resolved reference directory, so every
+    record silently lost ``refdiv_mean_clean`` and the ledger still validated — a
+    rule would simply have been reported as unavailable. Silent signal loss is worse
+    than a crash, so it is echoed at the end of every build.
+    """
+    present = set().union(*[set(r.get("scores") or {}) for r in records]) if records else set()
+    missing = [s for s in requested if s not in present]
+    if not missing:
+        return None
+    return (f"signal(s) requested but absent from every record: {missing} — the record "
+            f"population is valid but thinner than asked for; check the reference "
+            "model / --signals wiring before trusting a rule table built from it")
+
+
+def scored_ids(ledger: Dict[str, Any]) -> set:
+    """The (corpus, model_id) pairs already present — what a resume should skip."""
+    return {(r.get("corpus"), r.get("model_id")) for r in ledger.get("records", [])
+            if isinstance(r, dict)}
+
+
+def merge_ledgers(base: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, Any]:
+    """Union two ledgers that must agree on every contract that affects a rate.
+
+    Resuming is only sound if the appended records were produced under the same
+    alpha, direction and kind declaration as the ones already there. Merging silently
+    across a disagreement is how a ledger ends up half-labelled, so this refuses.
+    """
+    for name, ledger in (("base", base), ("new", new)):
+        problems = validate_ledger(ledger)
+        if problems:
+            raise LedgerError(f"{name} ledger invalid: {'; '.join(problems)}")
+    for key in ("alpha", "higher_is_more_anomalous"):
+        if base.get(key) != new.get(key):
+            raise LedgerError(f"refusing to merge: {key} differs "
+                              f"({base.get(key)!r} vs {new.get(key)!r})")
+    for key in ("positive_kinds", "negative_kinds"):
+        if set(base.get(key) or []) != set(new.get(key) or []):
+            raise LedgerError(f"refusing to merge: {key} differs; a kind's polarity "
+                              f"must not change between runs")
+    seen = scored_ids(base)
+    merged = dict(base)
+    out_records = list(base["records"])
+    for rec in new["records"]:
+        key = (rec.get("corpus"), rec.get("model_id"))
+        if key in seen:
+            continue          # already scored; first answer wins (no double-counting)
+        seen.add(key)
+        out_records.append(rec)
+    merged["records"] = out_records
+    prov = dict(base.get("provenance") or {})
+    new_prov = dict(new.get("provenance") or {})
+    snaps = dict(prov.get("corpus_snapshots") or {})
+    snaps.update(new_prov.get("corpus_snapshots") or {})
+    prov.update({k: v for k, v in new_prov.items() if k != "corpus_snapshots"})
+    if snaps:
+        prov["corpus_snapshots"] = snaps
+    prov["partial"] = bool(prov.get("partial") or new_prov.get("partial"))
+    prov["merged_runs"] = int(prov.get("merged_runs", 1)) + 1
+    merged["provenance"] = prov
+    return merged
+
+
 def assign_splits(ledger: Dict[str, Any], seed: int = 0) -> Dict[str, Any]:
     """Deterministically place every `unassigned` record into one half.
 

@@ -33,6 +33,49 @@ from cviaf.lab.manifest_schema import (read_manifest, scan_corpus, validate_regi
 FLEET_SCHEMA = "cviaf.fleet-census.v1"
 
 
+class PipeGuard:
+    """A stdout that survives its reader going away.
+
+    Measured on this lane: a fleet scoring run piped into ``head`` closed the pipe,
+    the next ``print(..., flush=True)`` raised ``BrokenPipeError``, and the run died
+    with the ledger unwritten — 6 models scored and thrown away inside a 20k pass.
+    Logging must never be load-bearing for the work, so progress output degrades to
+    silence instead of taking the process down with it.
+    """
+
+    def __init__(self, stream: Any) -> None:
+        self._stream = stream
+        self.broken = False
+
+    def write(self, data: str) -> int:
+        if self.broken:
+            return len(data)
+        try:
+            return self._stream.write(data)
+        except (BrokenPipeError, ValueError, OSError):
+            self.broken = True
+            return len(data)
+
+    def flush(self) -> None:
+        if self.broken:
+            return
+        try:
+            self._stream.flush()
+        except (BrokenPipeError, ValueError, OSError):
+            self.broken = True
+
+    def __getattr__(self, name: str) -> Any:      # fileno, isatty, encoding, ...
+        return getattr(self._stream, name)
+
+
+def install_pipe_guard() -> PipeGuard:
+    """Wrap ``sys.stdout`` for a long unattended producer; returns the guard."""
+    import sys
+    guard = PipeGuard(getattr(sys.stdout, "_stream", sys.stdout))
+    sys.stdout = guard                                       # type: ignore[assignment]
+    return guard
+
+
 def weights_digest(model_dir: str) -> Optional[str]:
     """sha256 of ``weights.npz``, or None when it is missing."""
     path = os.path.join(model_dir, "weights.npz")
