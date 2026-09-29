@@ -1,0 +1,480 @@
+{
+ "schema": "cviaf.power.v1",
+ "alpha": 0.05,
+ "power": 0.8,
+ "arm_counts": [
+  12,
+  24,
+  48,
+  96,
+  192,
+  384,
+  768,
+  1536,
+  3072
+ ],
+ "baselines": [
+  0.05,
+  0.1458,
+  0.3,
+  0.5
+ ],
+ "method": "exact binomial test of the observed recall against a FIXED baseline; the rejection region is an integer count, and the interval floor is the Wilson interval at the same n",
+ "caveat": "the baseline is estimated from 48 arms (0.1458); treating it as known makes these numbers optimistic. If the corpus must also re-estimate the baseline, double the arm count.",
+ "table": [
+  {
+   "arms": 12,
+   "0.05": {
+    "mde_gain_onesided": 0.2738,
+    "mde_gain_twosided": 0.2738,
+    "mde_loss_onesided": NaN,
+    "interval_floor_gain": 0.1583,
+    "interval_floor_loss": NaN
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.351,
+    "mde_gain_twosided": 0.351,
+    "mde_loss_onesided": NaN,
+    "interval_floor_gain": 0.2292,
+    "interval_floor_loss": NaN
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.3559,
+    "mde_gain_twosided": 0.4307,
+    "mde_loss_onesided": 0.2816,
+    "interval_floor_gain": 0.2417,
+    "interval_floor_loss": 0.2583
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.3693,
+    "mde_gain_twosided": 0.3693,
+    "mde_loss_onesided": 0.3693,
+    "interval_floor_gain": 0.2917,
+    "interval_floor_loss": 0.2917
+   }
+  },
+  {
+   "arms": 24,
+   "0.05": {
+    "mde_gain_onesided": 0.1679,
+    "mde_gain_twosided": 0.2142,
+    "mde_loss_onesided": NaN,
+    "interval_floor_gain": 0.0958,
+    "interval_floor_loss": NaN
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.2513,
+    "mde_gain_twosided": 0.2513,
+    "mde_loss_onesided": 0.1365,
+    "interval_floor_gain": 0.125,
+    "interval_floor_loss": 0.125
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.2642,
+    "mde_gain_twosided": 0.3045,
+    "mde_loss_onesided": 0.2028,
+    "interval_floor_gain": 0.1792,
+    "interval_floor_loss": 0.1958
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.2597,
+    "mde_gain_twosided": 0.2969,
+    "mde_loss_onesided": 0.2597,
+    "interval_floor_gain": 0.1875,
+    "interval_floor_loss": 0.1875
+   }
+  },
+  {
+   "arms": 48,
+   "0.05": {
+    "mde_gain_onesided": 0.1097,
+    "mde_gain_twosided": 0.133,
+    "mde_loss_onesided": NaN,
+    "interval_floor_gain": 0.0646,
+    "interval_floor_loss": NaN
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.1496,
+    "mde_gain_twosided": 0.1715,
+    "mde_loss_onesided": 0.1137,
+    "interval_floor_gain": 0.0938,
+    "interval_floor_loss": 0.0937
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.1879,
+    "mde_gain_twosided": 0.2087,
+    "mde_loss_onesided": 0.1637,
+    "interval_floor_gain": 0.1271,
+    "interval_floor_loss": 0.1229
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.1911,
+    "mde_gain_twosided": 0.2109,
+    "mde_loss_onesided": 0.1911,
+    "interval_floor_gain": 0.1354,
+    "interval_floor_loss": 0.1354
+   }
+  },
+  {
+   "arms": 96,
+   "0.05": {
+    "mde_gain_onesided": 0.078,
+    "mde_gain_twosided": 0.078,
+    "mde_loss_onesided": 0.0414,
+    "interval_floor_gain": 0.0385,
+    "interval_floor_loss": 0.0448
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.1052,
+    "mde_gain_twosided": 0.1162,
+    "mde_loss_onesided": 0.0783,
+    "interval_floor_gain": 0.0677,
+    "interval_floor_loss": 0.0677
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.1227,
+    "mde_gain_twosided": 0.1438,
+    "mde_loss_onesided": 0.1094,
+    "interval_floor_gain": 0.0906,
+    "interval_floor_loss": 0.0969
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.1299,
+    "mde_gain_twosided": 0.1502,
+    "mde_loss_onesided": 0.1299,
+    "interval_floor_gain": 0.099,
+    "interval_floor_loss": 0.099
+   }
+  },
+  {
+   "arms": 192,
+   "0.05": {
+    "mde_gain_onesided": 0.0491,
+    "mde_gain_twosided": 0.0547,
+    "mde_loss_onesided": 0.0339,
+    "interval_floor_gain": 0.0307,
+    "interval_floor_loss": 0.0318
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.0694,
+    "mde_gain_twosided": 0.0803,
+    "mde_loss_onesided": 0.0609,
+    "interval_floor_gain": 0.0495,
+    "interval_floor_loss": 0.0494
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.0864,
+    "mde_gain_twosided": 0.097,
+    "mde_loss_onesided": 0.0827,
+    "interval_floor_gain": 0.0672,
+    "interval_floor_loss": 0.063
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.0897,
+    "mde_gain_twosided": 0.1052,
+    "mde_loss_onesided": 0.0897,
+    "interval_floor_gain": 0.0703,
+    "interval_floor_loss": 0.0703
+   }
+  },
+  {
+   "arms": 384,
+   "0.05": {
+    "mde_gain_onesided": 0.0308,
+    "mde_gain_twosided": 0.0364,
+    "mde_loss_onesided": 0.0264,
+    "interval_floor_gain": 0.0216,
+    "interval_floor_loss": 0.0227
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.0497,
+    "mde_gain_twosided": 0.0551,
+    "mde_loss_onesided": 0.0429,
+    "interval_floor_gain": 0.0352,
+    "interval_floor_loss": 0.0351
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.0605,
+    "mde_gain_twosided": 0.0684,
+    "mde_loss_onesided": 0.0566,
+    "interval_floor_gain": 0.0451,
+    "interval_floor_loss": 0.0461
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.0643,
+    "mde_gain_twosided": 0.072,
+    "mde_loss_onesided": 0.0643,
+    "interval_floor_gain": 0.0508,
+    "interval_floor_loss": 0.0508
+   }
+  },
+  {
+   "arms": 768,
+   "0.05": {
+    "mde_gain_onesided": 0.0224,
+    "mde_gain_twosided": 0.0251,
+    "mde_loss_onesided": 0.0182,
+    "interval_floor_gain": 0.0158,
+    "interval_floor_loss": 0.0155
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.0332,
+    "mde_gain_twosided": 0.0372,
+    "mde_loss_onesided": 0.0311,
+    "interval_floor_gain": 0.0254,
+    "interval_floor_loss": 0.0254
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.0419,
+    "mde_gain_twosided": 0.0472,
+    "mde_loss_onesided": 0.0405,
+    "interval_floor_gain": 0.0327,
+    "interval_floor_loss": 0.0324
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.0457,
+    "mde_gain_twosided": 0.0509,
+    "mde_loss_onesided": 0.0457,
+    "interval_floor_gain": 0.0358,
+    "interval_floor_loss": 0.0358
+   }
+  },
+  {
+   "arms": 1536,
+   "0.05": {
+    "mde_gain_onesided": 0.0149,
+    "mde_gain_twosided": 0.0169,
+    "mde_loss_onesided": 0.0133,
+    "interval_floor_gain": 0.0109,
+    "interval_floor_loss": 0.0106
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.0234,
+    "mde_gain_twosided": 0.0261,
+    "mde_loss_onesided": 0.0223,
+    "interval_floor_gain": 0.0179,
+    "interval_floor_loss": 0.0179
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.0294,
+    "mde_gain_twosided": 0.0334,
+    "mde_loss_onesided": 0.0293,
+    "interval_floor_gain": 0.0232,
+    "interval_floor_loss": 0.023
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.0319,
+    "mde_gain_twosided": 0.0358,
+    "mde_loss_onesided": 0.0319,
+    "interval_floor_gain": 0.0251,
+    "interval_floor_loss": 0.0251
+   }
+  },
+  {
+   "arms": 3072,
+   "0.05": {
+    "mde_gain_onesided": 0.0104,
+    "mde_gain_twosided": 0.0118,
+    "mde_loss_onesided": 0.0095,
+    "interval_floor_gain": 0.0078,
+    "interval_floor_loss": 0.0078
+   },
+   "0.1458": {
+    "mde_gain_onesided": 0.0162,
+    "mde_gain_twosided": 0.0185,
+    "mde_loss_onesided": 0.0156,
+    "interval_floor_gain": 0.0126,
+    "interval_floor_loss": 0.0125
+   },
+   "0.3": {
+    "mde_gain_onesided": 0.0207,
+    "mde_gain_twosided": 0.0237,
+    "mde_loss_onesided": 0.0205,
+    "interval_floor_gain": 0.0162,
+    "interval_floor_loss": 0.0163
+   },
+   "0.5": {
+    "mde_gain_onesided": 0.0227,
+    "mde_gain_twosided": 0.0253,
+    "mde_loss_onesided": 0.0227,
+    "interval_floor_gain": 0.0177,
+    "interval_floor_loss": 0.0177
+   }
+  }
+ ],
+ "declared_delta": {
+  "delta": 0.05,
+  "alpha": 0.05,
+  "power": 0.8,
+  "n_max_searched": 20000,
+  "per_baseline": {
+   "0.05": {
+    "gain_onesided": 180,
+    "gain_twosided": 213,
+    "loss_onesided": "undefined: a 0.05 loss from a 0.05 baseline is not a recall",
+    "gain_onesided_reject_at": 18
+   },
+   "0.1458": {
+    "gain_onesided": 352,
+    "gain_twosided": 453,
+    "loss_onesided": 274,
+    "gain_onesided_reject_at": 69
+   },
+   "0.3": {
+    "gain_onesided": 566,
+    "gain_twosided": 695,
+    "loss_onesided": 508,
+    "gain_onesided_reject_at": 199
+   },
+   "0.5": {
+    "gain_onesided": 633,
+    "gain_twosided": 805,
+    "loss_onesided": 633,
+    "gain_onesided_reject_at": 349
+   }
+  },
+  "none_found_is_an_answer": "null means no arm count up to n_max_searched reaches the requested power: the change is smaller than any design in this range can resolve"
+ },
+ "paired": {
+  "method": "paired (McNemar) \u2014 two rules scored on the same arms",
+  "deltas": [
+   0.02,
+   0.05,
+   0.1
+  ],
+  "discordances": [
+   0.05,
+   0.1,
+   0.2,
+   0.4
+  ],
+  "cells": {
+   "0.02": {
+    "0.05": {
+     "n_arms": 982,
+     "delta": 0.02,
+     "discordance": 0.05,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.1": {
+     "n_arms": 1963,
+     "delta": 0.02,
+     "discordance": 0.1,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.2": {
+     "n_arms": 3925,
+     "delta": 0.02,
+     "discordance": 0.2,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.4": {
+     "n_arms": 7849,
+     "delta": 0.02,
+     "discordance": 0.4,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    }
+   },
+   "0.05": {
+    "0.05": {
+     "n_arms": 157,
+     "delta": 0.05,
+     "discordance": 0.05,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.1": {
+     "n_arms": 314,
+     "delta": 0.05,
+     "discordance": 0.1,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.2": {
+     "n_arms": 628,
+     "delta": 0.05,
+     "discordance": 0.2,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.4": {
+     "n_arms": 1256,
+     "delta": 0.05,
+     "discordance": 0.4,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    }
+   },
+   "0.1": {
+    "0.05": {
+     "n_arms": 40,
+     "delta": 0.1,
+     "discordance": 0.05,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.1": {
+     "n_arms": 79,
+     "delta": 0.1,
+     "discordance": 0.1,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.2": {
+     "n_arms": 157,
+     "delta": 0.1,
+     "discordance": 0.2,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    },
+    "0.4": {
+     "n_arms": 314,
+     "delta": 0.1,
+     "discordance": 0.4,
+     "alpha": 0.05,
+     "power": 0.8,
+     "sided": 2,
+     "method": "normal approximation to exact McNemar",
+     "note": "discordance is the share of arms the two rules classify differently; it is NOT known for recall until a corpus with attacked arms exists, so the table is reported over a range"
+    }
+   }
+  }
+ }
+}

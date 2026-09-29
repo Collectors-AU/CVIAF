@@ -1,0 +1,660 @@
+{
+ "schema": "cviaf.fpr-population.v1",
+ "ledger_schema": "cviaf.fpr-tpr-ledger.v1",
+ "alpha": 0.05,
+ "min_negatives": 20,
+ "n_records": 7503,
+ "n_positives": 0,
+ "n_negatives": 7503,
+ "positive_free": true,
+ "note": "a positive-free ledger can still test population homogeneity: the FPR is the only thing it can measure, and whether the FPR is one number is exactly the question. TPR is out of reach here.",
+ "split_stability": {
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "signals": {
+   "ctc_mean_clean": {
+    "n_seeds": 5,
+    "min": 0.0437,
+    "max": 0.0531,
+    "spread": 0.009399999999999999,
+    "mean": 0.04868,
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.04868035190615836,
+     "n_groups": 5,
+     "n_trials": 18755,
+     "statistic": 3.7142156789921708,
+     "df": 4,
+     "p_value": 0.4460617109170122,
+     "verdict": "homogeneous",
+     "note": "p < 0.05 means the shard rates differ by more than binomial noise: the pooled FPR is a mixture, not a property of the fleet"
+    },
+    "per_seed": [
+     {
+      "seed": 0,
+      "numerator": 186,
+      "denominator": 3751,
+      "rate": 0.0496,
+      "ci95": [
+       0.0431,
+       0.057
+      ]
+     },
+     {
+      "seed": 1,
+      "numerator": 185,
+      "denominator": 3751,
+      "rate": 0.0493,
+      "ci95": [
+       0.0428,
+       0.0567
+      ]
+     },
+     {
+      "seed": 2,
+      "numerator": 199,
+      "denominator": 3751,
+      "rate": 0.0531,
+      "ci95": [
+       0.0463,
+       0.0607
+      ]
+     },
+     {
+      "seed": 3,
+      "numerator": 179,
+      "denominator": 3751,
+      "rate": 0.0477,
+      "ci95": [
+       0.0413,
+       0.055
+      ]
+     },
+     {
+      "seed": 4,
+      "numerator": 164,
+      "denominator": 3751,
+      "rate": 0.0437,
+      "ci95": [
+       0.0376,
+       0.0507
+      ]
+     }
+    ]
+   },
+   "ctc_peak_clean": {
+    "n_seeds": 5,
+    "min": 0.0,
+    "max": 0.0,
+    "spread": 0.0,
+    "mean": 0.0,
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.0,
+     "n_groups": 5,
+     "statistic": 0.0,
+     "df": 4,
+     "p_value": 1.0,
+     "verdict": "homogeneous",
+     "note": "the pooled rate is 0 or 1: no scatter possible"
+    },
+    "per_seed": [
+     {
+      "seed": 0,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 1,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 2,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 3,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 4,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     }
+    ]
+   },
+   "ctc_q95_clean": {
+    "n_seeds": 5,
+    "min": 0.0,
+    "max": 0.0,
+    "spread": 0.0,
+    "mean": 0.0,
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.0,
+     "n_groups": 5,
+     "statistic": 0.0,
+     "df": 4,
+     "p_value": 1.0,
+     "verdict": "homogeneous",
+     "note": "the pooled rate is 0 or 1: no scatter possible"
+    },
+    "per_seed": [
+     {
+      "seed": 0,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 1,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 2,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 3,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     },
+     {
+      "seed": 4,
+      "numerator": 0,
+      "denominator": 3751,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.001
+      ]
+     }
+    ]
+   },
+   "refdiv_mean_clean": {
+    "n_seeds": 5,
+    "min": 0.044,
+    "max": 0.0517,
+    "spread": 0.0077000000000000055,
+    "mean": 0.048260000000000004,
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.04825379898693682,
+     "n_groups": 5,
+     "n_trials": 18755,
+     "statistic": 4.307290651067056,
+     "df": 4,
+     "p_value": 0.3660130481299002,
+     "verdict": "homogeneous",
+     "note": "p < 0.05 means the shard rates differ by more than binomial noise: the pooled FPR is a mixture, not a property of the fleet"
+    },
+    "per_seed": [
+     {
+      "seed": 0,
+      "numerator": 183,
+      "denominator": 3751,
+      "rate": 0.0488,
+      "ci95": [
+       0.0423,
+       0.0562
+      ]
+     },
+     {
+      "seed": 1,
+      "numerator": 194,
+      "denominator": 3751,
+      "rate": 0.0517,
+      "ci95": [
+       0.0451,
+       0.0593
+      ]
+     },
+     {
+      "seed": 2,
+      "numerator": 169,
+      "denominator": 3751,
+      "rate": 0.0451,
+      "ci95": [
+       0.0389,
+       0.0522
+      ]
+     },
+     {
+      "seed": 3,
+      "numerator": 194,
+      "denominator": 3751,
+      "rate": 0.0517,
+      "ci95": [
+       0.0451,
+       0.0593
+      ]
+     },
+     {
+      "seed": 4,
+      "numerator": 165,
+      "denominator": 3751,
+      "rate": 0.044,
+      "ci95": [
+       0.0379,
+       0.051
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "shard_heterogeneity": {
+  "corpora": [
+   "../runs/clean_null_local_w1",
+   "../runs/clean_null_local_w2",
+   "../runs/clean_null_local_w3",
+   "../runs/clean_null_local_w4",
+   "../runs/clean_null_local_w5",
+   "../runs/clean_null_local_w6"
+  ],
+  "reference_corpus": "../runs/clean_null_local_w1",
+  "signals": {
+   "ctc_mean_clean": {
+    "per_shard": [
+     {
+      "corpus": "../runs/clean_null_local_w1",
+      "numerator": 24,
+      "denominator": 568,
+      "rate": 0.0423,
+      "ci95": [
+       0.0286,
+       0.0621
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w2",
+      "numerator": 21,
+      "denominator": 593,
+      "rate": 0.0354,
+      "ci95": [
+       0.0233,
+       0.0535
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w3",
+      "numerator": 25,
+      "denominator": 611,
+      "rate": 0.0409,
+      "ci95": [
+       0.0279,
+       0.0597
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w4",
+      "numerator": 36,
+      "denominator": 633,
+      "rate": 0.0569,
+      "ci95": [
+       0.0414,
+       0.0777
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w5",
+      "numerator": 23,
+      "denominator": 661,
+      "rate": 0.0348,
+      "ci95": [
+       0.0233,
+       0.0517
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w6",
+      "numerator": 37,
+      "denominator": 684,
+      "rate": 0.0541,
+      "ci95": [
+       0.0395,
+       0.0737
+      ]
+     }
+    ],
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.04426666666666667,
+     "n_groups": 6,
+     "n_trials": 3750,
+     "statistic": 6.655267148041555,
+     "df": 5,
+     "p_value": 0.24756648452769725,
+     "verdict": "homogeneous",
+     "note": "p < 0.05 means the shard rates differ by more than binomial noise: the pooled FPR is a mixture, not a property of the fleet"
+    },
+    "shards_whose_interval_excludes_pooled": [],
+    "lowest_shard": {
+     "corpus": "../runs/clean_null_local_w5",
+     "rate": 0.0348
+    },
+    "reference_shard_is_lowest": false,
+    "verdict": "homogeneous",
+    "caveat": null
+   },
+   "ctc_peak_clean": {
+    "per_shard": [
+     {
+      "corpus": "../runs/clean_null_local_w1",
+      "numerator": 0,
+      "denominator": 568,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0067
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w2",
+      "numerator": 0,
+      "denominator": 593,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0064
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w3",
+      "numerator": 0,
+      "denominator": 611,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0062
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w4",
+      "numerator": 0,
+      "denominator": 633,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.006
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w5",
+      "numerator": 0,
+      "denominator": 661,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0058
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w6",
+      "numerator": 0,
+      "denominator": 684,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0056
+      ]
+     }
+    ],
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.0,
+     "n_groups": 6,
+     "statistic": 0.0,
+     "df": 5,
+     "p_value": 1.0,
+     "verdict": "homogeneous",
+     "note": "the pooled rate is 0 or 1: no scatter possible"
+    },
+    "shards_whose_interval_excludes_pooled": [],
+    "lowest_shard": {
+     "corpus": "../runs/clean_null_local_w1",
+     "rate": 0.0
+    },
+    "reference_shard_is_lowest": true,
+    "verdict": "homogeneous",
+    "caveat": null
+   },
+   "ctc_q95_clean": {
+    "per_shard": [
+     {
+      "corpus": "../runs/clean_null_local_w1",
+      "numerator": 0,
+      "denominator": 568,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0067
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w2",
+      "numerator": 0,
+      "denominator": 593,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0064
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w3",
+      "numerator": 0,
+      "denominator": 611,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0062
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w4",
+      "numerator": 0,
+      "denominator": 633,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.006
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w5",
+      "numerator": 0,
+      "denominator": 661,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0058
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w6",
+      "numerator": 0,
+      "denominator": 684,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.0056
+      ]
+     }
+    ],
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.0,
+     "n_groups": 6,
+     "statistic": 0.0,
+     "df": 5,
+     "p_value": 1.0,
+     "verdict": "homogeneous",
+     "note": "the pooled rate is 0 or 1: no scatter possible"
+    },
+    "shards_whose_interval_excludes_pooled": [],
+    "lowest_shard": {
+     "corpus": "../runs/clean_null_local_w1",
+     "rate": 0.0
+    },
+    "reference_shard_is_lowest": true,
+    "verdict": "homogeneous",
+    "caveat": null
+   },
+   "refdiv_mean_clean": {
+    "per_shard": [
+     {
+      "corpus": "../runs/clean_null_local_w1",
+      "numerator": 18,
+      "denominator": 568,
+      "rate": 0.0317,
+      "ci95": [
+       0.0201,
+       0.0495
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w2",
+      "numerator": 27,
+      "denominator": 593,
+      "rate": 0.0455,
+      "ci95": [
+       0.0315,
+       0.0654
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w3",
+      "numerator": 38,
+      "denominator": 611,
+      "rate": 0.0622,
+      "ci95": [
+       0.0456,
+       0.0842
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w4",
+      "numerator": 39,
+      "denominator": 633,
+      "rate": 0.0616,
+      "ci95": [
+       0.0454,
+       0.0831
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w5",
+      "numerator": 33,
+      "denominator": 661,
+      "rate": 0.0499,
+      "ci95": [
+       0.0358,
+       0.0693
+      ]
+     },
+     {
+      "corpus": "../runs/clean_null_local_w6",
+      "numerator": 38,
+      "denominator": 684,
+      "rate": 0.0556,
+      "ci95": [
+       0.0407,
+       0.0753
+      ]
+     }
+    ],
+    "homogeneity": {
+     "status": "measured",
+     "pooled_rate": 0.05146666666666667,
+     "n_groups": 6,
+     "n_trials": 3750,
+     "statistic": 8.019515169780464,
+     "df": 5,
+     "p_value": 0.15516338275924013,
+     "verdict": "homogeneous",
+     "note": "p < 0.05 means the shard rates differ by more than binomial noise: the pooled FPR is a mixture, not a property of the fleet"
+    },
+    "shards_whose_interval_excludes_pooled": [
+     {
+      "corpus": "../runs/clean_null_local_w1",
+      "rate": 0.0317,
+      "ci95": [
+       0.0201,
+       0.0495
+      ]
+     }
+    ],
+    "lowest_shard": {
+     "corpus": "../runs/clean_null_local_w1",
+     "rate": 0.0317
+    },
+    "reference_shard_is_lowest": true,
+    "verdict": "homogeneous",
+    "caveat": "1 shard(s) whose own interval excludes the pooled rate"
+   }
+  }
+ },
+ "verdicts": {
+  "one_population": true,
+  "split_stable": true,
+  "refusals": [],
+  "warnings": [
+   "refdiv_mean_clean: Q=8.0 (p=0.1552) is consistent with one rate, but 1 shard's own interval excludes the pooled rate (clean_null_local_w1): quote the pooled figure with that shard's own rate beside it"
+  ]
+ }
+}

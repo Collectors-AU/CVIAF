@@ -1,0 +1,42 @@
+{
+ "schema": "cviaf.manifest-validation.v1",
+ "corpora": {
+  "runs/clean_null": {
+   "problems": [],
+   "n_models": 50,
+   "foreign": {}
+  },
+  "runs/day1": {
+   "problems": [],
+   "n_models": 83,
+   "foreign": {}
+  },
+  "runs/real_cifar": {
+   "problems": [],
+   "n_models": 73,
+   "foreign": {}
+  },
+  "runs/mvp": {
+   "problems": [],
+   "n_models": 8,
+   "foreign": {}
+  },
+  "runs/stampfree": {
+   "problems": [],
+   "n_models": 4,
+   "foreign": {}
+  },
+  "runs/day1_backup_prepaired": {
+   "problems": [],
+   "n_models": 64,
+   "foreign": {}
+  },
+  "runs/drift_cells": {
+   "problems": [],
+   "n_models": 0,
+   "foreign": {
+    "cviaf.drift-cells/1": 11
+   }
+  }
+ }
+}

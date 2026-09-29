@@ -1,0 +1,124 @@
+{
+ "run_id": "243ee6f9-1847-49ac-a586-4c2890efb6d0",
+ "created_utc": "2026-09-28T21:03:25.268025+00:00",
+ "pipeline_version": "cviaf-pipeline-1.0.0",
+ "environment": {
+  "pipeline_version": "cviaf-pipeline-1.0.0",
+  "python": "3.12.14",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "2.5.3",
+  "cpu_count": 8,
+  "utc": "2026-09-28T21:03:25.307416+00:00"
+ },
+ "asset": {
+  "model_id": "realcifar_substitution_r0.25_s6",
+  "corpus": "runs/real_cifar",
+  "ground_truth_used_for_scoring_only": {
+   "kind": "substitution",
+   "rate_requested": 0.25,
+   "rate_actual": 0.0,
+   "n_poisoned": 0,
+   "attack_success_rate": {
+    "asr": 0.0,
+    "applicable": false,
+    "criterion": "model_attack_no_trigger",
+    "note": "model attack: no test-time trigger; the behaviour divergence is the ground truth"
+   },
+   "note": "recorded in the bundle for scoring and review; the engine never received it, so the report's findings are blind"
+  },
+  "artifact_digests": {
+   "weights_digest": "0e18c3800e13cbe73b5fc612fcf00dc610e8c2fd010cd34812ea092048f738a7",
+   "head_digest": "fbe457bc98b6144807cb4adcb33f67110d0fca0a09497bfaaa294c354993d64d",
+   "backbone_digest": "33d95b9633b01721243f0f10930ff463d7a931ea8d2f3cae49abe18d00378216",
+   "n_params_head": 3512,
+   "n_params_backbone": 10624,
+   "clean_weights_digest": "295ca738beca1ef16da4f7d10b31ef136cee01342bc48687e6642e4b8bf1ba19"
+  },
+  "spec_digest": "8608ed22c8a4d4e0",
+  "contribution_label_used_for_scoring": "substitution"
+ },
+ "inputs": {
+  "coco": "runs/real_cifar/assurance_subst_s6/intake/instances.json",
+  "yolo": "runs/real_cifar/assurance_subst_s6/intake/yolo",
+  "n_images": 900,
+  "n_contributors": 1,
+  "contributors": {
+   "cifar10": 900
+  }
+ },
+ "modules": {
+  "calibrated_protocol": null,
+  "data_integrity": {
+   "findings": 10,
+   "overall_risk": "HIGH"
+  },
+  "model_integrity": {
+   "findings": 2,
+   "checks_performed": [
+    "neural_cleanse",
+    "weight_analysis",
+    "entropy_probe",
+    "behavioral_fingerprint"
+   ],
+   "checks_skipped": [],
+   "access_level": "white-box"
+  },
+  "inference_provenance": {
+   "n_records": 10,
+   "n_flagged": 8,
+   "signing_mode": "ed25519"
+  },
+  "distribution_shift": {
+   "shift_detected": false,
+   "severity": "LOW",
+   "shift_type": "none",
+   "natural_vs_adversarial": "not_assessed",
+   "mean_mahalanobis": 12.514651934131468,
+   "mmd_p_value": 0.27,
+   "seed": 20260928,
+   "calibration_artifact": "drift_calibration.json"
+  }
+ },
+ "artifacts": {
+  "assurance_report": {
+   "path": "runs/real_cifar/assurance_subst_s6/assurance_report.json",
+   "sha256": "22213876c4bb0bf994ff25b40e33ff895c646a12ae92c686583c62725609da29"
+  },
+  "audit_trail": {
+   "path": "runs/real_cifar/assurance_subst_s6/audit_trail.json",
+   "sha256": "2379da2ec8161bf708e017ba4b7a63ead23101af08fa0e535a15cfc68dc1e2d3"
+  },
+  "coverage_statement": {
+   "path": "runs/real_cifar/assurance_subst_s6/coverage_statement.json",
+   "sha256": "fc9e3caa2e45c653fc01ebaea47b38715af6909b9889adff546b84cd72859759"
+  },
+  "inference_records": {
+   "path": "runs/real_cifar/assurance_subst_s6/inference_records.json",
+   "sha256": "bb59d67521afcd1f3e8458a997393da824d0f744a88afe28a71436b2efc048a6"
+  }
+ },
+ "report_summary": {
+  "overall_risk": "CRITICAL",
+  "overall_disposition": "quarantine",
+  "n_findings": 18,
+  "audit_trail_valid": true,
+  "audit_trail_length": 7
+ },
+ "schema_validation": {
+  "schema": "https://cviaf.local/schemas/assurance-report-3.0.0.json",
+  "valid": true,
+  "errors": []
+ },
+ "reproduce": {
+  "command": "python -m cviaf.lab assure --corpus runs/real_cifar --model realcifar_substitution_r0.25_s6 --out runs/real_cifar/assurance_subst_s6 --access-level white-box",
+  "seeds": {
+   "scene": 1000,
+   "attack": 0,
+   "detector": 6,
+   "drift_assessment": 20260928
+  },
+  "spec_digest": "8608ed22c8a4d4e0"
+ },
+ "elapsed_seconds": 341.3
+}

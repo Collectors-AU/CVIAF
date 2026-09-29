@@ -1,0 +1,136 @@
+{
+ "lab_version": "task3-real-backbone-1",
+ "model_id": "realcifar_substitution_r0.25_s7",
+ "created_utc": "2026-09-28T20:46:27Z",
+ "spec": {
+  "kind": "substitution",
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 64,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 400,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12.0,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 7
+  },
+  "backbone": {
+   "backbone": "resnet18_stem1",
+   "pretrained": true,
+   "finetune": false,
+   "runtime": "torch",
+   "img_size": 64,
+   "n_classes": 3,
+   "hidden": 48,
+   "seed": 7,
+   "normalize": "imagenet",
+   "pretrained_loaded": true
+  },
+  "dataset": {
+   "source": "cifar-10",
+   "split": "train",
+   "classes": [
+    0,
+    1,
+    2
+   ],
+   "class_names": [
+    "airplane",
+    "automobile",
+    "bird"
+   ],
+   "n_per_class": 300,
+   "seed": 1000,
+   "img_size": 64,
+   "upsample": "nearest_index_repeat",
+   "box_cells": 2.0,
+   "boxes": "one centred square box per image",
+   "cache_dir": "data/cifar10",
+   "pool_order": "content-hash (source independent)"
+  },
+  "eval_n": 60,
+  "train_n": 900,
+  "epochs": 400,
+  "lr": 0.003,
+  "batch": 32,
+  "hidden": 48,
+  "magnitude": 0.25,
+  "derived_from": "realcifar_clean_s7"
+ },
+ "spec_digest": "a0f24f2bdddf2c56",
+ "dataset_digests": {
+  "train": "d0eec0016d3777098e6c3088c8c112340a7f54830a3f5f442d7c3290f36a3dc3",
+  "eval": "6211aab2234bf3584a274d2c39b09b7202397cac2d73f2c76a5dab180e867c3b"
+ },
+ "attack_digest": "aa1c55602f4debf9",
+ "seeds": {
+  "scene": 1000,
+  "attack": 0,
+  "detector": 7
+ },
+ "artifact": {
+  "weights_digest": "a0b1f111d696652393e23e2be2e3c6a782b32aad7262411830e7d95441a53be4",
+  "head_digest": "05aa635d71765d788ed04ab8a3baa6c63b31790a635664ec188075909719f4c8",
+  "backbone_digest": "e39e7449a6f7804a825016d47908a57c92e2dc5e67988ac2202b777af7a2ee2d",
+  "n_params_head": 3512,
+  "n_params_backbone": 10624,
+  "clean_weights_digest": "65931de13cbc7e234de65dbc90ea30857ca7f04bbcc2722605d9b16017d6ae82"
+ },
+ "ground_truth": {
+  "kind": "substitution",
+  "trigger": "none",
+  "trigger_loc": "none",
+  "target_class": null,
+  "rate_requested": 0.25,
+  "rate_actual": 0.0,
+  "n_poisoned": 0,
+  "mal_contributor": "vendor_x"
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "mean_iou": 0.0,
+   "tp": 0,
+   "fp": 22,
+   "fn": 60
+  },
+  "attack_success_rate": {
+   "asr": 0.0,
+   "applicable": false,
+   "criterion": "model_attack_no_trigger",
+   "note": "model attack: no test-time trigger; the behaviour divergence is the ground truth"
+  },
+  "behaviour_divergence": {
+   "f1_before": 0.03669724770642202,
+   "f1_after": 0.0,
+   "f1_relative_drop": 1.0,
+   "applicable": true,
+   "note": "utility loss on the clean held-out CIFAR split, the model-attack analogue of the ASR"
+  }
+ },
+ "quality_flags": {
+  "backdoor_weak": false,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "control",
+  "asr_gate_value": 1.0,
+  "model_effect_weak": false,
+  "bdr_floor": 0.0,
+  "is_model_attack": true
+ },
+ "timing_seconds": 0.26,
+ "environment": {
+  "python": "3.12.14",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "2.5.3",
+  "torch": "2.14.0",
+  "backbone_runtime": "torch",
+  "reproducibility_note": "seeded torch + frozen backbone; same seed yields the same weights_digest"
+ }
+}

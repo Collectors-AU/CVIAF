@@ -19,6 +19,31 @@ from cviaf.lab.evaluate import load_registry, train_spec_from_manifest
 from cviaf.lab.poison import trigger_view
 from cviaf.lab.train import ModelArtifact, attack_success_rate, build_splits
 
+# This instrument builds its contrasts out of spec.scene/spec.attack: it stamps a trigger
+# into the SAME held-out images to separate a visual stamp artifact from a model effect.
+# A real-backbone weight-space arm has neither scene nor attack spec and no test-time
+# trigger at all, so every contrast here is undefined for it. Refusing early, with the
+# substitute instruments named, is the difference between this and the AttributeError on
+# `spec.n_train` that a corpus sweep hit five frames deep inside build_splits.
+REAL_BACKBONE_GUIDANCE = (
+    "null_suite needs a synthetic detector manifest (spec.scene + spec.attack) to build "
+    "paired stamped/unstamped views; a real-backbone corpus has neither. Use instead: "
+    "scripts/battery_model_attacks.py for weight-space arms (calibrated asset rule, "
+    "behaviour_divergence ground truth) and cviaf.lab.fpr_tpr over runs/fpr_ledger.json "
+    "for FPR/TPR on clean vs attack assets."
+)
+
+
+def require_synthetic_corpus(registry) -> None:
+    """Raise a ValueError naming the right instrument when the corpus cannot be used."""
+    offenders = [e["manifest"]["model_id"] for e in registry
+                 if train_spec_from_manifest(e["manifest"]) is None]
+    if offenders:
+        raise ValueError(
+            f"corpus has {len(offenders)} manifest(s) with no synthetic train spec "
+            f"(e.g. {offenders[:3]}); {REAL_BACKBONE_GUIDANCE}")
+
+
 SIGNALS = ("ctc", "refdiv", "ftc", "fft")
 FUSIONS = {"with_ftc": ("ctc", "refdiv", "ftc"),
            "without_ftc": ("ctc", "refdiv")}
@@ -117,6 +142,7 @@ def run(corpus, seeds=(5, 6, 7), attacks=("oga", "oda", "rma"), n_eval=24,
     if not 0 < alpha < 1 or n_eval < 1 or n_cal < 20:
         raise ValueError("invalid alpha or sample sizes; n_cal must be >=20 for alpha=.05")
     registry = load_registry(corpus)
+    require_synthetic_corpus(registry)
     lookup = {(e["manifest"]["spec"]["detector"]["seed"],
                e["manifest"]["ground_truth"]["kind"]): e for e in registry}
     rows = []

@@ -1,0 +1,31 @@
+{
+ "schema": "cviaf.attack-sweep.v1",
+ "corpus": "runs/real_cifar_sweep",
+ "note": "Dose ladder for the missing population: every fleet rule is fpr_only because no attacked arm shares a population with the clean null. Arms are DERIVED from the existing clean real-backbone detectors by post-hoc weight edits (tamper_head / tamper_prune), so a ladder costs evaluation time, not training time. The pilot places the ladder and validates the arm contract; the full sweep sizes each (kind, dose) cell from the power table.",
+ "kinds": {
+  "weight_tamper": {
+   "param": "scale",
+   "builder": "RealBackboneDetector.tamper_head",
+   "doses": [0.05, 0.1, 0.25, 0.5, 1.0],
+   "note": "unstructured head noise; the existing battery uses the single dose 0.25"
+  },
+  "substitution": {
+   "param": "frac",
+   "builder": "RealBackboneDetector.tamper_prune",
+   "doses": [0.05, 0.1, 0.25, 0.5],
+   "note": "structural unit removal; the existing battery uses the single dose 0.25"
+  }
+ },
+ "seeds": {
+  "pilot": [10264, 10305, 10346],
+  "full": "every clean real-backbone detector in runs/real_cifar"
+ },
+ "clean_reference": "runs/real_cifar/realcifar_clean_s10264",
+ "target": {
+  "delta": 0.05,
+  "alpha": 0.05,
+  "power": 0.8,
+  "half_width": 0.1,
+  "note": "delta sizes the arms needed to DETECT a 5-point TPR difference; half_width sizes the arms needed to MEASURE a cell to +/-10 points. They are different questions and the plan reports both."
+ }
+}

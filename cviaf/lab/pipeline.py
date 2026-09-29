@@ -581,8 +581,33 @@ def assure_model(
     manifest = entry["manifest"]
     spec = train_spec_from_manifest(manifest)
     art = ModelArtifact.load(entry["dir"])
-    splits = build_splits(spec)
-    truth = splits.truth
+    if spec is None:
+        # Task 3 real-backbone corpus: the "contribution" is the CIFAR training
+        # split named by the manifest, the contributor-disjoint calibration holdout
+        # is a disjoint seeded CIFAR subset, and a model attack leaves the dataset
+        # untouched (zero poisoned samples, by construction).
+        from cviaf.lab.cifar import load_cifar_subset
+        from cviaf.lab.poison import PoisonTruth
+        from cviaf.lab.train import Splits
+        train_ds = load_cifar_subset(
+            n_per_class=int(manifest["spec"]["dataset"]["n_per_class"]), seed=1000,
+            cache_dir=manifest["spec"]["dataset"]["cache_dir"],
+            img_size=int(manifest["spec"]["dataset"]["img_size"]))
+        cal_ds = load_cifar_subset(
+            n_per_class=40, seed=9000,
+            cache_dir=manifest["spec"]["dataset"]["cache_dir"],
+            img_size=int(manifest["spec"]["dataset"]["img_size"]))
+        truth = PoisonTruth(kind=manifest["ground_truth"]["kind"],
+                            attack_digest=manifest["attack_digest"],
+                            rate_requested=float(manifest["ground_truth"]["rate_requested"]),
+                            n_samples=len(train_ds), poisoned_indices=[])
+        truth.notes.append("real-backbone corpus: model attack, the dataset is "
+                           "clean by construction")
+        splits = Splits(train=train_ds, train_poisoned=train_ds, truth=truth,
+                        eval_clean=cal_ds, cal_clean=cal_ds)
+    else:
+        splits = build_splits(spec)
+        truth = splits.truth
 
     ref_entry = None
     for e in registry:
