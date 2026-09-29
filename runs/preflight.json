@@ -1,0 +1,127 @@
+{
+ "schema": "cviaf.preflight.v1",
+ "out": "runs/fleet_fpr_ledger_next.json",
+ "corpora": [
+  "../runs/clean_null_local_w1",
+  "../runs/clean_null_local_w2",
+  "../runs/clean_null_local_w3",
+  "../runs/clean_null_local_w4",
+  "../runs/clean_null_local_w5",
+  "../runs/clean_null_local_w6"
+ ],
+ "reference": "../runs/clean_null_local_w1/clean_none_fixed_s10264/",
+ "ledger": "runs/fleet_fpr_ledger.json",
+ "signals": [
+  "ctc_mean_clean",
+  "ctc_q95_clean",
+  "ctc_peak_clean",
+  "refdiv_mean_clean"
+ ],
+ "alpha": 0.05,
+ "higher_is_more_anomalous": true,
+ "workers": 4,
+ "checks": [
+  {
+   "name": "corpora_readable",
+   "status": "pass",
+   "detail": "6 shard(s); missing=none; without registry.jsonl=none",
+   "remedy": null
+  },
+  {
+   "name": "census",
+   "status": "pass",
+   "detail": "11637 model(s) on 6 shard(s), kinds={'clean': 11637}, distinct seeds=11637, problems=0",
+   "remedy": null
+  },
+  {
+   "name": "clean_only_population",
+   "status": "pass",
+   "detail": "kinds={'clean': 11637}",
+   "remedy": null
+  },
+  {
+   "name": "manifests",
+   "status": "pass",
+   "detail": "6 shard(s) validated, 0 problems",
+   "remedy": null
+  },
+  {
+   "name": "signals",
+   "status": "pass",
+   "detail": "requested=['ctc_mean_clean', 'ctc_q95_clean', 'ctc_peak_clean', 'refdiv_mean_clean']; unknown=none",
+   "remedy": null
+  },
+  {
+   "name": "ledger_contract",
+   "status": "pass",
+   "detail": "7503 record(s) already scored; contract mismatch=none",
+   "remedy": null
+  },
+  {
+   "name": "ledger_population_unchanged",
+   "status": "warn",
+   "detail": "cannot verify: ['clean_null_local_w1: no recorded digest; 1136 scored of 1934 models', 'clean_null_local_w2: no recorded digest; 1186 scored of 1946 models', 'clean_null_local_w3: no recorded digest; 1223 scored of 1937 models', 'clean_null_local_w4: no recorded digest; 1267 scored of 1935 models', 'clean_null_local_w5: no recorded digest; 1322 scored of 1946 models', 'clean_null_local_w6: no recorded digest; 1369 scored of 1939 models']; corpus has grown since scoring: ['clean_null_local_w1: 1136 scored of 1934 on disk', 'clean_null_local_w2: 1186 scored of 1946 on disk', 'clean_null_local_w3: 1223 scored of 1937 on disk', 'clean_null_local_w4: 1267 scored of 1935 on disk', 'clean_null_local_w5: 1322 scored of 1946 on disk', 'clean_null_local_w6: 1369 scored of 1939 on disk']",
+   "remedy": "the ledger carries no corpus digest, so whether the population moved cannot be checked from it. Appending is still safe under --resume (the harness refuses a contract change and re-splits by model), but the rate computed from the existing records describes the population at the time it was scored, and must be quoted with that date and count"
+  },
+  {
+   "name": "reference_pinned",
+   "status": "pass",
+   "detail": "../runs/clean_null_local_w1/clean_none_fixed_s10264/: model_id='clean_none_fixed_s10264', spec_digest=98ad9a8b26b1b59e, weights_digest=4bd541b05814318b15a27c1a5c5ef6e245766305f50b80a383ac26ee9d690f85, used for all 6 shard(s)",
+   "remedy": null
+  },
+  {
+   "name": "reference_outside_population",
+   "status": "warn",
+   "detail": "the reference lives inside a scored shard: ['clean_null_local_w1']",
+   "remedy": "the reference model is then part of the population it is measuring, and its own refdiv score is defined against itself: keep it, but quote the shard's rate with that in mind (this is exactly the w1 coincidence on the 7.5k fleet)"
+  },
+  {
+   "name": "disk_space",
+   "status": "pass",
+   "detail": "173.4 GB free at /Users/billasur/cv-assurance-engine/.task3/runs; needs ~8.1 MB for 11637 records (min_free_gb=20)",
+   "remedy": null
+  },
+  {
+   "name": "runtime_estimate",
+   "status": "warn",
+   "detail": "~149 min at 12.8 min/1k models (4 worker(s); basis: 7,503 models in ~96 min on this machine)",
+   "remedy": null
+  }
+ ],
+ "failures": [],
+ "warnings": [
+  "ledger_population_unchanged",
+  "reference_outside_population",
+  "runtime_estimate"
+ ],
+ "green": true,
+ "verdict": "GREEN \u2014 every input checked; safe to launch the scoring pass",
+ "launch_command": "python scripts/build_fpr_ledger.py --corpus ../runs/clean_null_local_w1 ../runs/clean_null_local_w2 ../runs/clean_null_local_w3 ../runs/clean_null_local_w4 ../runs/clean_null_local_w5 ../runs/clean_null_local_w6 --out runs/fleet_fpr_ledger_next.json --signals ctc_mean_clean ctc_q95_clean ctc_peak_clean refdiv_mean_clean --n-eval 40 --backgrounds 4 --write-every 200 --workers 4 --resume --reference ../runs/clean_null_local_w1/clean_none_fixed_s10264/",
+ "estimated_minutes": 149.0,
+ "fleet": {
+  "schema": "cviaf.fleet-census.v1",
+  "corpora": [
+   "../runs/clean_null_local_w1",
+   "../runs/clean_null_local_w2",
+   "../runs/clean_null_local_w3",
+   "../runs/clean_null_local_w4",
+   "../runs/clean_null_local_w5",
+   "../runs/clean_null_local_w6"
+  ],
+  "n_shards": 6,
+  "n_models": 11637,
+  "kinds": {
+   "clean": 11637
+  },
+  "seed_range": [
+   10264,
+   24607
+  ],
+  "n_distinct_seeds": 11637,
+  "duplicate_model_ids": [],
+  "duplicate_spec_digests": [],
+  "duplicate_weight_digests": [],
+  "problems": [],
+  "ready_for_fpr": true
+ }
+}
