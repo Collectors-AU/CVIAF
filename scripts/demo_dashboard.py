@@ -97,6 +97,11 @@ def main(argv=None) -> int:
     ap.add_argument("--census", required=True, help="runs/integration_census.json")
     ap.add_argument("--out", required=True, help="the .html to write")
     ap.add_argument("--split-seed", type=int, default=0, help="must match the evaluator")
+    ap.add_argument("--tpr", default=None,
+                    help="runs/tpr_at_frozen.json - the additive attacked-arm receipt")
+    ap.add_argument("--tpr-skipped", default=None,
+                    help="the scorer's skipped_*.json for the arms, so the panel can say "
+                         "how many attacks could not be scored")
     args = ap.parse_args(argv)
 
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -181,9 +186,38 @@ def main(argv=None) -> int:
         for sh in plan["shards"]
     ]
 
+    tpr_blob = None
+    if args.tpr:
+        tpr = json.loads(Path(args.tpr).read_text(encoding="utf-8"))
+        skipped = None
+        if args.tpr_skipped and Path(args.tpr_skipped).is_file():
+            raw = json.loads(Path(args.tpr_skipped).read_text(encoding="utf-8"))
+            skipped = {
+                "n_models": raw.get("n_models"),
+                "n_scored": raw.get("n_scored"),
+                "n_error": raw.get("n_error"),
+                # Grouping the failures by class is the part that matters: if they all
+                # fall in one class, that class's TPR is measured on a biased subset.
+                "by_class": {},
+                "reasons": sorted({s.get("reason", "") for s in raw.get("skipped", [])}),
+            }
+            for row in raw.get("skipped", []):
+                cls = str(row.get("model_id", "")).split("_r0")[0].split("_r")[0]
+                skipped["by_class"][cls] = skipped["by_class"].get(cls, 0) + 1
+        tpr_blob = {
+            "n_arms": tpr["n_arms"],
+            "kinds": tpr["kinds"],
+            "min_positives": tpr.get("min_positives", 20),
+            "rules": tpr["rules"],
+            "problems": tpr.get("problems", []),
+            "frozen_thresholds_from": tpr.get("frozen_thresholds_from"),
+            "skipped": skipped,
+        }
+
     blob = {
         "n": n,
         "alpha": report["alpha"],
+        "tpr": tpr_blob,
         "splitSeed": args.split_seed,
         "signals": signals,
         "scores": {sig: b64_floats([r["scores"][sig] for r in records]) for sig in signals},
@@ -365,6 +399,26 @@ a{color:var(--b)}
   <div id="hist"></div>
 </section>
 
+<section id="t-tpr">
+  <h2>What the 5% false-alarm budget actually buys</h2>
+  <p>These are attacked variants derived from models that are <b>already in the clean
+  population above</b> - weight-space tampering only (head noise and structural pruning),
+  no retraining, no new data. They were scored through the same adapter against the same
+  pinned reference, and then judged at the <b>thresholds the FPR half already chose</b>.
+  Nothing here recalibrated anything: the clean ledger and its thresholds are untouched,
+  and this is a separate receipt.</p>
+  <div id="tprhead"></div>
+  <table id="tprtable"></table>
+  <div id="tprmsg"></div>
+  <h2>Per attack class</h2>
+  <p>Two classes, because a single class cannot tell a rule that misses weak attacks from
+  one that misses all of them. Attack severity varies widely within a class - some head
+  tampers <i>improve</i> f1, because zero-mean noise on a trained head is closer to
+  regularisation than to sabotage.</p>
+  <table id="tprkinds"></table>
+  <div id="tprskip"></div>
+</section>
+
 <section id="t-sources">
   <h2>Per-source breakdown at the committed threshold</h2>
   <p>Eleven shards, three machines. A pooled rate can hide a source that behaves differently, so the
@@ -406,8 +460,9 @@ const DATA = /*__DATA__*/;
 const SIGS = DATA.signals;
 const ALPHA = DATA.alpha;
 const Z = 1.959963984540054;
-const TABLES = {headline:'headline',explore:'explore',sources:'sources',split:'split',
+const TABLES = {headline:'headline',explore:'explore',tpr:'tpr',sources:'sources',split:'split',
                 audit:'audit',poison:'poison'};
+const TPR_LABEL = {tpr:'detection'};
 
 function b64f(s){const bin=atob(s);const buf=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
@@ -447,7 +502,7 @@ function idxFor(pop){
 // ---------------- tabs ----------------
 const nav=document.getElementById('tabs');
 Object.keys(TABLES).forEach((k,i)=>{
-  const b=document.createElement('button');b.textContent=k;
+  const b=document.createElement('button');b.textContent=TPR_LABEL[k]||k;
   if(i===0)b.className='on';b.onclick=()=>{
     document.querySelectorAll('nav button').forEach(x=>x.className='');
     document.querySelectorAll('main section').forEach(x=>x.className='');
@@ -749,6 +804,96 @@ document.getElementById('poison').innerHTML=
  '<div class="warn">This is the failure mode the whole pass is designed around: <b>one undefined '+
  'statistic must not become a lost corpus, and must not become a quietly smaller denominator.'+
  '</b></div>';
+
+// ---------------- TPR at frozen thresholds ----------------
+(function(){
+  const T=DATA.tpr;
+  const host=document.getElementById('tprhead');
+  if(!T){host.innerHTML='<div class="warn">No attacked-arm receipt was supplied to this build, so no detection panel is shown. The false-alarm numbers above stand alone: they are a clean-null measurement.</div>';return;}
+  const live=Object.entries(T.rules).filter(([,e])=>!e.degenerate);
+  const deg=Object.entries(T.rules).filter(([,e])=>e.degenerate);
+  const best=live.slice().sort((a,b)=>(b[1].pooled.tpr||0)-(a[1].pooled.tpr||0))[0];
+  host.innerHTML=
+    '<div class="cards">'+
+    '<div class="card"><div class="k">attacked variants</div><div class="v">'+T.n_arms+'</div>'+
+      '<div class="n">'+T.kinds.join(' \u00b7 ')+'</div></div>'+
+    '<div class="card"><div class="k">best live detection</div><div class="v">'+
+      (best?pct(best[1].pooled.tpr):'&ndash;')+'</div><div class="n">'+(best?best[0]:'')+'</div></div>'+
+    '<div class="card"><div class="k">rules that cannot fire</div><div class="v">'+deg.length+' of '+Object.keys(T.rules).length+
+      '</div><div class="n">threshold at the corpus ceiling</div></div>'+
+    '<div class="card"><div class="k">false alarms</div><div class="v">'+pct(DATA.committed[best?best[0]:SIGS[0]].recomputed_fpr)+
+      '</div><div class="n">unchanged - not recalibrated for attacks</div></div></div>';
+
+  let h='<tr><th>rule</th><th class="num">frozen threshold</th><th class="num">caught / n</th>'+
+        '<th class="num">TPR (95% Wilson)</th><th>reading</th></tr>';
+  Object.entries(T.rules).sort((a,b)=>(b[1].pooled.tpr||-1)-(a[1].pooled.tpr||-1)).forEach(([sig,e])=>{
+    const p=e.pooled;
+    if(e.degenerate){
+      h+='<tr><td>'+sig+'</td><td class="num">'+e.threshold.toFixed(6)+'</td>'+
+         '<td class="num dim">'+p.caught+' / '+p.n+'</td>'+
+         '<td class="num y">not measurable</td>'+
+         '<td class="y">threshold is the ceiling - the rule cannot fire on an attack either. '+
+         'This is not a 0% detection rate.</td></tr>';
+    }else{
+      const ci=p.ci95_wilson;
+      h+='<tr><td>'+sig+'</td><td class="num">'+e.threshold.toFixed(6)+'</td>'+
+         '<td class="num">'+p.caught+' / '+p.n+'</td>'+
+         '<td class="num">'+pct(p.tpr)+' ['+pct(ci[0])+', '+pct(ci[1])+']</td>'+
+         '<td>'+(p.tpr<0.10?'<span class="r">nearly blind at this operating point</span>':
+                 '<span class="g">detects a real fraction</span>')+'</td></tr>';
+    }
+  });
+  document.getElementById('tprtable').innerHTML=h;
+
+  const l=live.slice().sort((a,b)=>b[1].pooled.tpr-a[1].pooled.tpr)[0];
+  const w=live.slice().sort((a,b)=>a[1].pooled.tpr-b[1].pooled.tpr)[0];
+  document.getElementById('tprmsg').innerHTML=
+    '<div class="warn"><b>The two numbers do not agree, and that is the finding.</b> '+
+    'The rule that best respects the false-alarm budget is not the rule that detects: '+
+    (w?('<code>'+w[0]+'</code> holds FPR at '+pct(DATA.committed[w[0]].recomputed_fpr)+
+        ' but catches only '+pct(w[1].pooled.tpr)+' of attacks'):'')+', while '+
+    (l?('<code>'+l[0]+'</code> catches '+pct(l[1].pooled.tpr)+' at a similar FPR'):'')+
+    '. A calibration study alone would have reported the first as the winner.</div>';
+
+  let body='<tr><th>attack class</th><th class="num">arms</th>';
+  Object.keys(T.rules).forEach(sig=>{body+='<th class="num">'+sig+'</th>';});
+  body+='</tr>';
+  T.kinds.forEach(k=>{
+    body+='<tr><td>'+k+'</td>';
+    const n=T.rules[Object.keys(T.rules)[0]].per_kind[k].n;
+    body+='<td class="num">'+n+'</td>';
+    Object.entries(T.rules).forEach(([sig,e])=>{
+      const c=e.per_kind[k];
+      let cell;
+      if(c.tpr===null&&e.degenerate) cell='<span class="y">degenerate</span>';
+      else if(c.tpr===null) cell='<span class="y">n/a</span>';
+      else{
+        const ci=c.ci95_wilson;
+        cell=pct(c.tpr)+' <span class="dim">['+pct(ci[0])+', '+pct(ci[1])+']</span>';
+        if(c.n_below_floor) cell+=' <span class="y">(n&lt;'+T.min_positives+')</span>';
+      }
+      body+='<td class="num">'+cell+'</td>';
+    });
+    body+='</tr>';
+  });
+  document.getElementById('tprkinds').innerHTML=body;
+
+  let s='';
+  if(T.skipped&&T.skipped.n_error>0){
+    const cls=Object.entries(T.skipped.by_class).map(([k,v])=>k+' \u00d7'+v).join(', ');
+    s='<div class="bad"><b>Survivorship warning.</b> '+T.skipped.n_models+' arms were built but only '+
+      T.skipped.n_scored+' could be scored: the scorer returned no CTC statistic for '+
+      T.skipped.n_error+' of them ('+cls+'). Those are <i>not</i> counted as misses, because the '+
+      'rule never got a chance to look at them - which means the pruned class’s TPR above is '+
+      'measured on the survivors of an attack that also destroys measurability. '+
+      'The true detection rate on that class is <b>no better</b> than the number shown.</div>';
+  }
+  if(T.problems&&T.problems.length){
+    s+='<div class="bad">'+T.problems.join('; ')+'</div>';
+  }
+  document.getElementById('tprskip').innerHTML=s||
+    '<div class="ok">Every arm was scored, so no class is measured on a biased subset.</div>';
+})();
 
 // ---------------- boot ----------------
 resetExplorer();drawHist();
