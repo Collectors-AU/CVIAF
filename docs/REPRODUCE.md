@@ -311,8 +311,8 @@ headline in the browser.
 
 ```bash
 cd <repo>
-python -m pytest -q                             # 638 passed, 5 skipped, 1 xfailed (~40 s)
-~/.venvs/cviaf-torch/bin/python -m pytest -q    # 647 passed, 1 xfailed (~45 s)
+python -m pytest -q                             # 639 passed, 5 skipped, 1 xfailed (~42 s)
+~/.venvs/cviaf-torch/bin/python -m pytest -q    # 648 passed, 1 xfailed (~51 s)
 ```
 
 **Run them sequentially.** Launched into the same rootdir in parallel, the two lanes corrupt

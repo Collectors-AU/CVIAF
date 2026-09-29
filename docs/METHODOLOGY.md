@@ -437,10 +437,18 @@ of the arithmetic, and it is allowed to disagree with the report only by refusin
 * If no attack receipt is supplied, the detection panel is omitted entirely rather than drawn
   empty — an empty panel reads as "nothing to report", which is a different claim.
 * Unscorable arms are shown grouped by class, above the table.
+* **Agreement is judged at the precision the report publishes, not at full float.** The
+  evaluator rounds its point estimate to four decimals (`0.0523`); the page recomputes the
+  exact ratio (`0.05230812…`). Comparing those two at `1e-12` printed "NO" in the *agrees*
+  column for every rule that was exactly right — a page accusing the report of disagreeing
+  with itself, in the column a sceptical reader checks first, directly under a paragraph
+  promising a disagreement would have failed the build. The comparison now happens in the
+  generator, at the published precision plus an exact hit count.
 
 Tests: `test_dashboard_refuses_to_publish_a_page_that_contradicts_the_report` ·
 `test_dashboard_writes_a_self_contained_page_when_the_numbers_agree` ·
-`test_score_blob_round_trips_exactly`.
+`test_a_rule_whose_rate_is_right_is_not_reported_as_disagreeing_with_the_report` ·
+`test_score_blob_round_trips_exactly` (7 in the file).
 
 ---
 
@@ -448,8 +456,8 @@ Tests: `test_dashboard_refuses_to_publish_a_page_that_contradicts_the_report` ·
 
 ```bash
 cd .task3
-python -m pytest -q                       # numpy lane: 638 passed, 5 skipped, 1 xfailed
-~/.venvs/cviaf-torch/bin/python -m pytest -q   # torch lane: 647 passed, 1 xfailed
+python -m pytest -q                       # numpy lane: 639 passed, 5 skipped, 1 xfailed
+~/.venvs/cviaf-torch/bin/python -m pytest -q   # torch lane: 648 passed, 1 xfailed
 ```
 
 **Run the two lanes sequentially.** Launched into the same rootdir in parallel they corrupt

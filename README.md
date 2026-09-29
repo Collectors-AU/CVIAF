@@ -556,6 +556,7 @@ Committed receipts backing every number in this document:
 
 One commit per unit; each carries its own tests. Newest first:
 
+`f289153` the agrees column that accused the report · `448e7bd` commit ledger ·
 `e784a8a` methodology / inventory / runbook docs · `292a205` the paper reports detection ·
 `bea29b0` dashboard detection panel · `f7bf09c` measured detection at frozen thresholds ·
 `44948c3` untrack compiled bytecode · `129b2bb` interactive dashboard ·
@@ -572,8 +573,8 @@ One commit per unit; each carries its own tests. Newest first:
 
 | lane | command | result |
 |---|---|---|
-| numpy (canonical) | `python -m pytest -q` from `.task3` | **638 passed, 5 skipped, 1 xfailed** (40 s) |
-| torch | `~/.venvs/cviaf-torch/bin/python -m pytest -q` | **647 passed, 1 xfailed** (45 s) |
+| numpy (canonical) | `python -m pytest -q` from `.task3` | **639 passed, 5 skipped, 1 xfailed** (42 s) |
+| torch | `~/.venvs/cviaf-torch/bin/python -m pytest -q` | **648 passed, 1 xfailed** (51 s) |
 
 Run the two lanes **sequentially**. Launched into the same rootdir in parallel they corrupt
 each other's cache, and one lane reports a fraction of its tests passing — 55 instead of 647 —
