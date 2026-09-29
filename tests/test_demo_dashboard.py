@@ -230,6 +230,86 @@ def test_a_rule_whose_rate_is_right_is_not_reported_as_disagreeing_with_the_repo
     assert '"agrees":false' not in html, "a correct rule must not be flagged as disagreeing"
 
 
+def _ladder_receipt(tmp):
+    """A minimal but structurally real per-class, per-dose receipt."""
+    rules = {s: {"threshold": 0.9, "degenerate": False, "status": "measured"} for s in SIGNALS}
+    rules["ctc_peak_clean"] = {"threshold": 1.0, "degenerate": True,
+                              "status": "degenerate_threshold_at_ceiling"}
+    cells = {
+        "substitution": {
+            "0.25": {"n": 94, "n_behaviour_inert": 40, "median_f1_relative_drop": 0.6,
+                     "rules": {s: {"caught": 45, "tpr": 45 / 94, "ci95_wilson": [0.39, 0.59],
+                                    "conclusion": "measured", "n_below_floor": False}
+                               for s in SIGNALS if s != "ctc_peak_clean"}},
+        },
+        "bias_lift": {
+            "0.25": {"n": 99, "n_behaviour_inert": 99, "median_f1_relative_drop": 0.0,
+                     "rules": {s: {"caught": 5, "tpr": 5 / 99, "ci95_wilson": [0.02, 0.11],
+                                    "conclusion": "measured", "n_below_floor": False}
+                               for s in SIGNALS if s != "ctc_peak_clean"}},
+        },
+    }
+    path = os.path.join(tmp, "ladder.json")
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump({
+            "schema": "cviaf.tpr-ladder.v1",
+            "n_arms": 193,
+            "kinds": ["bias_lift", "substitution"],
+            "doses": [0.25],
+            "units_per_kind": {"bias_lift": "absolute logit units",
+                              "substitution": "fraction of hidden units zeroed"},
+            "min_positives": 20,
+            "rules": rules,
+            "cells": cells,
+            "unscorable": {"substitution@0.25": 5},
+            "pooled_estimate": None,
+            "pooled_refusal": "no pooled rate across attack classes or doses",
+            "behaviour_metric": "f1_relative_drop; arms that did not move it are inert",
+            "problems": [],
+        }, fh)
+    return path
+
+
+def test_the_detection_panel_refuses_a_single_dose_receipt():
+    """A per-dose table cannot be built from a one-dose receipt without inventing rows.
+
+    Inventing a row is the failure this page exists to prevent, so the build refuses rather
+    than drawing an empty cell that reads as "nothing found here".
+    """
+    tmp = tempfile.mkdtemp()
+    ledger, report, plan, verify, census = _fixture(tmp)
+    out = os.path.join(tmp, "page.html")
+    single = os.path.join(tmp, "single.json")
+    with open(single, "w", encoding="utf-8") as fh:
+        json.dump({"schema": "cviaf.tpr-at-frozen.v1", "n_arms": 193, "kinds": ["substitution"],
+                   "rules": {}}, fh)
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(_args(tmp, out, ledger, report, plan, verify, census) + ["--tpr", single])
+
+    assert "cviaf.tpr-ladder.v1" in str(excinfo.value)
+    assert not os.path.exists(out), "a refused build must not leave a page behind"
+
+
+def test_the_detection_panel_carries_every_class_and_dose_and_no_pooled_rate():
+    """The panel is per-cell by construction: no pooled number is even shipped to it."""
+    tmp = tempfile.mkdtemp()
+    ledger, report, plan, verify, census = _fixture(tmp)
+    out = os.path.join(tmp, "page.html")
+    ladder = _ladder_receipt(tmp)
+
+    assert main(_args(tmp, out, ledger, report, plan, verify, census) + ["--tpr", ladder]) == 0
+    html = open(out, encoding="utf-8").read()
+
+    assert '"bias_lift"' in html and '"substitution"' in html
+    assert '"cells"' in html, "the panel is driven by cells, not by a rule-level rate"
+    assert "pooled_estimate" not in html, (
+        "no pooled rate may reach the page: a blank or averaged cell is what a reader "
+        "quotes when the table gets awkward"
+    )
+    assert "pooled_refusal" in html, "the refusal has to be visible, not just absent"
+
+
 def test_score_blob_round_trips_exactly():
     """float64, not float32: the threshold must survive the embed."""
     np = pytest.importorskip("numpy")

@@ -22,10 +22,18 @@ Two things this script refuses to do, both because the alternative is a fabricat
     report gives the exact upper bound and says ``insufficient_denominator``, the same
     convention the FPR side uses.
 
+One more rule, learned by trying to quote a single number:
+
+  * the detection rate is reported **per attack class and per dose, never pooled**. A
+    pooled rate over classes is the number that survives exactly one follow-up question
+    ("which classes?"), and a pooled rate over doses hides that severity within a class is
+    wide. ``evaluate-ladder`` therefore emits no pooled cell at all and names the refusal.
+
 Subcommands
 -----------
-``build``     derive arms from the merged clean population (weight-space only, no training)
-``evaluate``  TPR per rule per attack class at the frozen thresholds, with Wilson intervals
+``build``            derive arms from the merged clean population (weight-space only)
+``evaluate``         TPR per rule per attack class at the frozen thresholds (single dose)
+``evaluate-ladder``  TPR per rule per (attack class, dose), with the pooling refused
 """
 
 from __future__ import annotations
@@ -35,6 +43,7 @@ import hashlib
 import json
 import math
 import os
+import statistics
 import sys
 import time
 from pathlib import Path
@@ -47,15 +56,30 @@ from cviaf.lab.detector import TinyDetector  # noqa: E402
 
 Z95 = 1.959963984540054
 DEFAULT_MAGNITUDE = 0.25
+DEFAULT_DOSES = (0.1, 0.25, 0.5, 1.0)
 ARM_KIND_PREFIX = "cviaf.tpr-arm"
 SCHEMA = "cviaf.tpr-at-frozen.v1"
+SCHEMA_LADDER = "cviaf.tpr-ladder.v1"
 
-# Two classes, both weight-space, both already established in this repository's arm
-# convention (scripts/build_model_attack_arms.py uses exactly these two ops for exactly
-# these two kind labels). No retraining, no data, no test-time trigger.
+# Three classes, all weight-space, no retraining, no data, no test-time trigger. The first
+# two labels match scripts/build_model_attack_arms.py exactly; the third is the
+# targeted/insider analogue - one class's bias nudged - which is the closest thing in this
+# repository to the problem statement's "backdoor-like behaviour", and is deliberately NOT
+# *called* a backdoor: there is no trigger and no source-specific behaviour, so the name
+# would be a claim this arm cannot support.
+#
+# The third element of each tuple is the unit of the dose axis, because the same number
+# means different things in the three families: 0.25 is a noise scale in one, a fraction of
+# hidden units in another, and absolute logit units in the third. The ladder is comparable
+# *within* a family and not across families, and the receipt carries the units so nobody
+# has to infer that.
 OPS = {
-    "weight_tamper": ("unstructured: zero-mean Gaussian noise on the head weights", "head"),
-    "substitution": ("structural: the frac least-important hidden units are zeroed", "prune"),
+    "weight_tamper": ("unstructured: zero-mean Gaussian noise on the head weights", "head",
+                      "standard deviation of the added noise"),
+    "substitution": ("structural: the frac least-important hidden units are zeroed", "prune",
+                     "fraction of hidden units zeroed"),
+    "bias_lift": ("targeted: one class's bias lifted, in ABSOLUTE logit units", "bias",
+                  "absolute logit units added to one class's output bias"),
 }
 
 
@@ -144,8 +168,14 @@ def build_arm(clean_dir: Path, base: dict, kind: str, magnitude: float, op_name:
     seed = int(base["seeds"]["detector"])
     if op_name == "head":
         tampered = model.tamper_head(scale=magnitude, seed=seed)
-    else:
+    elif op_name == "prune":
         tampered = model.tamper_prune(frac=magnitude, seed=seed)
+    else:
+        # Targeted: lift ONE class's output bias by `magnitude` absolute logit units. The
+        # units were forced by a measurement (see TinyDetector.tamper_bias): scaling the
+        # shift by the bias vector's own standard deviation was a no-op, because that
+        # vector is small after training.
+        tampered = model.tamper_bias(delta=magnitude, target=0)
 
     # The no-op check runs FIRST: it is a property of the op, it is cheap, and there is no
     # point rebuilding a dataset to measure the damage of an attack that did not happen.
@@ -251,18 +281,23 @@ def cmd_build(args) -> int:
         picks = select_models(Path(shards[sid]), Path(corpora[sid]), args.per_shard)
         selected.extend(picks)
         print(f"{sid:12s} picked {len(picks)} clean models")
-    print(f"selected {len(selected)} clean models -> {len(selected) * len(args.kinds)} arms")
+    doses = list(dict.fromkeys(float(d) for d in args.magnitudes))
+    for kind in args.kinds:
+        if kind not in OPS:
+            raise SystemExit(f"unknown arm kind {kind!r}; known: {sorted(OPS)}")
+    print(f"selected {len(selected)} clean models -> "
+          f"{len(selected) * len(args.kinds) * len(doses)} arms "
+          f"({len(args.kinds)} classes x {len(doses)} doses)")
 
     for shard_id, clean_dir, entry in selected:
         base = json.loads((clean_dir / "manifest.json").read_text(encoding="utf-8"))
         for kind in args.kinds:
-            if kind not in OPS:
-                raise SystemExit(f"unknown arm kind {kind!r}; known: {sorted(OPS)}")
             op_name = OPS[kind][1]
-            arm = build_arm(clean_dir, base, kind, args.magnitude, op_name, out_root, shard_id)
-            print(f"  {arm['model_id']:34s} f1 -> {arm['f1_after']:.4f} "
-                  f"(rel drop {arm['f1_relative_drop']:.3f}, weak={arm['effect_weak']})")
-            arms.append(arm)
+            for dose in doses:
+                arm = build_arm(clean_dir, base, kind, dose, op_name, out_root, shard_id)
+                print(f"  {arm['model_id']:34s} f1 -> {arm['f1_after']:.4f} "
+                      f"(rel drop {arm['f1_relative_drop']:.3f}, weak={arm['effect_weak']})")
+                arms.append(arm)
 
     (out_root / "models").mkdir(parents=True, exist_ok=True)
     with open(out_root / "registry.jsonl", "w", encoding="utf-8") as fh:
@@ -406,6 +441,197 @@ def cmd_evaluate(args) -> int:
     return 0
 
 
+# --------------------------------------------------------------------------- #
+# evaluate-ladder
+# --------------------------------------------------------------------------- #
+
+def load_registry(path: Path) -> dict:
+    """model_id -> {kind, magnitude}, from the build's registry.jsonl.
+
+    The scored npz carries only (model_id, kind, seed, signals), so the dose has to come
+    from the registry the build wrote rather than from parsing the model id: an id is a
+    label, and a label is not a record.
+    """
+    out = {}
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            # The registry is also the only place the arm's *measured* behaviour damage is
+            # recorded, and that matters more than it looks: a family whose attack does not
+            # move the behaviour metric at all is a weight-space change the detector may or
+            # may not see, not a harmful model. Carrying it here lets the ladder say how
+            # many arms in each cell are behaviourally inert.
+            out[row["model_id"]] = {
+                "kind": row["kind"],
+                "magnitude": float(row["magnitude"]),
+                "f1_relative_drop": float(row.get("f1_relative_drop", 0.0)),
+                "effect_weak": bool(row.get("effect_weak", False)),
+            }
+    return out
+
+
+def cmd_evaluate_ladder(args) -> int:
+    """TPR per (attack class, dose) per rule - and no pooled number anywhere."""
+    report = json.loads(Path(args.frozen_report).read_text(encoding="utf-8"))
+    thresholds = {sig: float(r["threshold"]) for sig, r in report["rules"].items()}
+    registry = load_registry(Path(args.registry))
+
+    rows = []
+    for npz_path in sorted(Path(args.results).glob("results_*.npz")):
+        with np.load(npz_path, allow_pickle=False) as z:
+            sigs = [k for k in z.files if k.endswith("_clean")]
+            for i in range(len(z["model_id"])):
+                mid = str(z["model_id"][i])
+                meta = registry.get(mid)
+                if meta is None:
+                    raise SystemExit(
+                        f"{mid} was scored but is not in the build registry; refusing to "
+                        "guess which dose it belongs to"
+                    )
+                rows.append({
+                    "model_id": mid,
+                    "kind": meta["kind"],
+                    "magnitude": meta["magnitude"],
+                    "f1_relative_drop": meta["f1_relative_drop"],
+                    "effect_weak": meta["effect_weak"],
+                    "scores": {s: float(z[s][i]) for s in sigs},
+                })
+    if not rows:
+        raise SystemExit(f"no results_*.npz found under {args.results}")
+
+    kinds = sorted({r["kind"] for r in rows})
+    doses = sorted({r["magnitude"] for r in rows})
+    problems = []
+    if any(k == "clean" for k in kinds):
+        problems.append("the arm set contains a model whose kind is 'clean' - it is not an attack")
+
+    # Attacks that could not be scored are counted per (class, dose): *where* they fall
+    # decides whether a cell is an estimate or an upper bound.
+    unscorable: dict = {}
+    for path in args.skipped or []:
+        blob = json.loads(Path(path).read_text(encoding="utf-8"))
+        for row in blob.get("skipped", []):
+            meta = registry.get(str(row.get("model_id", "")))
+            if meta is None:
+                continue
+            key = f"{meta['kind']}@{meta['magnitude']:g}"
+            unscorable[key] = unscorable.get(key, 0) + 1
+
+    rules = {}
+    for sig, thr in sorted(thresholds.items()):
+        max_possible = max(r["scores"][sig] for r in rows)
+        degenerate = thr >= 1.0 and max_possible <= thr
+        rules[sig] = {
+            "threshold": thr,
+            "frozen_from": args.frozen_report,
+            "degenerate": bool(degenerate),
+            "status": "degenerate_threshold_at_ceiling" if degenerate else "measured",
+        }
+        if degenerate:
+            rules[sig]["note"] = (
+                "the threshold is at the ceiling of the clean corpus, so no score can exceed "
+                "it: the rule cannot fire on an attack either. This is not a miss rate."
+            )
+
+    cells: dict = {}
+    for kind in kinds:
+        for dose in doses:
+            subset = [r for r in rows if r["kind"] == kind and r["magnitude"] == dose]
+            n = len(subset)
+            drops = sorted(r["f1_relative_drop"] for r in subset)
+            entry = {
+                "n": n,
+                # How many arms in this cell left the repository's behaviour metric
+                # unmoved. A cell that is mostly inert is measuring detection of a weight
+                # perturbation, not detection of a damaged model.
+                "n_behaviour_inert": sum(1 for r in subset if r["effect_weak"]),
+                "median_f1_relative_drop": (statistics.median(drops) if drops else None),
+                "rules": {},
+            }
+            for sig, thr in sorted(thresholds.items()):
+                deg = rules[sig]["degenerate"]
+                hits = sum(1 for r in subset if r["scores"][sig] > thr)
+                entry["rules"][sig] = {
+                    "caught": hits,
+                    "tpr": (hits / n) if (n and not deg) else None,
+                    "ci95_wilson": wilson(hits, n) if (n and not deg) else None,
+                    "exact_upper_bound_95": (exact_upper(0, n) if (n and hits == 0) else None),
+                    "conclusion": ("degenerate_rule" if deg else
+                                   ("insufficient_denominator" if n < args.min_positives
+                                    else "measured")),
+                    "n_below_floor": bool(n < args.min_positives),
+                }
+            cells.setdefault(kind, {})[f"{dose:g}"] = entry
+
+    out = {
+        "schema": SCHEMA_LADDER,
+        "alpha": report.get("alpha", 0.05),
+        "frozen_thresholds_from": args.frozen_report,
+        "fpr_ledger_untouched": True,
+        "n_arms": len(rows),
+        "kinds": kinds,
+        "doses": doses,
+        "units_per_kind": {k: OPS[k][2] for k in kinds if k in OPS},
+        "behaviour_metric": (
+            "f1_relative_drop on each arm's own held-out clean eval split - the repository's "
+            "behaviour metric, measured per arm at build time. n_behaviour_inert counts arms "
+            "whose attack did not move it; a cell that is mostly inert is a test of whether a "
+            "rule notices a weight-space change, not whether it notices a damaged model."
+        ),
+        "min_positives": args.min_positives,
+        "pooled_estimate": None,
+        "pooled_refusal": (
+            "no pooled detection rate is reported, on either axis: not across attack classes "
+            "(which would hide that a rule can catch one class at several times its rate on "
+            "another) and not across doses (which would hide that severity within a class is "
+            "wide, so the number would be dominated by whichever dose has the most arms). "
+            "Read a cell, and compare rules inside that cell."
+        ),
+        "rules": rules,
+        "cells": cells,
+        "unscorable": unscorable,
+        "problems": problems,
+    }
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(out, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    live = [s for s in sorted(thresholds) if not rules[s]["degenerate"]]
+    print(f"TPR at frozen thresholds, per class per dose (alpha {out['alpha']}) - "
+          f"{len(rows)} arms, {len(kinds)} classes x {len(doses)} doses")
+    print(f"{'class':16s}{'dose':>6s}{'n':>6s}{'inert':>7s}  "
+          + "  ".join(f"{s[:18]:>18s}" for s in live))
+    for kind in kinds:
+        for dose in doses:
+            cell = cells[kind][f"{dose:g}"]
+            cols = []
+            for sig in live:
+                c = cell["rules"][sig]
+                cols.append("               n/a" if c["tpr"] is None else f"{c['tpr']:18.4f}")
+            flagged = "*" if any(cell["rules"][s]["n_below_floor"] for s in live) else " "
+            print(f"{kind:16s}{dose:6g}{cell['n']:6d}{cell['n_behaviour_inert']:7d}{flagged} "
+                  + "  ".join(cols))
+    print("\n* = fewer than min_positives arms survived in that cell. The ratio is shown "
+          "beside its count and interval, and the cell's conclusion field says "
+          "insufficient_denominator: do not quote it on its own.")
+    deg = [s for s in sorted(thresholds) if rules[s]["degenerate"]]
+    if deg:
+        print(f"\ndegenerate (cannot fire, and not a miss rate): {', '.join(deg)}")
+    if unscorable:
+        print("\nunscorable arms by cell: " +
+              ", ".join(f"{k} x{v}" for k, v in sorted(unscorable.items())))
+    print("\nNo pooled rate is reported: read a cell, and compare rules inside it.")
+    if problems:
+        print("\nPROBLEMS:")
+        for p in problems:
+            print(f"  - {p}")
+    print(f"\nwrote {out_path}")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="command", required=True)
@@ -415,7 +641,9 @@ def main(argv=None) -> int:
     b.add_argument("--corpus", action="append", required=True, help="id=corpus-root")
     b.add_argument("--out", required=True)
     b.add_argument("--per-shard", type=int, default=9)
-    b.add_argument("--magnitude", type=float, default=DEFAULT_MAGNITUDE)
+    b.add_argument("--magnitudes", nargs="+", type=float, default=list(DEFAULT_DOSES),
+                   help="one or more doses; each kind's dose axis has its own units "
+                        "(see OPS), so a ladder is comparable within a family only")
     b.add_argument("--kinds", nargs="+", default=sorted(OPS))
     b.add_argument("--shard-id", default="tpr_arms")
     b.set_defaults(func=cmd_build)
@@ -426,6 +654,18 @@ def main(argv=None) -> int:
     e.add_argument("--out", required=True)
     e.add_argument("--min-positives", type=int, default=20)
     e.set_defaults(func=cmd_evaluate)
+
+    lad = sub.add_parser("evaluate-ladder",
+                         help="TPR per attack class per dose, with the pooling refused")
+    lad.add_argument("--results", required=True, help="directory of results_*.npz")
+    lad.add_argument("--registry", required=True,
+                     help="the build's registry.jsonl (model_id -> kind, magnitude)")
+    lad.add_argument("--frozen-report", required=True, help="runs/merged_fpr_tpr_report.json")
+    lad.add_argument("--out", required=True)
+    lad.add_argument("--min-positives", type=int, default=20)
+    lad.add_argument("--skipped", action="append", default=None,
+                     help="skipped_*.json from the scoring run, for the per-cell unscorable count")
+    lad.set_defaults(func=cmd_evaluate_ladder)
 
     args = ap.parse_args(argv)
     return args.func(args)

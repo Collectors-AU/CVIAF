@@ -1,0 +1,609 @@
+{
+  "alpha": 0.05,
+  "behaviour_metric": "f1_relative_drop on each arm's own held-out clean eval split - the repository's behaviour metric, measured per arm at build time. n_behaviour_inert counts arms whose attack did not move it; a cell that is mostly inert is a test of whether a rule notices a weight-space change, not whether it notices a damaged model.",
+  "cells": {
+    "bias_lift": {
+      "0.1": {
+        "median_f1_relative_drop": 0.0,
+        "n": 99,
+        "n_behaviour_inert": 99,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 6,
+            "ci95_wilson": [
+              0.02806979744622149,
+              0.12596787376489957
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.06060606060606061
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 5,
+            "ci95_wilson": [
+              0.021763234491416872,
+              0.11282702686248858
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.050505050505050504
+          }
+        }
+      },
+      "0.25": {
+        "median_f1_relative_drop": 0.0,
+        "n": 99,
+        "n_behaviour_inert": 99,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 6,
+            "ci95_wilson": [
+              0.02806979744622149,
+              0.12596787376489957
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.06060606060606061
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 5,
+            "ci95_wilson": [
+              0.021763234491416872,
+              0.11282702686248858
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.050505050505050504
+          }
+        }
+      },
+      "0.5": {
+        "median_f1_relative_drop": 0.0,
+        "n": 99,
+        "n_behaviour_inert": 99,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 6,
+            "ci95_wilson": [
+              0.02806979744622149,
+              0.12596787376489957
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.06060606060606061
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 5,
+            "ci95_wilson": [
+              0.021763234491416872,
+              0.11282702686248858
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.050505050505050504
+          }
+        }
+      },
+      "1": {
+        "median_f1_relative_drop": 0.0,
+        "n": 99,
+        "n_behaviour_inert": 99,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 6,
+            "ci95_wilson": [
+              0.02806979744622149,
+              0.12596787376489957
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.06060606060606061
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 5,
+            "ci95_wilson": [
+              0.021763234491416872,
+              0.11282702686248858
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.050505050505050504
+          }
+        }
+      }
+    },
+    "substitution": {
+      "0.1": {
+        "median_f1_relative_drop": 0.0,
+        "n": 99,
+        "n_behaviour_inert": 88,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 4,
+            "ci95_wilson": [
+              0.015822638994147556,
+              0.09932021250254229
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.04040404040404041
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 13,
+            "ci95_wilson": [
+              0.07837241241376693,
+              0.21179712779786347
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.13131313131313133
+          }
+        }
+      },
+      "0.25": {
+        "median_f1_relative_drop": 0.1915882929966815,
+        "n": 94,
+        "n_behaviour_inert": 40,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 2,
+            "ci95_wilson": [
+              0.00585433623917276,
+              0.07429020489102964
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.02127659574468085
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.03136701207878767,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.03136701207878767,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 45,
+            "ci95_wilson": [
+              0.38057168146840054,
+              0.5785458536929418
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.4787234042553192
+          }
+        }
+      },
+      "0.5": {
+        "median_f1_relative_drop": 0.9449572766892008,
+        "n": 63,
+        "n_behaviour_inert": 6,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 2,
+            "ci95_wilson": [
+              0.008749527561580449,
+              0.10856477046607432
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.031746031746031744
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.046438451483938215,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.046438451483938215,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 59,
+            "ci95_wilson": [
+              0.8478082215469362,
+              0.9750343819866059
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.9365079365079365
+          }
+        }
+      },
+      "1": {
+        "median_f1_relative_drop": 0.9868408806527337,
+        "n": 7,
+        "n_behaviour_inert": 0,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 7,
+            "ci95_wilson": [
+              0.6456695649333126,
+              1.0
+            ],
+            "conclusion": "insufficient_denominator",
+            "exact_upper_bound_95": null,
+            "n_below_floor": true,
+            "tpr": 1.0
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.34816365513116077,
+            "n_below_floor": true,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.34816365513116077,
+            "n_below_floor": true,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 7,
+            "ci95_wilson": [
+              0.6456695649333126,
+              1.0
+            ],
+            "conclusion": "insufficient_denominator",
+            "exact_upper_bound_95": null,
+            "n_below_floor": true,
+            "tpr": 1.0
+          }
+        }
+      }
+    },
+    "weight_tamper": {
+      "0.1": {
+        "median_f1_relative_drop": 0.05252939273001821,
+        "n": 99,
+        "n_behaviour_inert": 73,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 5,
+            "ci95_wilson": [
+              0.021763234491416872,
+              0.11282702686248858
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.050505050505050504
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 7,
+            "ci95_wilson": [
+              0.034670230283234696,
+              0.13881485078510197
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.0707070707070707
+          }
+        }
+      },
+      "0.25": {
+        "median_f1_relative_drop": 0.2350029291154071,
+        "n": 99,
+        "n_behaviour_inert": 23,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 5,
+            "ci95_wilson": [
+              0.021763234491416872,
+              0.11282702686248858
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.050505050505050504
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 22,
+            "ci95_wilson": [
+              0.15158101831950355,
+              0.31361521060706726
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.2222222222222222
+          }
+        }
+      },
+      "0.5": {
+        "median_f1_relative_drop": 0.5877894736842106,
+        "n": 99,
+        "n_behaviour_inert": 4,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 11,
+            "ci95_wilson": [
+              0.06318563453857474,
+              0.1880890859586244
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.1111111111111111
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 59,
+            "ci95_wilson": [
+              0.49746896182579103,
+              0.6872814318177571
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.5959595959595959
+          }
+        }
+      },
+      "1": {
+        "median_f1_relative_drop": 0.8624787775891342,
+        "n": 99,
+        "n_behaviour_inert": 0,
+        "rules": {
+          "ctc_mean_clean": {
+            "caught": 29,
+            "ci95_wilson": [
+              0.2123663249451079,
+              0.3889617729819722
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.29292929292929293
+          },
+          "ctc_peak_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "ctc_q95_clean": {
+            "caught": 0,
+            "ci95_wilson": null,
+            "conclusion": "degenerate_rule",
+            "exact_upper_bound_95": 0.02980667377335089,
+            "n_below_floor": false,
+            "tpr": null
+          },
+          "refdiv_mean_clean": {
+            "caught": 92,
+            "ci95_wilson": [
+              0.8611851492148981,
+              0.9653297697167653
+            ],
+            "conclusion": "measured",
+            "exact_upper_bound_95": null,
+            "n_below_floor": false,
+            "tpr": 0.9292929292929293
+          }
+        }
+      }
+    }
+  },
+  "doses": [
+    0.1,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "fpr_ledger_untouched": true,
+  "frozen_thresholds_from": "runs/merged_fpr_tpr_report.json",
+  "kinds": [
+    "bias_lift",
+    "substitution",
+    "weight_tamper"
+  ],
+  "min_positives": 20,
+  "n_arms": 1055,
+  "pooled_estimate": null,
+  "pooled_refusal": "no pooled detection rate is reported, on either axis: not across attack classes (which would hide that a rule can catch one class at several times its rate on another) and not across doses (which would hide that severity within a class is wide, so the number would be dominated by whichever dose has the most arms). Read a cell, and compare rules inside that cell.",
+  "problems": [],
+  "rules": {
+    "ctc_mean_clean": {
+      "degenerate": false,
+      "frozen_from": "runs/merged_fpr_tpr_report.json",
+      "status": "measured",
+      "threshold": 0.9845092069058692
+    },
+    "ctc_peak_clean": {
+      "degenerate": true,
+      "frozen_from": "runs/merged_fpr_tpr_report.json",
+      "note": "the threshold is at the ceiling of the clean corpus, so no score can exceed it: the rule cannot fire on an attack either. This is not a miss rate.",
+      "status": "degenerate_threshold_at_ceiling",
+      "threshold": 1.0
+    },
+    "ctc_q95_clean": {
+      "degenerate": true,
+      "frozen_from": "runs/merged_fpr_tpr_report.json",
+      "note": "the threshold is at the ceiling of the clean corpus, so no score can exceed it: the rule cannot fire on an attack either. This is not a miss rate.",
+      "status": "degenerate_threshold_at_ceiling",
+      "threshold": 1.0
+    },
+    "refdiv_mean_clean": {
+      "degenerate": false,
+      "frozen_from": "runs/merged_fpr_tpr_report.json",
+      "status": "measured",
+      "threshold": 0.7276592261904761
+    }
+  },
+  "schema": "cviaf.tpr-ladder.v1",
+  "units_per_kind": {
+    "bias_lift": "absolute logit units added to one class's output bias",
+    "substitution": "fraction of hidden units zeroed",
+    "weight_tamper": "standard deviation of the added noise"
+  },
+  "unscorable": {
+    "substitution@0.25": 5,
+    "substitution@0.5": 36,
+    "substitution@1": 92
+  }
+}

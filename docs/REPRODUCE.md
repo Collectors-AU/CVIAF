@@ -214,44 +214,70 @@ reproduces the published threshold exactly, which is one way to check the enviro
 
 ```bash
 cd <repo>
-# 7a. build 198 arms from 9 clean models per shard - no retraining, no new data
+# 7a. build 1,188 arms: 3 classes x 4 doses x 99 clean parents - no retraining, no new data
 python scripts/tpr_arms.py build \
     --shard seed_60152_65151=$ANALYSIS/combined-plan/shards/seed_60152_65151.json ... \
-    --corpus seed_60152_65151=$ANALYSIS/<corpus> ... \
-    --out $ANALYSIS/tpr-corpus --per-shard 9 --magnitude 0.25
+    --corpus seed_60152_65151=$ANALYSIS/corpus-box1/box-corpus ... \
+    --out $ANALYSIS/tpr-ladder-corpus --per-shard 9 \
+    --magnitudes 0.1 0.25 0.5 1.0 --kinds weight_tamper substitution bias_lift
 
 # 7b. score them exactly as the corpus was scored
 ~/.venvs/cviaf-torch/bin/python scripts/integration.py score \
-    --shard $ANALYSIS/tpr-corpus/plan/shards/tpr_arms.json \
-    --corpus $ANALYSIS/tpr-corpus --out $ANALYSIS/tpr-results \
+    --shard $ANALYSIS/tpr-ladder-corpus/plan/shards/tpr_ladder.json \
+    --corpus $ANALYSIS/tpr-ladder-corpus --out $ANALYSIS/tpr-ladder-results \
     --reference $CVIAF_REFERENCE_DIR --workers 5 --rewrite-shard
 
-# 7c. judge at the thresholds §6 already froze
-python scripts/tpr_arms.py evaluate \
-    --results $ANALYSIS/tpr-results \
+# 7c. judge at the thresholds §6 already froze, per class and per dose
+python scripts/tpr_arms.py evaluate-ladder \
+    --results $ANALYSIS/tpr-ladder-results \
+    --registry $ANALYSIS/tpr-ladder-corpus/registry.jsonl \
+    --skipped $ANALYSIS/tpr-ladder-results/skipped_tpr_ladder.json \
     --frozen-report runs/merged_fpr_tpr_report.json \
-    --out runs/tpr_at_frozen.json
+    --out runs/tpr_ladder_at_frozen.json
 ```
 
-**Expected:** build 198 arms in ~39 s; score 193 with 5 errors in ~20 s; then
+**Expected:** build in ~3 m 49 s; score 1,055 with 133 errors in ~1 m 53 s; then
 
 ```
-TPR at frozen thresholds (alpha 0.05) - 193 arms ['substitution', 'weight_tamper']
-signal                threshold     caught/n      TPR   status
-ctc_mean_clean         0.984509     7/193      0.0363   measured
-ctc_peak_clean         1.000000     0/193         n/a   degenerate_rule
-ctc_q95_clean          1.000000     0/193         n/a   degenerate_rule
-refdiv_mean_clean      0.727659    67/193      0.3472   measured
+TPR at frozen thresholds, per class per dose (alpha 0.05) - 1055 arms, 3 classes x 4 doses
+class             dose     n  inert      ctc_mean_clean   refdiv_mean_clean
+bias_lift          0.1    99     99              0.0606              0.0505
+bias_lift         0.25    99     99              0.0606              0.0505
+bias_lift          0.5    99     99              0.0606              0.0505
+bias_lift            1    99     99              0.0606              0.0505
+substitution       0.1    99     88              0.0404              0.1313
+substitution      0.25    94     40              0.0213              0.4787
+substitution       0.5    63      6              0.0317              0.9365
+substitution         1     7      0*             1.0000              1.0000
+weight_tamper      0.1    99     73              0.0505              0.0707
+weight_tamper     0.25    99     23              0.0505              0.2222
+weight_tamper      0.5    99      4              0.1111              0.5960
+weight_tamper        1    99      0              0.2929              0.9293
 ```
 
-**Reproducibility check** — the receipt is a pure function of the results directory and the
-frozen report:
+(the `*` on the dose-1.00 substitution row is the below-floor marker: 7 arms is a count, not
+a rate, and the cell's `conclusion` says `insufficient_denominator`.)
+
+The single-dose path still works and still reproduces its own receipt:
 
 ```bash
+python scripts/tpr_arms.py build ... --magnitudes 0.25 --kinds weight_tamper substitution \
+    --out $ANALYSIS/tpr-corpus
 python scripts/tpr_arms.py evaluate --results $ANALYSIS/tpr-results \
-    --frozen-report runs/merged_fpr_tpr_report.json --out /tmp/tpr_check.json
-diff <(python -m json.tool runs/tpr_at_frozen.json) \
-     <(python -m json.tool /tmp/tpr_check.json) && echo "receipt reproduces exactly"
+    --frozen-report runs/merged_fpr_tpr_report.json --out runs/tpr_at_frozen.json
+# -> {'n_arms': 193, ...} and byte-identical to the committed receipt
+```
+
+**Reproducibility check** — the receipt is a pure function of the results directory, the
+build registry, and the frozen report:
+
+```bash
+python scripts/tpr_arms.py evaluate-ladder --results $ANALYSIS/tpr-ladder-results \
+    --registry $ANALYSIS/tpr-ladder-corpus/registry.jsonl \
+    --skipped $ANALYSIS/tpr-ladder-results/skipped_tpr_ladder.json \
+    --frozen-report runs/merged_fpr_tpr_report.json --out /tmp/ladder_check.json
+diff <(python -m json.tool runs/tpr_ladder_at_frozen.json) \
+     <(python -m json.tool /tmp/ladder_check.json) && echo "ladder receipt reproduces exactly"
 ```
 
 **Verify the guardrail:** `runs/tpr_at_frozen.json` carries
@@ -259,11 +285,13 @@ diff <(python -m json.tool runs/tpr_at_frozen.json) \
 If a run of this pass changes any of `runs/merge_report.json`, `runs/merged_fpr_tpr_report.json`
 or the ledger, something is wrong with the run, not with the thresholds.
 
-**Expected failure to expect.** 5 of 198 arms come back unscorable, all `substitution`, all
-with the s81621 signature. That is the designed behaviour: `--rewrite-shard` names them in
-`skipped_tpr_arms.json` and they are excluded from the denominator rather than counted as
-misses. It also means that class's rate is measured on survivors — the receipt says so, and so
-does the dashboard.
+**Expected failure to expect.** 133 of the 1,188 arms come back unscorable, **all
+`substitution`**, all with the s81621 signature. That is the designed behaviour:
+`--rewrite-shard` names them in `skipped_tpr_ladder.json` and they are excluded from the
+denominator rather than counted as misses. It also means that class's rate is measured on
+survivors — and because the removals cluster at the higher doses (0 / 5 / 36 / 92 across
+doses 0.10 → 1.00), the bias grows exactly as the attack starts working. The receipt and the
+dashboard both say so, per cell.
 
 ---
 
@@ -277,8 +305,8 @@ python scripts/demo_dashboard.py \
     --plan $ANALYSIS/combined-plan \
     --verify runs/integration_verify.json \
     --census runs/integration_census.json \
-    --tpr runs/tpr_at_frozen.json \
-    --tpr-skipped $ANALYSIS/tpr-results/skipped_tpr_arms.json \
+    --tpr runs/tpr_ladder_at_frozen.json \
+    --tpr-skipped $ANALYSIS/tpr-ladder-results/skipped_tpr_ladder.json \
     --split-seed 0 \
     --out demo/fpr_dashboard.html
 ```
@@ -311,8 +339,8 @@ headline in the browser.
 
 ```bash
 cd <repo>
-python -m pytest -q                             # 639 passed, 5 skipped, 1 xfailed (~42 s)
-~/.venvs/cviaf-torch/bin/python -m pytest -q    # 648 passed, 1 xfailed (~51 s)
+python -m pytest -q                             # 654 passed, 5 skipped, 1 xfailed (~41 s)
+~/.venvs/cviaf-torch/bin/python -m pytest -q    # 663 passed, 1 xfailed (~49 s)
 ```
 
 **Run them sequentially.** Launched into the same rootdir in parallel, the two lanes corrupt
@@ -325,5 +353,21 @@ Integration subset only:
 python -m pytest tests/test_integration_census.py tests/test_integration_verify.py \
     tests/test_integration_plans.py tests/test_integration_score.py \
     tests/test_integration_merge.py tests/test_tpr_arms.py \
-    tests/test_demo_dashboard.py -q
+    tests/test_demo_dashboard.py tests/test_number_audit.py -q
 ```
+
+## 11. Check the prose against the receipts (≈1 s)
+
+Every figure quoted in the README and the docs is re-derived from the committed receipts and
+required to appear where it is allowed to appear — and superseded figures are required *not*
+to appear outside the section that keeps them as history ([`docs/PS26228_ALIGNMENT_MATRIX.md`](PS26228_ALIGNMENT_MATRIX.md) §3
+explains both directions):
+
+```bash
+python scripts/number_audit.py
+# -> number-audit: clean (18 checks), figures recomputed from the receipts
+#    exit 3 = a document and a receipt disagree; exit 4 = a receipt is unreadable
+```
+
+A receipt that disagrees with itself (cells that do not sum to `n_arms`, a survivorship map
+that contradicts its own cells) is refused before the prose is even consulted.

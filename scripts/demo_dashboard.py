@@ -39,6 +39,10 @@ Z95 = 1.959963984540054
 # a rule that is exactly right reads as a disagreement.
 PUBLISHED_FPR_DECIMALS = 4
 
+# The detection panel is built from the per-class, per-dose receipt. A single-dose receipt
+# cannot fill a per-dose table without inventing the other doses, so it is refused by name.
+LADDER_SCHEMA = "cviaf.tpr-ladder.v1"
+
 
 def wilson(hits: int, n: int, z: float = Z95) -> list:
     """Wilson score interval - the same one the evaluator prints."""
@@ -205,6 +209,13 @@ def main(argv=None) -> int:
     tpr_blob = None
     if args.tpr:
         tpr = json.loads(Path(args.tpr).read_text(encoding="utf-8"))
+        if tpr.get("schema") != LADDER_SCHEMA:
+            raise SystemExit(
+                f"--tpr wants a {LADDER_SCHEMA} receipt (per attack class, per dose); "
+                f"{args.tpr} is {tpr.get('schema')!r}. A single-dose receipt cannot fill a "
+                "per-dose table without inventing the other doses, and inventing one is the "
+                "failure this page exists to make impossible."
+            )
         skipped = None
         if args.tpr_skipped and Path(args.tpr_skipped).is_file():
             raw = json.loads(Path(args.tpr_skipped).read_text(encoding="utf-8"))
@@ -212,19 +223,22 @@ def main(argv=None) -> int:
                 "n_models": raw.get("n_models"),
                 "n_scored": raw.get("n_scored"),
                 "n_error": raw.get("n_error"),
-                # Grouping the failures by class is the part that matters: if they all
-                # fall in one class, that class's TPR is measured on a biased subset.
-                "by_class": {},
                 "reasons": sorted({s.get("reason", "") for s in raw.get("skipped", [])}),
             }
-            for row in raw.get("skipped", []):
-                cls = str(row.get("model_id", "")).split("_r0")[0].split("_r")[0]
-                skipped["by_class"][cls] = skipped["by_class"].get(cls, 0) + 1
         tpr_blob = {
+            "mode": "ladder",
             "n_arms": tpr["n_arms"],
             "kinds": tpr["kinds"],
+            "doses": tpr["doses"],
+            "units_per_kind": tpr.get("units_per_kind", {}),
             "min_positives": tpr.get("min_positives", 20),
             "rules": tpr["rules"],
+            "cells": tpr["cells"],
+            # Already grouped by (class, dose) by the evaluator, because *where* the
+            # unscorable arms fall decides whether a cell is an estimate or a bound.
+            "unscorable": tpr.get("unscorable", {}),
+            "pooled_refusal": tpr.get("pooled_refusal"),
+            "behaviour_metric": tpr.get("behaviour_metric"),
             "problems": tpr.get("problems", []),
             "frozen_thresholds_from": tpr.get("frozen_thresholds_from"),
             "skipped": skipped,
@@ -416,22 +430,20 @@ a{color:var(--b)}
 </section>
 
 <section id="t-tpr">
-  <h2>What the 5% false-alarm budget actually buys</h2>
+  <h2>What the 5% false-alarm budget actually buys, class by class</h2>
   <p>These are attacked variants derived from models that are <b>already in the clean
-  population above</b> - weight-space tampering only (head noise and structural pruning),
-  no retraining, no new data. They were scored through the same adapter against the same
-  pinned reference, and then judged at the <b>thresholds the FPR half already chose</b>.
-  Nothing here recalibrated anything: the clean ledger and its thresholds are untouched,
-  and this is a separate receipt.</p>
+  population above</b> - weight-space tampering only (head noise, structural pruning, and a
+  targeted class-bias lift), no retraining, no new data. They were scored through the same
+  adapter against the same pinned reference, and then judged at the <b>thresholds the FPR
+  half already chose</b>. Nothing here recalibrated anything: the clean ledger and its
+  thresholds are untouched, and this is a separate receipt.</p>
+  <p><b>There is no pooled detection rate on this page.</b> A rate averaged over attack
+  classes survives exactly one follow-up question, and a rate averaged over doses hides
+  whether the rule is detecting damage or merely noticing that a weight changed. Every cell
+  stands on its own, including the cells where the rule misses.</p>
   <div id="tprhead"></div>
   <table id="tprtable"></table>
   <div id="tprmsg"></div>
-  <h2>Per attack class</h2>
-  <p>Two classes, because a single class cannot tell a rule that misses weak attacks from
-  one that misses all of them. Attack severity varies widely within a class - some head
-  tampers <i>improve</i> f1, because zero-mean noise on a trained head is closer to
-  regularisation than to sabotage.</p>
-  <table id="tprkinds"></table>
   <div id="tprskip"></div>
 </section>
 
@@ -821,94 +833,104 @@ document.getElementById('poison').innerHTML=
  'statistic must not become a lost corpus, and must not become a quietly smaller denominator.'+
  '</b></div>';
 
-// ---------------- TPR at frozen thresholds ----------------
+// ---------------- detection: TPR ladder at frozen thresholds ----------------
 (function(){
   const T=DATA.tpr;
   const host=document.getElementById('tprhead');
   if(!T){host.innerHTML='<div class="warn">No attacked-arm receipt was supplied to this build, so no detection panel is shown. The false-alarm numbers above stand alone: they are a clean-null measurement.</div>';return;}
-  const live=Object.entries(T.rules).filter(([,e])=>!e.degenerate);
-  const deg=Object.entries(T.rules).filter(([,e])=>e.degenerate);
-  const best=live.slice().sort((a,b)=>(b[1].pooled.tpr||0)-(a[1].pooled.tpr||0))[0];
+  const sigs=Object.keys(T.rules);
+  const live=sigs.filter(s=>!T.rules[s].degenerate);
+  const deg=sigs.filter(s=>T.rules[s].degenerate);
+
+  // The single best cell - and only among cells with enough arms to conclude from, so the
+  // card can never show a headline number that the table below flags as too small.
+  let best=null;
+  T.kinds.forEach(k=>T.doses.forEach(d=>{
+    const c=(T.cells[k]||{})[String(d)]; if(!c) return;
+    live.forEach(s=>{
+      const r=c.rules[s];
+      if(r.tpr===null||r.n_below_floor) return;
+      if(!best||r.tpr>best.tpr) best={kind:k,dose:d,tpr:r.tpr,caught:r.caught,n:c.n,rule:s};
+    });
+  }));
   host.innerHTML=
     '<div class="cards">'+
     '<div class="card"><div class="k">attacked variants</div><div class="v">'+T.n_arms+'</div>'+
-      '<div class="n">'+T.kinds.join(' \u00b7 ')+'</div></div>'+
-    '<div class="card"><div class="k">best live detection</div><div class="v">'+
-      (best?pct(best[1].pooled.tpr):'&ndash;')+'</div><div class="n">'+(best?best[0]:'')+'</div></div>'+
-    '<div class="card"><div class="k">rules that cannot fire</div><div class="v">'+deg.length+' of '+Object.keys(T.rules).length+
+      '<div class="n">'+T.kinds.length+' classes &times; '+T.doses.length+' doses, no retraining</div></div>'+
+    (best?'<div class="card"><div class="k">best measured cell</div><div class="v">'+pct(best.tpr)+'</div>'+
+      '<div class="n">'+best.rule+' on '+best.kind+' @ dose '+best.dose+' ('+best.caught+'/'+best.n+')</div></div>':
+      '<div class="card"><div class="k">best measured cell</div><div class="v">&ndash;</div>'+
+      '<div class="n">every cell is below the floor</div></div>')+
+    '<div class="card"><div class="k">rules that cannot fire</div><div class="v">'+deg.length+' of '+sigs.length+
       '</div><div class="n">threshold at the corpus ceiling</div></div>'+
-    '<div class="card"><div class="k">false alarms</div><div class="v">'+pct(DATA.committed[best?best[0]:SIGS[0]].recomputed_fpr)+
-      '</div><div class="n">unchanged - not recalibrated for attacks</div></div></div>';
+    '<div class="card"><div class="k">false alarms</div><div class="v">'+pct(DATA.committed[best?best.rule:live[0]].recomputed_fpr)+
+      '</div><div class="n">unchanged - not recalibrated for attacks</div></div></div>'+
+    '<div class="bad"><b>No pooled detection rate is on this page, and that is deliberate.</b> '+
+      (T.pooled_refusal||'')+'</div>';
 
-  let h='<tr><th>rule</th><th class="num">frozen threshold</th><th class="num">caught / n</th>'+
-        '<th class="num">TPR (95% Wilson)</th><th>reading</th></tr>';
-  Object.entries(T.rules).sort((a,b)=>(b[1].pooled.tpr||-1)-(a[1].pooled.tpr||-1)).forEach(([sig,e])=>{
-    const p=e.pooled;
-    if(e.degenerate){
-      h+='<tr><td>'+sig+'</td><td class="num">'+e.threshold.toFixed(6)+'</td>'+
-         '<td class="num dim">'+p.caught+' / '+p.n+'</td>'+
-         '<td class="num y">not measurable</td>'+
-         '<td class="y">threshold is the ceiling - the rule cannot fire on an attack either. '+
-         'This is not a 0% detection rate.</td></tr>';
-    }else{
-      const ci=p.ci95_wilson;
-      h+='<tr><td>'+sig+'</td><td class="num">'+e.threshold.toFixed(6)+'</td>'+
-         '<td class="num">'+p.caught+' / '+p.n+'</td>'+
-         '<td class="num">'+pct(p.tpr)+' ['+pct(ci[0])+', '+pct(ci[1])+']</td>'+
-         '<td>'+(p.tpr<0.10?'<span class="r">nearly blind at this operating point</span>':
-                 '<span class="g">detects a real fraction</span>')+'</td></tr>';
-    }
+  // One row per (attack class, dose). No row is a rule, and no column is an average.
+  let h='<tr><th>attack class</th><th class="num">dose</th><th class="num">arms</th>'+
+        '<th class="num">behaviour unmoved</th>';
+  live.forEach(s=>{h+='<th class="num">'+s+'</th>';});
+  h+='</tr>';
+  T.kinds.forEach(k=>{
+    T.doses.forEach(d=>{
+      const c=(T.cells[k]||{})[String(d)]; if(!c) return;
+      h+='<tr><td>'+k+'</td><td class="num">'+d+'</td><td class="num">'+c.n+'</td>'+
+         '<td class="num dim">'+c.n_behaviour_inert+' / '+c.n+'</td>';
+      live.forEach(s=>{
+        const r=c.rules[s];
+        if(r.tpr===null){h+='<td class="num y">&ndash;</td>';return;}
+        const ci=r.ci95_wilson;
+        h+='<td class="num">'+pct(r.tpr)+(r.n_below_floor?' <span class="y">*</span>':'')+
+           ' <span class="dim">['+pct(ci[0])+', '+pct(ci[1])+']</span></td>';
+      });
+      h+='</tr>';
+    });
   });
   document.getElementById('tprtable').innerHTML=h;
 
-  const l=live.slice().sort((a,b)=>b[1].pooled.tpr-a[1].pooled.tpr)[0];
-  const w=live.slice().sort((a,b)=>a[1].pooled.tpr-b[1].pooled.tpr)[0];
   document.getElementById('tprmsg').innerHTML=
-    '<div class="warn"><b>The two numbers do not agree, and that is the finding.</b> '+
-    'The rule that best respects the false-alarm budget is not the rule that detects: '+
-    (w?('<code>'+w[0]+'</code> holds FPR at '+pct(DATA.committed[w[0]].recomputed_fpr)+
-        ' but catches only '+pct(w[1].pooled.tpr)+' of attacks'):'')+', while '+
-    (l?('<code>'+l[0]+'</code> catches '+pct(l[1].pooled.tpr)+' at a similar FPR'):'')+
-    '. A calibration study alone would have reported the first as the winner.</div>';
+    '<div class="warn"><b>Read down a class, not across the table.</b> A dose is a different '+
+    'unit in each family - the units are listed below - so the only comparison that means '+
+    'anything is between rules <i>inside</i> one cell. '+
+    (deg.length?('The rules '+deg.map(s=>'<code>'+s+'</code>').join(' and ')+
+      ' show as &ndash; because their frozen threshold is the ceiling of the clean corpus: '+
+      'they cannot fire on an attack either. That is undefined, not 0%.'):'')+
+    ' A cell marked <span class="y">*</span> has fewer than '+T.min_positives+
+    ' arms left, so its ratio is shown beside its count and interval and should not be '+
+    'quoted on its own.</div>';
 
-  let body='<tr><th>attack class</th><th class="num">arms</th>';
-  Object.keys(T.rules).forEach(sig=>{body+='<th class="num">'+sig+'</th>';});
-  body+='</tr>';
-  T.kinds.forEach(k=>{
-    body+='<tr><td>'+k+'</td>';
-    const n=T.rules[Object.keys(T.rules)[0]].per_kind[k].n;
-    body+='<td class="num">'+n+'</td>';
-    Object.entries(T.rules).forEach(([sig,e])=>{
-      const c=e.per_kind[k];
-      let cell;
-      if(c.tpr===null&&e.degenerate) cell='<span class="y">degenerate</span>';
-      else if(c.tpr===null) cell='<span class="y">n/a</span>';
-      else{
-        const ci=c.ci95_wilson;
-        cell=pct(c.tpr)+' <span class="dim">['+pct(ci[0])+', '+pct(ci[1])+']</span>';
-        if(c.n_below_floor) cell+=' <span class="y">(n&lt;'+T.min_positives+')</span>';
-      }
-      body+='<td class="num">'+cell+'</td>';
-    });
-    body+='</tr>';
-  });
-  document.getElementById('tprkinds').innerHTML=body;
-
+  // Nothing here is derived from the raw skipped receipt any more: the evaluator already
+  // grouped the unscorable arms by (class, dose), which is the grouping that matters.
   let s='';
-  if(T.skipped&&T.skipped.n_error>0){
-    const cls=Object.entries(T.skipped.by_class).map(([k,v])=>k+' \u00d7'+v).join(', ');
-    s='<div class="bad"><b>Survivorship warning.</b> '+T.skipped.n_models+' arms were built but only '+
-      T.skipped.n_scored+' could be scored: the scorer returned no CTC statistic for '+
-      T.skipped.n_error+' of them ('+cls+'). Those are <i>not</i> counted as misses, because the '+
-      'rule never got a chance to look at them - which means the pruned class’s TPR above is '+
-      'measured on the survivors of an attack that also destroys measurability. '+
-      'The true detection rate on that class is <b>no better</b> than the number shown.</div>';
+  const un=Object.entries(T.unscorable||{});
+  if(un.length){
+    s+='<div class="bad"><b>Survivorship, and it gets worse with dose.</b> These arms were '+
+      'built and could not be scored at all - the scorer returned no CTC statistic, so no '+
+      'rule ever got to look at them, and they are <i>not</i> counted as misses: '+
+      un.map(([k,v])=>k+' &times;'+v).join(', ')+
+      '. At the highest dose the attack removes most of its own subjects, so the rate on '+
+      'what remains is an upper bound measured on a shrinking subset. The true detection '+
+      'rate on those cells is <b>no better</b> than the number shown.</div>';
+  }
+  if(T.behaviour_metric){
+    s+='<div class="warn"><b>Some arms cannot be caught by listening to behaviour, and the '+
+      'table says how many.</b> '+T.behaviour_metric+'</div>';
+  }
+  if(T.units_per_kind&&Object.keys(T.units_per_kind).length){
+    s+='<div class="warn"><b>The dose axes are not the same units.</b> '+
+      Object.entries(T.units_per_kind).map(([k,v])=>'<code>'+k+'</code> = '+v).join('; ')+
+      '. A ladder is comparable within a family and not across families.</div>';
   }
   if(T.problems&&T.problems.length){
     s+='<div class="bad">'+T.problems.join('; ')+'</div>';
   }
-  document.getElementById('tprskip').innerHTML=s||
-    '<div class="ok">Every arm was scored, so no class is measured on a biased subset.</div>';
+  if(!s){
+    s='<div class="ok">Every arm was scored and every class is measurable, so nothing in '+
+      'this table is an upper bound dressed as an estimate.</div>';
+  }
+  document.getElementById('tprskip').innerHTML=s;
 })();
 
 // ---------------- boot ----------------

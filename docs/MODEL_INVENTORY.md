@@ -136,29 +136,40 @@ denominator.
 
 | | |
 |---|---|
-| arms built | **198** |
-| arms scored | **193** |
-| unscorable | **5**, all `substitution` |
-| parents | 9 clean models per shard × 11 shards = 99 |
-| classes | `weight_tamper` (head noise), `substitution` (structural pruning) |
-| magnitude | 0.25 for every arm |
+| arms built | **1,188** — 3 classes × 4 doses × 99 parents |
+| arms scored | **1,055** |
+| unscorable | **133**, all `substitution` (0 / 5 / 36 / 92 across doses 0.10 / 0.25 / 0.50 / 1.00) |
+| parents | 9 clean models per shard × 11 shards = 99, drawn from the corpus in §3 |
+| classes | `weight_tamper` (head noise), `substitution` (structural pruning), `bias_lift` (targeted class-bias lift) |
+| doses | 0.10, 0.25, 0.50, 1.00 — **units differ per class** (noise σ / prune fraction / absolute logit units) |
 | naming | `<kind>_r<magnitude>_s<parent-seed>`, e.g. `substitution_r0.25_s74592` |
-| location | `~/cviaf-analysis/tpr-corpus/models/` + `registry.jsonl` |
-| plan | `~/cviaf-analysis/tpr-corpus/plan/shards/tpr_arms.json` |
-| results | `~/cviaf-analysis/tpr-results/results_tpr_arms.npz` |
-| unscorable | `~/cviaf-analysis/tpr-results/skipped_tpr_arms.json` |
-| receipt | [`runs/tpr_at_frozen.json`](../runs/tpr_at_frozen.json) |
+| location | `~/cviaf-analysis/tpr-ladder-corpus/models/` + `registry.jsonl` |
+| plan | `~/cviaf-analysis/tpr-ladder-corpus/plan/shards/tpr_ladder.json` |
+| results | `~/cviaf-analysis/tpr-ladder-results/results_tpr_ladder.npz` |
+| unscorable | `~/cviaf-analysis/tpr-ladder-results/skipped_tpr_ladder.json` |
+| receipt | [`runs/tpr_ladder_at_frozen.json`](../runs/tpr_ladder_at_frozen.json) — per class, per dose |
+| earlier single-dose set | 198 arms at 0.25 → `runs/tpr_at_frozen.json` (still reproducible) |
+
+Each arm is `<kind>_r<dose>_s<parent seed>`, so the same clean parent appears once per
+(class, dose) cell — 12 arms share a parent. That is intended: it is what makes a dose column
+possible, and it is why the scored `.npz` cannot supply the dose by itself. The build
+registry is the record: `evaluate-ladder` joins on `model_id` and refuses to score an arm it
+cannot place in a cell.
 
 Every arm directory passes the same `cviaf.lab.manifest_schema.validate_model_dir` the clean
-corpus passes, so an arm is admissible evidence by exactly the standard a clean model is. An
-arm whose tampering turned out to be a no-op is refused at build time rather than recorded as
-an attack.
+corpus passes, so an arm is admissible evidence by exactly the standard a clean model is.
+Three refusals keep the set honest: a no-op tamper is rejected at build time rather than
+recorded as an attack; an arm set containing a clean parent is flagged rather than scored;
+and every arm carries its **own measured** `f1_relative_drop` and a
+`metrics.attack_success_rate` object, because the validator requires both for a weight-space
+arm and copying the parent's f1 onto a tampered artifact would be the exact fabricated number
+this lane refuses.
 
-The five unscorable arms are `substitution_r0.25_s74592`, `_s93482`, `_s96262`, `_s7159`,
-`_s41150`, each with the same producer message
-`ValueError: repository scorer omitted signals: dict_keys(['refdiv_mean_clean'])`. Pruning
-can destroy the *statistic* as well as the model, so that class's detection rate is measured
-on the subset that survived its own attack.
+The 133 unscorable arms are all `substitution`, each with the same producer message
+`ValueError: repository scorer omitted signals: dict_keys(['refdiv_mean_clean'])`. Pruning can
+destroy the *statistic* as well as the model, so that class's detection rate is measured on
+the subset that survived its own attack — and the subset shrinks with the dose, which is the
+whole reason the ladder is more honest than the single-point pass it replaced.
 
 ---
 
@@ -216,9 +227,11 @@ print("collisions:", c["n_collisions"], "fatal:", len(c["collisions_fatal"]))
 print("gaps:", c["gaps"])
 PY
 
-# the attack arm inventory in §4
-python scripts/tpr_arms.py evaluate --results ~/cviaf-analysis/tpr-results \
-    --frozen-report runs/merged_fpr_tpr_report.json --out /tmp/tpr_check.json
-diff <(python -m json.tool runs/tpr_at_frozen.json) <(python -m json.tool /tmp/tpr_check.json) \
-  && echo "receipt reproduces"
+# the attack arm inventory in §4 and the ladder receipt
+python scripts/tpr_arms.py evaluate-ladder --results ~/cviaf-analysis/tpr-ladder-results \
+    --registry ~/cviaf-analysis/tpr-ladder-corpus/registry.jsonl \
+    --skipped ~/cviaf-analysis/tpr-ladder-results/skipped_tpr_ladder.json \
+    --frozen-report runs/merged_fpr_tpr_report.json --out /tmp/ladder_check.json
+diff <(python -m json.tool runs/tpr_ladder_at_frozen.json) \
+     <(python -m json.tool /tmp/ladder_check.json) && echo "ladder receipt reproduces"
 ```
