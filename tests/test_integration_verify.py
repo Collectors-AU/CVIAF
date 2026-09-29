@@ -29,9 +29,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts.integration import (  # noqa: E402
     VERIFY_SCHEMA,
+    VerifyError,
     plan_entries,
     quarantine_dir,
     render_verify,
+    require_native_validator,
     verify_judge,
     verify_model_dir,
     verify_source,
@@ -160,6 +162,48 @@ def test_quarantine_refuses_to_move_outside_the_owned_root(tmp_path):
     assert outside.is_dir()
 
 
+def test_verify_refuses_to_quarantine_anything_when_the_native_validator_is_missing(tmp_path):
+    """A missing dependency is not 56,628 broken models; it is a refusal to verify.
+
+    This one is written from a real accident: the CLI was run without the repo on
+    PYTHONPATH, so `cviaf.lab.manifest_schema` was not importable, every model was
+    recorded as a failure and every model was moved into quarantine.
+    """
+
+    def broken_importer(name):
+        raise ModuleNotFoundError(f"No module named {name!r}")
+
+    with pytest.raises(VerifyError) as excinfo:
+        require_native_validator(importer=broken_importer)
+    assert "refusing to verify or quarantine anything" in str(excinfo.value)
+    assert "No module named" in str(excinfo.value)
+
+
+def test_verify_moves_nothing_when_verification_cannot_run(tmp_path, monkeypatch):
+    """The guarantee is about side effects: prove it before the first rename happens."""
+    from scripts import integration
+
+    def refuse(importer=None):
+        raise VerifyError("validator unavailable")
+
+    monkeypatch.setattr(integration, "require_native_validator", refuse)
+    root = tmp_path / "corpus"
+    model = write_model(root, "clean_none_fixed_s60152")
+
+    with pytest.raises(VerifyError):
+        integration.verify_source(
+            "box1-corpus-v2",
+            root,
+            plan={"clean_none_fixed_s60152": {"weights_sha256": "0" * 64}},
+            quarantine_root=tmp_path / "quarantine",
+            owned_root=root,
+        )
+
+    assert model.is_dir(), "nothing may be moved when verification cannot run"
+    assert (model / "weights.npz").is_file()
+    assert not (tmp_path / "quarantine").exists()
+
+
 def test_verify_reports_a_schema_failure_as_a_schema_failure(tmp_path):
     """A missing manifest field must not be reported as a plan-digest mismatch."""
     root = tmp_path / "corpus"
@@ -172,6 +216,7 @@ def test_verify_reports_a_schema_failure_as_a_schema_failure(tmp_path):
 
     assert problems, "the native validator must reject a manifest missing a required field"
     assert not any("plan" in p for p in problems)
+    assert not any("raised" in p for p in problems), "a clean rejection is not a crash"
 
 
 def test_verify_passes_a_source_that_matches_its_pinned_plan(tmp_path):

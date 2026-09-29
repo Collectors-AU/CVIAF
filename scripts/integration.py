@@ -43,6 +43,7 @@ from __future__ import annotations
 import argparse
 import glob
 import hashlib
+import importlib
 import json
 import os
 import re
@@ -1351,8 +1352,39 @@ def render_plan(plan: Dict[str, Any]) -> str:
 VERIFY_SCHEMA = "cviaf.integration-verify.v1"
 
 
+class VerifyError(RuntimeError):
+    """The verification step cannot run at all - so it must not run."""
+
+
+def require_native_validator(importer=None):
+    """The native manifest validator, or a refusal.
+
+    A per-model problem string is the right answer for a bad model and the wrong answer
+    for a missing dependency. Learned the expensive way: run without the repo on
+    PYTHONPATH and `cviaf.lab.manifest_schema` is not importable, which - if that is
+    recorded per model - presents itself as 56,628 individually broken models and moves
+    every one of them into quarantine. So an unavailable validator is a refusal to
+    verify anything, raised before the first file is touched.
+    """
+    importer = importer or importlib.import_module
+    try:
+        module = importer("cviaf.lab.manifest_schema")
+    except Exception as exc:  # noqa: BLE001 - any import failure is a refusal
+        raise VerifyError(
+            "native manifest validator unavailable "
+            f"({type(exc).__name__}: {exc}); refusing to verify or quarantine anything "
+            "(is the repo root on PYTHONPATH?)"
+        ) from exc
+    validate = getattr(module, "validate_model_dir", None)
+    if validate is None:
+        raise VerifyError("cviaf.lab.manifest_schema has no validate_model_dir")
+    return validate
+
+
 def verify_model_dir(
-    model_dir: Path, plan_entry: Optional[Dict[str, Any]] = None
+    model_dir: Path,
+    plan_entry: Optional[Dict[str, Any]] = None,
+    validator=None,
 ) -> List[str]:
     """Every reason this model directory cannot be scored. Empty list = it can.
 
@@ -1368,10 +1400,9 @@ def verify_model_dir(
         return ["missing manifest.json"]
     if not weights_path.is_file():
         problems.append("missing weights.npz")
+    validator = validator or require_native_validator()
     try:
-        from cviaf.lab.manifest_schema import validate_model_dir
-
-        problems.extend(validate_model_dir(str(model_dir)))
+        problems.extend(validator(str(model_dir)))
     except Exception as exc:  # noqa: BLE001 - a validator crash is a verification failure
         problems.append(f"native validator raised {type(exc).__name__}: {exc}")
     if plan_entry is not None:
@@ -1434,8 +1465,11 @@ def verify_source(
     quarantine_root: Optional[Path] = None,
     owned_root: Optional[Path] = None,
     limit: Optional[int] = None,
+    validator=None,
 ) -> Dict[str, Any]:
     """Check every model dir under one source root, quarantining what fails."""
+    # Establish that verification is possible *before* anything can be moved.
+    validator = validator or require_native_validator()
     root = Path(root)
     models = sorted(p.parent for p in root.rglob("manifest.json"))
     if limit is not None:
@@ -1451,7 +1485,7 @@ def verify_source(
             seen.add(model_dir.name)
             if entry is None:
                 missing_from_plan.append(model_dir.name)
-        problems = verify_model_dir(model_dir, entry)
+        problems = verify_model_dir(model_dir, entry, validator=validator)
         if not problems:
             verified.append(model_dir.name)
             continue
@@ -1702,6 +1736,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 print(f"verify: no shard files matched {pattern!r}", file=sys.stderr)
                 return 8
             plans[source_id] = plan_entries(shards)
+        try:
+            validator = require_native_validator()
+        except VerifyError as exc:
+            print(f"verify: REFUSED: {exc}", file=sys.stderr)
+            return 8
         sources = []
         for spec in args.source:
             source_id, _, root = spec.partition("=")
@@ -1716,6 +1755,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     quarantine_root=Path(args.quarantine) if args.quarantine else None,
                     owned_root=Path(args.owned_root) if args.owned_root else None,
                     limit=args.limit,
+                    validator=validator,
                 )
             )
         report = verify_judge(
