@@ -889,6 +889,197 @@ def summarise_fpr_report(report_path: Path, merge: Dict[str, Any]) -> Dict[str, 
 
 
 SCORE_SCHEMA = "cviaf.integration-score.v1"
+DEFAULT_SIGNALS = (
+    "ctc_mean_clean",
+    "ctc_q95_clean",
+    "ctc_peak_clean",
+    "refdiv_mean_clean",
+)
+
+
+def run_score(args) -> int:
+    """CLI entry point for the tolerant scorer.
+
+    Writes the same file names as `shard_worker.py` (registry, results, report, meta) so
+    the vendored merge and the evaluator accept its output unchanged, plus a `skipped`
+    file and the counts that say how many models did not make it in and why.
+    """
+    import importlib
+
+    shard = load_shard(Path(args.shard))
+    corpus = Path(args.corpus).resolve()
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    shard_id = shard["shard_id"]
+    signals = list(args.signals)
+
+    module_name, _, function_name = args.adapter.partition(":")
+    if not function_name:
+        print(f"score: adapter must be module:function, got {args.adapter!r}", file=sys.stderr)
+        return 8
+    reference = Path(args.reference).resolve() if args.reference else None
+    if reference is None or not (reference / "manifest.json").is_file():
+        print("score: --reference must point at a model dir with manifest.json", file=sys.stderr)
+        return 8
+    reference_identity = {
+        "model_id": reference.name,
+        "manifest_sha256": sha256_file(reference / "manifest.json"),
+        "weights_sha256": sha256_file(reference / "weights.npz"),
+    }
+
+    adapter = getattr(importlib.import_module(module_name), function_name)
+    items: List[Dict[str, Any]] = []
+    unreadable: List[Dict[str, Any]] = []
+    for model in shard["models"]:
+        model_dir = corpus / model["path"]
+        manifest_path = model_dir / "manifest.json"
+        if not manifest_path.is_file():
+            unreadable.append(
+                {"model_id": model["model_id"], "seed": model["seed"], "kind": None,
+                 "status": "error", "reason": f"missing {manifest_path}", "scores": None}
+            )
+            continue
+        items.append(
+            {
+                "model_id": model["model_id"],
+                "seed": model["seed"],
+                "kind": json.loads(manifest_path.read_text(encoding="utf-8"))["ground_truth"]["kind"],
+                "path": str(model_dir),
+                "manifest": json.loads(manifest_path.read_text(encoding="utf-8")),
+            }
+        )
+
+    registry_path = out / f"registry_{shard_id}.jsonl"
+    resume: Dict[str, Dict[str, Any]] = {}
+    if registry_path.is_file():
+        for line in registry_path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                row = json.loads(line)
+                resume[row["model_id"]] = row
+        print(f"score: resuming, {len(resume)} rows already in the registry")
+
+    def checkpoint(done: Dict[str, Dict[str, Any]]) -> None:
+        body = "".join(
+            json.dumps(done[key], sort_keys=True) + "\n" for key in sorted(done)
+        )
+        atomic_write(registry_path, body)
+
+    report = score_records(
+        items,
+        adapter,
+        signals,
+        workers=args.workers,
+        resume=resume,
+        checkpoint=checkpoint,
+    )
+    for row in unreadable:
+        report["rows"].append(row)
+        report["skipped"].append(
+            {"model_id": row["model_id"], "status": row["status"], "reason": row["reason"]}
+        )
+        report["n_error"] += 1
+    checkpoint({r["model_id"]: r for r in report["rows"]})
+
+    complete = [r for r in report["rows"] if r["status"] == "complete"]
+    if args.rewrite_shard:
+        # the shard the merge validates against must be the shard that was scored
+        issued = scored_shard(shard, report)
+        shard_target = out / "shards"
+        shard_target.mkdir(parents=True, exist_ok=True)
+        (shard_target / f"{shard_id}.json").write_text(
+            json.dumps(issued, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        shard_for_hash = shard_target / f"{shard_id}.json"
+    else:
+        shard_for_hash = Path(args.shard)
+
+    npz_path = out / f"results_{shard_id}.npz"
+    if complete:
+        import numpy as np
+
+        np.savez_compressed(
+            npz_path,
+            model_id=np.array([r["model_id"] for r in complete]),
+            seed=np.array([r["seed"] for r in complete], dtype="int64"),
+            kind=np.array([r["kind"] for r in complete]),
+            **{
+                name: np.array([r["scores"][name] for r in complete], dtype="float64")
+                for name in signals
+            },
+        )
+    else:
+        npz_path.write_bytes(b"")  # nothing scored: the merge will see count 0 and refuse
+
+    digest = sha256_file(npz_path)
+    (out / f"report_{shard_id}.json").write_text(
+        json.dumps(
+            {
+                "schema": "cviaf.analysis-result.v1",
+                "shard_id": shard_id,
+                "count": len(complete),
+                "mode": "adapter",
+                "sha256": digest,
+                "n_incomplete": report["n_incomplete"],
+                "n_error": report["n_error"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (out / f"registry_{shard_id}.meta.json").write_text(
+        json.dumps(
+            {
+                "shard_sha256": sha256_file(shard_for_hash),
+                "mode": "adapter",
+                "adapter": args.adapter,
+                "reference": reference_identity,
+                "n_eval": str(args.n_eval),
+                "backgrounds": str(args.backgrounds),
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (out / f"skipped_{shard_id}.json").write_text(
+        json.dumps(
+            {
+                "schema": SCORE_SCHEMA,
+                "shard_id": shard_id,
+                "n_models": report["n_models"],
+                "n_scored": report["n_scored"],
+                "n_incomplete": report["n_incomplete"],
+                "n_error": report["n_error"],
+                "skipped": report["skipped"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    print(
+        json.dumps(
+            {
+                "status": "PASS" if report["n_scored"] else "FAIL",
+                "shard": shard_id,
+                "scored": report["n_scored"],
+                "incomplete": report["n_incomplete"],
+                "error": report["n_error"],
+            },
+            sort_keys=True,
+        )
+    )
+    return 0 if report["n_scored"] else 6
+
+
+def atomic_write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
 
 def classify_signals(
     values: Optional[Dict[str, Any]], signals: Sequence[str], error: Optional[str] = None
@@ -1075,7 +1266,16 @@ def merge_plans(
                 f"{source_id}: shard count {shard.get('count')} != {len(models)} models"
             )
         seeds = [m["seed"] for m in models]
-        if min(seeds) != shard.get("seed_min") or max(seeds) != shard.get("seed_max"):
+        unscorable = shard.get("unscorable_model_ids") or []
+        if unscorable:
+            # A re-issued shard keeps the plan's original bounds after dropping the models
+            # that could not be scored, so containment (not equality) is what holds.
+            if min(seeds) < shard.get("seed_min") or max(seeds) > shard.get("seed_max"):
+                raise PlanError(
+                    f"{source_id}: models {min(seeds)}..{max(seeds)} fall outside the shard's "
+                    f"declared bounds {shard.get('seed_min')}..{shard.get('seed_max')}"
+                )
+        elif min(seeds) != shard.get("seed_min") or max(seeds) != shard.get("seed_max"):
             raise PlanError(
                 f"{source_id}: seed bounds {shard.get('seed_min')}..{shard.get('seed_max')} "
                 f"do not match the models ({min(seeds)}..{max(seeds)})"
@@ -1385,6 +1585,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     merge_results.add_argument("--repo-root", default=None, help="the pinned scorer export")
     merge_results.add_argument("--python", default=sys.executable)
 
+    score = sub.add_parser("score", help="score a shard and classify, instead of crashing")
+    score.add_argument("--shard", required=True)
+    score.add_argument("--corpus", required=True, help="corpus root the shard paths are relative to")
+    score.add_argument("--out", required=True)
+    score.add_argument("--reference", default=None, help="reference model dir (required for adapter mode)")
+    score.add_argument("--adapter", default="real_score_adapter:score")
+    score.add_argument("--mode", choices=["adapter"], default="adapter")
+    score.add_argument("--signals", nargs="+", default=list(DEFAULT_SIGNALS))
+    score.add_argument("--n-eval", type=int, default=40)
+    score.add_argument("--backgrounds", type=int, default=4)
+    score.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 3))
+    score.add_argument(
+        "--rewrite-shard",
+        action="store_true",
+        help="re-issue the shard without the models that could not be scored",
+    )
+
     verify = sub.add_parser("verify", help="validate every model dir, quarantine failures")
     verify.add_argument("--source", action="append", required=True, help="id=path")
     verify.add_argument("--plan", action="append", default=[], help="id=shard.json (or a glob)")
@@ -1401,6 +1618,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     verify.add_argument("--limit", type=int, default=None, help="check at most N models per source")
     verify.add_argument("--out", default=None)
     args = parser.parse_args(argv)
+
+    if args.command == "score":
+        return run_score(args)
 
     if args.command == "merge-results":
         plan_dir = Path(args.plan)
