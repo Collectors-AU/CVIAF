@@ -466,7 +466,7 @@ declares `unscorable_model_ids: ['clean_none_fixed_s81621']`.
 
 This is the invariant the whole pass is built around: **one undefined statistic must not
 become a lost corpus, and must not become a quietly smaller denominator.** It replays live
-in **2.2 seconds** (`docs/REPRODUCE.md` §5).
+in **1.8 seconds** (`docs/REPRODUCE.md` §5; `real 0m1.832s` measured here).
 
 ### 7.4 We quarantined all 56,628 models ourselves
 
@@ -511,7 +511,7 @@ Recorded so nobody re-invents them:
 |---|---|
 | [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) | every procedure, step by step, with the failure mode it prevents and the test that pins it |
 | [`docs/MODEL_INVENTORY.md`](docs/MODEL_INVENTORY.md) | every model generated: 56,627 rows by source, seed range, path and digest |
-| [`docs/REPRODUCE.md`](docs/REPRODUCE.md) | exact end-to-end reproduction, including the live 2.2 s poison replay |
+| [`docs/REPRODUCE.md`](docs/REPRODUCE.md) | exact end-to-end reproduction, including the live 1.8 s poison replay |
 | [`docs/COVERAGE_STATEMENT.md`](docs/COVERAGE_STATEMENT.md) | what the engine claims to detect, and what it declares out of scope |
 | [`docs/PS26228_REQUIREMENT_TRACE.md`](docs/PS26228_REQUIREMENT_TRACE.md) | problem-statement clause → artefact that satisfies it |
 | [`docs/CLEAN_NULL_CORPUS.md`](docs/CLEAN_NULL_CORPUS.md) | how the null corpus is generated |
