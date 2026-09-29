@@ -1126,7 +1126,16 @@ def score_records(
     three outcomes separate and countable - scored, incomplete, error - so the ledger can
     exclude the undefined models explicitly and say how many there were.
     """
-    done = dict(resume or {})
+    # Resume skips what the scorer has already decided about a *model*: a complete row, or
+    # an incomplete one (undefined on every image is a property of the model). An `error`
+    # row is not decided - it is usually systemic (the corpus was mid-move, a reference was
+    # missing) - and treating it as done turns a recoverable failure into a permanent one.
+    done = {
+        key: row
+        for key, row in (resume or {}).items()
+        if (row or {}).get("status") in ("complete", "incomplete")
+    }
+    retried = len(resume or {}) - len(done)
     pending = [item for item in items if item["model_id"] not in done]
     results: List[Dict[str, Any]] = []
     if workers <= 1 or len(pending) <= 1:
@@ -1157,6 +1166,7 @@ def score_records(
         "schema": SCORE_SCHEMA,
         "signals": list(signals),
         "n_models": len(items),
+        "n_retried": retried,
         "n_scored": len(scored),
         "n_incomplete": len(incomplete),
         "n_error": len(errors),

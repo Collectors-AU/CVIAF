@@ -100,6 +100,62 @@ def test_score_records_keeps_incomplete_rows_out_of_the_scored_set():
     assert report["rows"][0]["scores"] == {"refdiv_mean_clean": 1.0}
 
 
+def test_score_records_retries_a_previously_errored_model_on_resume():
+    """An error is usually systemic; treating it as done makes it permanent.
+
+    Written from a real run: box 5's rescore first executed while the corpus was
+    mid-move, so all 5,000 rows came out `error`. Resuming with those rows treated as
+    done would have reported 0 scored on the second attempt and looked like a clean skip.
+    """
+    models = [item(f"clean_none_fixed_s{80152 + i}", 80152 + i) for i in range(3)]
+    resume = {
+        m["model_id"]: {
+            "model_id": m["model_id"],
+            "seed": m["seed"],
+            "status": "error",
+            "reason": "FileNotFoundError: corpus was mid-move",
+            "scores": None,
+        }
+        for m in models
+    }
+    seen = []
+
+    def counting_score(model_dir, manifest):
+        seen.append(model_dir.name)
+        return FULL
+
+    report = score_records(models, counting_score, SIGNALS, workers=1, resume=resume)
+
+    assert len(seen) == 3, "a previously errored model must be attempted again"
+    assert report["n_retried"] == 3
+    assert report["n_scored"] == 3
+
+
+def test_score_records_does_not_retry_an_incomplete_model():
+    """Undefined-on-every-image is a property of the model, not of the run."""
+    models = [item("clean_none_fixed_s81621", 81621)]
+    resume = {
+        "clean_none_fixed_s81621": {
+            "model_id": "clean_none_fixed_s81621",
+            "seed": 81621,
+            "status": "incomplete",
+            "reason": "scorer omitted ctc_mean_clean, ctc_q95_clean, ctc_peak_clean",
+            "scores": {"refdiv_mean_clean": 1.0},
+        }
+    }
+    seen = []
+
+    def counting_score(model_dir, manifest):
+        seen.append(model_dir.name)
+        return FULL
+
+    report = score_records(models, counting_score, SIGNALS, workers=1, resume=resume)
+
+    assert seen == [], "an incomplete model must not be scored again"
+    assert report["n_retried"] == 0
+    assert report["n_incomplete"] == 1
+
+
 def test_score_records_resumes_without_rescoring_the_models_it_has():
     """The registry is the checkpoint; scoring 4,000 rows twice is 4,000 rows of waste."""
     models = [item(f"clean_none_fixed_s{81619 + i}", 81619 + i) for i in range(3)]
