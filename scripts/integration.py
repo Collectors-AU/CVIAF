@@ -500,7 +500,7 @@ def render(report: Dict[str, Any]) -> str:
     lines.append("")
     lines.append(
         f"verdict: {'PASS' if report['ok'] else 'FAIL'} (exit {report['exit_code']}) "
-        f"collisions={len(report['collisions'])} "
+        f"collisions={report.get('n_collisions', len(report['collisions']))} "
         f"fatal={len(report['collisions_fatal'])}"
     )
     return "\n".join(lines)
@@ -719,14 +719,23 @@ def build_report(
     archives: Sequence[Dict[str, Any]],
     gaps: Sequence[Dict[str, Any]],
     selected: Sequence[str],
+    max_collisions: Optional[int] = None,
 ) -> Dict[str, Any]:
+    collisions = find_collisions(sources, selected)
+    total_collisions = len(collisions)
+    if max_collisions is not None and total_collisions > max_collisions:
+        # The receipt is committed; the full list is not. Say what was dropped rather
+        # than shipping a file nobody will read and everybody will trust by size.
+        collisions = collisions[:max_collisions]
     report: Dict[str, Any] = {
         "schema": CENSUS_SCHEMA,
         "lab_seed_range": [LAB_SEED_MIN, LAB_SEED_MAX],
         "sources": [summarize(src) for src in sources],
         "archives": list(archives),
         "gaps": list(gaps),
-        "collisions": find_collisions(sources, selected),
+        "collisions": collisions,
+        "n_collisions": total_collisions,
+        "collisions_truncated": max(0, total_collisions - len(collisions)),
         "selected": list(selected),
     }
     return judge(report, selected)
@@ -1598,6 +1607,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="also list staged corpora (copies of inputs; off by default)",
     )
+    census.add_argument(
+        "--max-collisions",
+        type=int,
+        default=25,
+        help="write at most this many collision records (counts stay complete); -1 for all",
+    )
     merge = sub.add_parser("merge-plans", help="assemble one byte-pinned plan")   
     merge.add_argument("--source", action="append", required=True, help="id=shard.json")
     merge.add_argument("--out", required=True, help="output directory for plan.json + shards/")
@@ -1777,7 +1792,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         selected = [s["id"] for s in sources if s.get("role") == "input"]
     else:
         selected = args.selected
-    report = build_report(sources, archives, gaps, selected)
+    report = build_report(
+        sources,
+        archives,
+        gaps,
+        selected,
+        max_collisions=None if args.max_collisions is not None and args.max_collisions < 0 else args.max_collisions,
+    )
     print(render(report))
     if args.out:
         out = Path(args.out)
