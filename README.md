@@ -667,8 +667,8 @@ the report · `448e7bd` commit ledger ·
 
 | lane | command | result |
 |---|---|---|
-| numpy (canonical) | `python -m pytest -q` from `.task3` | **646 passed, 5 skipped, 1 xfailed** (42 s) |
-| torch | `~/.venvs/cviaf-torch/bin/python -m pytest -q` | **655 passed, 1 xfailed** (49 s) |
+| numpy (canonical) | `python -m pytest -q` from `.task3` | **654 passed, 5 skipped, 1 xfailed** (41 s) |
+| torch | `~/.venvs/cviaf-torch/bin/python -m pytest -q` | **663 passed, 1 xfailed** (49 s) |
 
 Run the two lanes **sequentially**. Launched into the same rootdir in parallel they corrupt
 each other's cache, and one lane reports a fraction of its tests passing — 55 instead of 647 —

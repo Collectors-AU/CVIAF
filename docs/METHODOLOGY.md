@@ -486,8 +486,8 @@ Tests: `test_dashboard_refuses_to_publish_a_page_that_contradicts_the_report` ·
 
 ```bash
 cd .task3
-python -m pytest -q                       # numpy lane: 646 passed, 5 skipped, 1 xfailed
-~/.venvs/cviaf-torch/bin/python -m pytest -q   # torch lane: 655 passed, 1 xfailed
+python -m pytest -q                       # numpy lane: 654 passed, 5 skipped, 1 xfailed
+~/.venvs/cviaf-torch/bin/python -m pytest -q   # torch lane: 663 passed, 1 xfailed
 ```
 
 **Run the two lanes sequentially.** Launched into the same rootdir in parallel they corrupt
