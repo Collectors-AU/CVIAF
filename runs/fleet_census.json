@@ -1,0 +1,64 @@
+{
+ "schema": "cviaf.fleet-census.v1",
+ "corpora": [
+  "../runs/clean_null_local_w1",
+  "../runs/clean_null_local_w2",
+  "../runs/clean_null_local_w3",
+  "../runs/clean_null_local_w4",
+  "../runs/clean_null_local_w5",
+  "../runs/clean_null_local_w6"
+ ],
+ "n_shards": 6,
+ "n_models": 7001,
+ "kinds": {
+  "clean": 7001
+ },
+ "seed_range": [
+  10264,
+  23835
+ ],
+ "n_distinct_seeds": 7001,
+ "duplicate_model_ids": [],
+ "duplicate_spec_digests": [],
+ "duplicate_weight_digests": [],
+ "problems": [],
+ "ready_for_fpr": true,
+ "shards": [
+  {
+   "corpus": "../runs/clean_null_local_w1",
+   "n_models": 1163,
+   "problems": [],
+   "foreign_schemas": {}
+  },
+  {
+   "corpus": "../runs/clean_null_local_w2",
+   "n_models": 1171,
+   "problems": [],
+   "foreign_schemas": {}
+  },
+  {
+   "corpus": "../runs/clean_null_local_w3",
+   "n_models": 1165,
+   "problems": [],
+   "foreign_schemas": {}
+  },
+  {
+   "corpus": "../runs/clean_null_local_w4",
+   "n_models": 1164,
+   "problems": [],
+   "foreign_schemas": {}
+  },
+  {
+   "corpus": "../runs/clean_null_local_w5",
+   "n_models": 1171,
+   "problems": [],
+   "foreign_schemas": {}
+  },
+  {
+   "corpus": "../runs/clean_null_local_w6",
+   "n_models": 1167,
+   "problems": [],
+   "foreign_schemas": {}
+  }
+ ]
+}
