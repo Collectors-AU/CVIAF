@@ -556,7 +556,8 @@ Committed receipts backing every number in this document:
 
 One commit per unit; each carries its own tests. Newest first:
 
-`f7bf09c` measured detection at frozen thresholds · `bea29b0` dashboard detection panel ·
+`e784a8a` methodology / inventory / runbook docs · `292a205` the paper reports detection ·
+`bea29b0` dashboard detection panel · `f7bf09c` measured detection at frozen thresholds ·
 `44948c3` untrack compiled bytecode · `129b2bb` interactive dashboard ·
 `679e9f7` merge/verify receipts · `48383ba` retry errored rows on resume ·
 `496cad8` census receipt truncation · `6adf2b9` missing validator is a refusal ·
