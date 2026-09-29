@@ -202,6 +202,26 @@ def validate_model_dir(model_dir: str) -> List[str]:
                               artefact_dir=model_dir)]
 
 
+def resolve_registry_dir(recorded: str, corpus_dir: str) -> Optional[str]:
+    """Resolve a registry's recorded model dir, allowing for a moved corpus.
+
+    Registries record the path the trainer was run with, which may be relative to a
+    different working directory than the reader's: the 6,800-model local shards all
+    record ``runs/clean_null_local_wN/<model>`` while being read from ``.task3``. Every
+    one of those entries would otherwise be reported as a missing directory, which is
+    6,801 false alarms on the fleet that has to be trusted for the FPR measurement.
+
+    Tries the recorded path as given, then the same basename inside the corpus (the
+    layout the lane actually uses), then the basename beside the corpus.
+    """
+    base = os.path.basename(recorded.rstrip("/"))
+    for candidate in (recorded, os.path.join(corpus_dir, base),
+                      os.path.join(os.path.dirname(corpus_dir.rstrip("/")), base)):
+        if candidate and os.path.isdir(candidate):
+            return candidate
+    return None
+
+
 def read_manifest(model_dir: str) -> Optional[Dict[str, Any]]:
     """The manifest dict, or None when it is missing/unreadable."""
     mpath = os.path.join(model_dir, "manifest.json")
@@ -293,9 +313,9 @@ def validate_registry(corpus_dir: str, strict: bool = False) -> List[str]:
                 continue
             registered.append(mid)
             seen[mid] = seen.get(mid, 0) + 1
-            if entry.get("dir") and not os.path.isdir(entry["dir"]):
+            if entry.get("dir") and resolve_registry_dir(entry["dir"], corpus_dir) is None:
                 problems.append(f"registry entry {mid!r} points at a missing dir "
-                                f"{entry['dir']!r}")
+                                f"{entry['dir']!r} (also tried it under {corpus_dir!r})")
     for mid, count in seen.items():
         if count > 1:
             problems.append(f"registry lists {mid!r} {count} times; a duplicate "
@@ -323,7 +343,9 @@ def make_registry_from_disk(corpus_dir: str, write: bool = True) -> List[Dict[st
     for name in on_disk:
         manifest = read_manifest(os.path.join(corpus_dir, name))
         if manifest is not None:
-            entries.append({"dir": os.path.join(corpus_dir, name),
+            # absolute, so the registry survives being read from another working
+            # directory; resolve_registry_dir() still copes if the corpus moves
+            entries.append({"dir": os.path.abspath(os.path.join(corpus_dir, name)),
                             "manifest": manifest})
     if write:
         path = os.path.join(corpus_dir, "registry.jsonl")

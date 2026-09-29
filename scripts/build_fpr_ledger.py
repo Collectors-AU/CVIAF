@@ -110,6 +110,13 @@ def main() -> int:
     ap.add_argument("--signals", nargs="+",
                     default=["ctc_mean_clean", "ctc_q95_clean", "ctc_peak_clean",
                              "refdiv_mean_clean"])
+    ap.add_argument("--reference", default=None,
+                    help="model DIR to use as the reference for every corpus. Required "
+                         "for a multi-shard fleet: each shard would otherwise pick its "
+                         "own reference and refdiv scores would not be comparable")
+    ap.add_argument("--write-every", type=int, default=1,
+                    help="rewrite the output ledger every N models (0 = only at the end); "
+                         "a long fleet run that dies keeps its progress")
     args = ap.parse_args()
 
     backgrounds = make_backgrounds(args.backgrounds, seed=1)
@@ -119,19 +126,58 @@ def main() -> int:
     ref_model = None
     ref_id: Optional[str] = None
 
+    def write_ledger() -> None:
+        """Atomically dump what has been scored so far."""
+        ledger = {
+            "schema": LEDGER_SCHEMA,
+            "alpha": 0.05,
+            "higher_is_more_anomalous": True,
+            "positive_kinds": POSITIVE_KINDS,
+            "negative_kinds": NEGATIVE_KINDS,
+            "provenance": {
+                "producer": "scripts/build_fpr_ledger.py",
+                "corpora": list(args.corpus),
+                "n_eval_per_model": args.n_eval,
+                "n_backgrounds": args.backgrounds,
+                "signals": args.signals,
+                "reference_model": ref_id,
+                "reference_dir": args.reference,
+                "partial": len(records) == 0 or None,
+                "notes": ("scores are computed on held-out CLEAN images only, so a "
+                          "weight-space tamper with no test-time trigger is still "
+                          "scored; splits are left unassigned for the harness to "
+                          "separate"),
+            },
+            "records": records,
+        }
+        ledger["provenance"]["partial"] = not done[0]
+        os.makedirs(os.path.dirname(os.path.abspath(args.out)) or ".", exist_ok=True)
+        tmp = args.out + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(ledger, fh, indent=1)
+        os.replace(tmp, args.out)
+
+    done = [False]
+
     # Pick ONE cross-corpus clean reference up front and exclude it from the ledger.
     # A model cannot be scored against itself: if it were, a single missing score
     # would silently drop a signal for every record (measured on the smoke run) or,
     # worse, its own zero divergence would sit in the null as a fake clean asset.
-    for corpus in args.corpus:
-        for e in load_registry(corpus):
-            if e["manifest"]["ground_truth"]["kind"] == "clean":
-                ref_id = e["manifest"]["model_id"]
-                ref_model = ModelArtifact.load(e["dir"]).model
+    if args.reference:
+        from cviaf.lab.train import ModelArtifact as _MA
+        ref_model = _MA.load(args.reference).model
+        ref_id = os.path.basename(os.path.normpath(args.reference))
+        print(f"  reference model: {ref_id} from --reference (excluded by id)")
+    else:
+        for corpus in args.corpus:
+            for e in load_registry(corpus):
+                if e["manifest"]["ground_truth"]["kind"] == "clean":
+                    ref_id = e["manifest"]["model_id"]
+                    ref_model = ModelArtifact.load(e["dir"]).model
+                    break
+            if ref_model is not None:
                 break
-        if ref_model is not None:
-            break
-    print(f"  reference model: {ref_id} (excluded from the scored population)")
+        print(f"  reference model: {ref_id} (excluded from the scored population)")
 
     for corpus in args.corpus:
         registry = load_registry(corpus)
@@ -173,7 +219,11 @@ def main() -> int:
             })
             if i % 10 == 0 or i == len(entries):
                 print(f"  {corpus} [{i}/{len(entries)}] {m['model_id']:38s} "
-                      f"{ {k: round(v, 4) for k, v in scores.items()} }", flush=True)
+                      f" { {k: round(v, 4) for k, v in scores.items()} }", flush=True)
+            if args.write_every and i % args.write_every == 0:
+                write_ledger()
+
+    done[0] = True
 
     # Every signal must exist on every record, or per-rule denominators differ.
     if records:
@@ -187,27 +237,7 @@ def main() -> int:
                 r["scores"] = {k: v for k, v in r["scores"].items() if k in common}
         records = [r for r in records if r["scores"]]
 
-    ledger = {
-        "schema": LEDGER_SCHEMA,
-        "alpha": 0.05,
-        "higher_is_more_anomalous": True,
-        "positive_kinds": POSITIVE_KINDS,
-        "negative_kinds": NEGATIVE_KINDS,
-        "provenance": {
-            "producer": "scripts/build_fpr_ledger.py",
-            "corpora": list(args.corpus),
-            "n_eval_per_model": args.n_eval,
-            "n_backgrounds": args.backgrounds,
-            "signals": args.signals,
-            "notes": ("scores are computed on held-out CLEAN images only, so a "
-                      "weight-space tamper with no test-time trigger is still scored; "
-                      "splits are left unassigned for the harness to separate"),
-        },
-        "records": records,
-    }
-    os.makedirs(os.path.dirname(os.path.abspath(args.out)) or ".", exist_ok=True)
-    with open(args.out, "w", encoding="utf-8") as fh:
-        json.dump(ledger, fh, indent=1)
+    write_ledger()
     kinds: Dict[str, int] = {}
     for r in records:
         kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1

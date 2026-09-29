@@ -23,7 +23,8 @@ import numpy as np
 import pytest
 
 from cviaf.lab.manifest_schema import (is_model_manifest, main, make_registry_from_disk,
-                                      scan_corpus, validate_manifest, validate_model_dir,
+                                      resolve_registry_dir, scan_corpus,
+                                      validate_manifest, validate_model_dir,
                                       validate_registry)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -236,6 +237,39 @@ def test_duplicate_registry_entries_are_reported(tmp_path):
 def test_registry_entry_with_missing_dir_is_reported(tmp_path):
     root = make_corpus(tmp_path, model_ids=("m0",), registry=["m0", "ghost"])
     assert any("points at a missing dir" in p for p in validate_registry(root))
+
+
+def test_a_registry_relative_to_another_cwd_still_resolves(tmp_path):
+    """The fleet's registries record paths relative to the repo root, not to the reader.
+
+    All 6,800 local shard entries looked missing until this was handled -- 6,801 false
+    alarms on the corpus that has to be trusted for the FPR measurement.
+    """
+    root = make_corpus(tmp_path, model_ids=("m0", "m1"), registry=["m0", "m1"])
+    with open(os.path.join(root, "registry.jsonl"), "w", encoding="utf-8") as fh:
+        for mid in ("m0", "m1"):
+            # as the trainer wrote it: relative to a different working directory
+            fh.write(json.dumps({"dir": f"runs/{os.path.basename(root)}/{mid}",
+                                 "manifest": {"model_id": mid}}) + "\n")
+    assert validate_registry(root) == []
+    assert resolve_registry_dir(f"runs/{os.path.basename(root)}/m0", root) \
+        == os.path.join(root, "m0")
+
+
+def test_a_dir_missing_everywhere_is_still_reported(tmp_path):
+    root = make_corpus(tmp_path, model_ids=("m0",), registry=["m0"])
+    with open(os.path.join(root, "registry.jsonl"), "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"dir": "runs/elsewhere/ghost",
+                             "manifest": {"model_id": "ghost"}}) + "\n")
+    assert any("points at a missing dir" in p for p in validate_registry(root))
+    assert resolve_registry_dir("runs/elsewhere/ghost", root) is None
+
+
+def test_the_repair_path_writes_absolute_dirs(tmp_path):
+    root = make_corpus(tmp_path, model_ids=("m0",), registry=None)
+    entries = make_registry_from_disk(root)
+    assert os.path.isabs(entries[0]["dir"])
+    assert validate_registry(root) == []
 
 
 def test_missing_registry_is_reported_with_repair_path(tmp_path):

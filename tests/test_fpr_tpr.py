@@ -439,6 +439,117 @@ def test_the_real_report_is_priced_and_names_its_prevalence():
     assert refdiv["break_even_prevalence_vs_accept_all"] < risk["prevalence"]
 
 
+# --------------------------------------------------------------------------- #
+# clean-only ledgers (the 6,800-model local fleet) and the calibration check
+# --------------------------------------------------------------------------- #
+
+def clean_only_ledger(cal, ev, signal="sig", alpha=0.05):
+    """A ledger with clean assets only: FPR is measurable, TPR is not."""
+    recs = []
+    for i, value in enumerate(cal):
+        recs.append(rec(f"clean_c{i}", "clean", float(value), split="calibration"))
+    for i, value in enumerate(ev):
+        recs.append(rec(f"clean_e{i}", "clean", float(value), split="evaluation"))
+    return ledger(recs, positive_kinds=("attack",), negative_kinds=("clean",),
+                  alpha=alpha)
+
+
+def test_a_clean_only_ledger_measures_fpr_and_refuses_to_report_a_tpr():
+    """The fleet case: there is no attacked asset, so TPR is undefined, not zero."""
+    import numpy as np
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    rng = np.random.default_rng(0)
+    report = evaluate_corpus(clean_only_ledger(rng.normal(0, 1, 200),
+                                               rng.normal(0, 1, 200)),
+                             min_negatives=20)
+    rule = report["rules"]["signal"]
+    assert rule["status"] == "fpr_only"
+    assert rule["tpr"]["point_estimate"] is None
+    assert rule["tpr"]["exact_upper_bound_95"] is None
+    assert "undefined here, not zero" in rule["tpr_note"]
+    assert rule["fpr"]["point_estimate"] is not None
+    assert report["fpr_measured"] is True and report["positives_measured"] is False
+    assert "TPR not measurable" in report["headline"]
+
+
+def test_a_clean_only_ledger_is_not_priced():
+    """Expected loss needs a TPR; inventing one would invent false negatives."""
+    import numpy as np
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    rng = np.random.default_rng(1)
+    report = evaluate_corpus(clean_only_ledger(rng.normal(0, 1, 150),
+                                               rng.normal(0, 1, 150)),
+                             min_negatives=20, prevalence=0.1)
+    risk = report["risk"]
+    assert risk["priced"] is False
+    priced = risk["per_signal"]["signal"]
+    assert priced["status"] == "not_measured" and priced["fpr"] is not None
+    assert "expected loss needs a TPR" in risk["reason"]
+
+
+def test_clause_3_7_is_not_measurable_without_oda_arms():
+    import numpy as np
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    rng = np.random.default_rng(2)
+    report = evaluate_corpus(clean_only_ledger(rng.normal(0, 1, 100),
+                                               rng.normal(0, 1, 100)),
+                             min_negatives=20)
+    check = report["clause_checks"]["3.7_oda_recall"]
+    assert check["satisfied"] is None and check["measurable"] is False
+    assert check["best_recall"] is None
+
+
+def test_calibration_holds_when_the_halves_are_exchangeable():
+    import numpy as np
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    rng = np.random.default_rng(3)
+    check = evaluate_corpus(clean_only_ledger(rng.normal(0, 1, 300),
+                                              rng.normal(0, 1, 300)),
+                            min_negatives=20)["rules"]["signal"]["fpr_calibration"]
+    assert check["holds"] is True
+    assert check["target_alpha"] == 0.05
+    assert "still contains the declared alpha" in check["note"]
+    assert check["direction"].startswith("one-sided")
+
+
+def test_calibration_alarms_when_the_evaluation_half_moved():
+    """The check the fleet run exists to run: a threshold that does not transfer."""
+    import numpy as np
+    from cviaf.lab.fpr_tpr import evaluate_corpus
+    rng = np.random.default_rng(4)
+    shifted = clean_only_ledger(rng.normal(0, 1, 300), rng.normal(1.0, 1, 300))
+    check = evaluate_corpus(shifted, min_negatives=20)["rules"]["signal"]["fpr_calibration"]
+    assert check["holds"] is False
+    assert check["measured_fpr"] > check["target_alpha"]
+    assert "not exchangeable" in check["note"]
+    assert check["direction"].startswith("one-sided")
+
+
+def test_render_prints_the_alarm_and_skips_the_kind_block_when_there_are_none():
+    import numpy as np
+    from cviaf.lab.fpr_tpr import evaluate_corpus, render_report
+    rng = np.random.default_rng(5)
+    text = render_report(evaluate_corpus(
+        clean_only_ledger(rng.normal(0, 1, 300), rng.normal(1.0, 1, 300)),
+        min_negatives=20))
+    assert "CALIBRATION ALARM" in text
+    assert "recall by attack kind" not in text
+    assert "not measurable" in text
+
+
+def test_zero_denominator_intervals_render_as_not_measured():
+    import numpy as np
+    from cviaf.lab.fpr_tpr import evaluate_corpus, render_report
+    led = clean_only_ledger(np.zeros(0), np.zeros(0))
+    with pytest.raises(Exception):
+        evaluate_corpus(led, min_negatives=1)      # an empty ledger is refused
+    rng = np.random.default_rng(6)
+    report = evaluate_corpus(clean_only_ledger(rng.normal(0, 1, 30),
+                                               rng.normal(0, 1, 3)), min_negatives=20)
+    text = render_report(report)
+    assert "not measured" in text
+
+
 def test_smoke_on_the_real_corpus_when_present():
     """If a ledger produced from the on-disk corpora exists, it must validate and
     score. This is the check that the harness works on real artefacts, not just

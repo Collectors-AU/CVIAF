@@ -333,14 +333,56 @@ def evaluate_rule(records: Sequence[Dict[str, Any]], signal: str, alpha: float,
     neg = [r for r in ev if not r["is_positive"]]
     tp = sum(1 for r in pos if fires(r))
     fp = sum(1 for r in neg if fires(r))
+    status = "measured" if (len(neg) >= min_negatives and pos) else "partial"
+    if not pos:
+        # A clean-only ledger (the fleet) measures FPR and nothing else. Saying "TPR 0"
+        # here would be a fabricated detection failure: there is no attacked asset in
+        # the population to detect, so the rate is undefined, not zero.
+        status = "fpr_only"
+
+    fpr = rate(fp, len(neg), min_negatives)
+
+    # The calibration check the fleet exists to run: the threshold came from one half
+    # of the clean population, so the FPR on the other half should land on alpha. If
+    # alpha falls outside the interval, the two halves are not exchangeable and every
+    # number computed from this calibration is suspect -- which is worth knowing
+    # BEFORE 20k more models are scored against it.
+    calibration_check: Dict[str, Any] = {
+        "target_alpha": alpha, "measured_fpr": fpr.get("point_estimate"),
+        "n_evaluation_negatives": len(neg),
+    }
+    if fpr.get("ci95_wilson"):
+        lo, hi = fpr["ci95_wilson"]
+        calibration_check["ci95"] = [lo, hi]
+        # One-sided on purpose. An FPR BELOW alpha is a conservative detector, not a
+        # calibration failure -- the quantile threshold is estimated from a finite
+        # calibration half, which biases the in-sample rate slightly under alpha, and
+        # a two-sided test would fire on that every time n grows. What matters is
+        # whether the rule alarms MORE often than it was calibrated to.
+        calibration_check["direction"] = "one-sided (alarm when the FPR interval "
+        calibration_check["holds"] = bool(lo <= alpha)
+        calibration_check["note"] = (
+            "the evaluation half's FPR interval still contains the declared alpha"
+            if calibration_check["holds"] else
+            f"the whole FPR interval [{lo}, {hi}] is above alpha {alpha}: the "
+            f"calibration half and the evaluation half are not exchangeable, so "
+            f"thresholds taken from this null alarm more often on held-out clean "
+            f"assets than they were calibrated to")
+    else:
+        calibration_check["holds"] = None
+        calibration_check["note"] = "FPR has no interval at this denominator"
+
     return {
         "signal": signal,
-        "status": "measured" if (len(neg) >= min_negatives and pos) else "partial",
+        "status": status,
         "threshold": threshold,
         "threshold_basis": (f"{alpha:.3g}-quantile of {len(cal_neg)} calibration "
                             f"negatives"),
         "tpr": rate(tp, len(pos), 1),
-        "fpr": rate(fp, len(neg), min_negatives),
+        "tpr_note": (None if pos else "no attacked assets in this ledger: the TPR of "
+                                      "this rule is undefined here, not zero"),
+        "fpr": fpr,
+        "fpr_calibration": calibration_check,
         "confusion": {"tp": tp, "fn": len(pos) - tp, "fp": fp, "tn": len(neg) - fp},
     }
 
@@ -426,13 +468,21 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
     # over four signals inflates it, so the per-signal column is the authoritative one.
     oda = {s: (per_kind[s]["kinds"].get("oda", {}) or {}).get("tpr", {}).get("point_estimate")
            for s in signals if per_kind[s]["status"] != "refused"}
-    caught = {s: v for s, v in oda.items() if v}
+    # Measured means there are oda arms on the evaluation half. Zero recall with oda
+    # arms present is a measured zero; no oda arms at all is "not measurable".
+    oda_measurable = any((per_kind[s]["kinds"].get("oda", {}) or {}).get("status")
+                         in ("measured", "partial") for s in signals
+                         if per_kind[s]["status"] != "refused")
+    known = {s: v for s, v in oda.items() if v is not None and oda_measurable}
+    best_signal = max(known, key=known.get) if known else None
     oda_check = {
         "clause": "3.7 ODA (cloaking) recall > 0 on the reference battery",
         "recall_per_signal": oda,
-        "best_signal": max(caught, key=caught.get) if caught else None,
-        "best_recall": max(caught.values()) if caught else 0.0,
-        "satisfied": bool(caught),
+        "best_signal": best_signal,
+        "best_recall": (known[best_signal] if best_signal else None),
+        "satisfied": (None if not oda_measurable else bool(known and
+                                                           known[best_signal] > 0)),
+        "measurable": oda_measurable,
         "caveat": ("the best-of-four number is selected over signals, so it is optimistic; "
                    "the per-signal recall in this report is the authoritative figure. A "
                    "kind with no evaluation-half assets is reported as not measured, not "
@@ -459,20 +509,25 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
         "rules": rules,
         "per_kind": per_kind,
         "clause_checks": {"3.7_oda_recall": oda_check},
-        "risk": risk_block(rules, prevalence=prevalence, costs=costs),
+        "risk": risk_block(rules, prevalence=prevalence, costs=costs,
+                           n_positives=n_ev_pos),
         # The single sentence a reader should see before any number: without enough
         # clean assets on the evaluation half, FPR is not measured and every claim
         # downstream is conditional on an untested assumption.
         "fpr_measured": bool(n_ev_neg >= min_negatives),
+        "positives_measured": bool(n_ev_pos > 0),
         "headline": ("FPR is measured on %d clean assets" % n_ev_neg if ready else
-                     "FPR NOT MEASURED: %d evaluation negatives < %d required; "
-                     "report bounds, not rates" % (n_ev_neg, min_negatives)),
+                     ("FPR measured on %d clean assets; TPR not measurable (no attacked "
+                      "assets in this ledger)" % n_ev_neg if n_ev_neg >= min_negatives
+                      else "FPR NOT MEASURED: %d evaluation negatives < %d required; "
+                           "report bounds, not rates" % (n_ev_neg, min_negatives))),
     }
     return report
 
 
 def risk_block(rules: Mapping[str, Any], prevalence: Optional[float] = None,
-               costs: Optional[Any] = None) -> Dict[str, Any]:
+               costs: Optional[Any] = None,
+               n_positives: Optional[int] = None) -> Dict[str, Any]:
     """Expected loss per signal, from its own measured operating point.
 
     A signal whose FPR is only bounded (0/30 clean assets) has no point estimate and is
@@ -493,6 +548,21 @@ def risk_block(rules: Mapping[str, Any], prevalence: Optional[float] = None,
                         .OperatorCosts().to_dict()),
         "per_signal": {},
     }
+    if not n_positives:
+        # With no attacked assets the TPR is undefined, and every expected loss in this
+        # model is a function of TPR: pricing a rule here would be inventing the false
+        # negatives. The fleet run buys the FPR half of the equation and says so.
+        out["priced"] = False
+        out["reason"] = ("no attacked assets in this ledger: expected loss needs a TPR, "
+                         "and a TPR needs a positive arm. The FPR half is measured and "
+                         "is the deliverable of a clean-only run")
+        for name, rule in rules.items():
+            out["per_signal"][name] = {"status": "not_measured",
+                                       "reason": out["reason"],
+                                       "fpr": ((rule.get("fpr") or {}).get("point_estimate")),
+                                       "threshold": rule.get("threshold")}
+        return out
+    out["priced"] = True
     for name, rule in rules.items():
         if rule.get("status") == "refused":
             out["per_signal"][name] = {"status": "not_measured",
@@ -522,33 +592,54 @@ def render_report(report: Dict[str, Any]) -> str:
         t, f = r["tpr"], r["fpr"]
         tpr_s = f"{t['point_estimate']:.3f}" if t["point_estimate"] is not None else "bound"
         fpr_s = f"{f['point_estimate']:.3f}" if f["point_estimate"] is not None else "bound"
-        tpr_ci = (f"[{t['ci95_wilson'][0]:.3f},{t['ci95_wilson'][1]:.3f}]"
-                  if t["ci95_wilson"] else f"<={t['exact_upper_bound_95']:.3f}")
-        fpr_ci = (f"[{f['ci95_wilson'][0]:.3f},{f['ci95_wilson'][1]:.3f}]"
-                  if f["ci95_wilson"] else f"<={f['exact_upper_bound_95']:.3f}")
+        def interval(entry):
+            if entry["ci95_wilson"]:
+                return f"[{entry['ci95_wilson'][0]:.3f},{entry['ci95_wilson'][1]:.3f}]"
+            if entry["exact_upper_bound_95"] is not None:
+                return f"<={entry['exact_upper_bound_95']:.3f}"
+            return "not measured"      # n = 0: nothing to bound
+        tpr_ci = interval(t)
+        fpr_ci = interval(f)
         lines.append(f"{name:26s} {tpr_s:>7s} {tpr_ci:>16s} {fpr_s:>7s} {fpr_ci:>16s} "
                      f"{r['status']:>10s}")
 
-    lines += ["", "recall by attack kind, at the same threshold the TPR used",
-              "(tp/n; 'not measured' means no evaluation-half assets of that kind)"]
-    for name in sorted(report.get("per_kind", {})):
-        entry = report["per_kind"][name]
-        if entry.get("status") == "refused":
-            lines.append(f"  {name:24s} refused")
-            continue
-        parts = []
-        for kind, k in sorted(entry["kinds"].items()):
-            if k.get("status") == "not_measured":
-                parts.append(f"{kind}=not measured")
-            else:
-                parts.append(f"{kind}={k['tp']}/{k['n_evaluation']}")
-        lines.append(f"  {name:24s} {'  '.join(parts)}")
+    if report.get("positives_measured"):
+        lines += ["", "recall by attack kind, at the same threshold the TPR used",
+                  "(tp/n; 'not measured' means no evaluation-half assets of that kind)"]
+        for name in sorted(report.get("per_kind", {})):
+            entry = report["per_kind"][name]
+            if entry.get("status") == "refused":
+                lines.append(f"  {name:24s} refused")
+                continue
+            parts = []
+            for kind, k in sorted(entry["kinds"].items()):
+                if k.get("status") == "not_measured":
+                    parts.append(f"{kind}=not measured")
+                else:
+                    parts.append(f"{kind}={k['tp']}/{k['n_evaluation']}")
+            lines.append(f"  {name:24s} {'  '.join(parts)}")
+
+    # The calibration check is the headline of a clean-only run, so it gets its own
+    # block rather than hiding in the JSON.
+    alarms = {n: r["fpr_calibration"] for n, r in report["rules"].items()
+              if r.get("fpr_calibration", {}).get("holds") is False}
+    if alarms:
+        lines += ["", f"CALIBRATION ALARM: alpha {report['alpha']:.3g} is outside the "
+                      f"measured FPR interval for {len(alarms)} rule(s)"]
+        for name, c in sorted(alarms.items()):
+            lines.append(f"  {name:24s} c={c['measured_fpr']} "
+                         f"ci=[{c['ci95'][0]}, {c['ci95'][1]}]")
+        lines.append("  the calibration half and the evaluation half are not "
+                     "exchangeable; thresholds from this null do not transfer")
 
     check = report.get("clause_checks", {}).get("3.7_oda_recall")
     if check:
-        best = (f"{check['best_signal']}" if check["best_signal"] else "no signal")
-        lines += ["", f"clause 3.7 ODA recall > 0: {'satisfied' if check['satisfied'] else 'NOT satisfied'} "
-                      f"(best {best} {check['best_recall']:.3f}; {check['caveat'].split('.')[0]}.)"]
+        best = (f"{check['best_signal']}" if check.get("best_signal") else "no signal")
+        verdict = ("not measurable" if check.get("satisfied") is None else
+                   ("satisfied" if check["satisfied"] else "NOT satisfied"))
+        value = "-" if check.get("best_recall") is None else f"{check['best_recall']:.3f}"
+        lines += ["", f"clause 3.7 ODA recall > 0: {verdict} (best {best} {value}; "
+                      f"{check['caveat'].split('.')[0]}.)"]
 
     risk = report.get("risk")
     if risk:

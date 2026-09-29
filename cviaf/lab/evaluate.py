@@ -665,14 +665,38 @@ def _summarise(per_model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 # --------------------------------------------------------------------------- #
 
 def load_registry(corpus_dir: str) -> List[Dict[str, Any]]:
+    """Models in a corpus, with every ``dir`` resolved to a usable absolute path.
+
+    A trainer records the path it was invoked with, which may be relative to a
+    different working directory than the reader's. The 6,800-model local shards all
+    record ``runs/clean_null_local_wN/<model>``; read from anywhere else, every path
+    fails to open and every consumer (ledger producer, compare, battery) dies on the
+    first model. Resolution happens once, here, and the recorded path is kept beside
+    it so a reader can see what the registry actually said.
+
+    Falls back to the manifests on disk when there is no registry at all, which is how
+    a corpus that has lost its registry still gets scored instead of silently empty.
+    """
+    from cviaf.lab.manifest_schema import resolve_registry_dir
+
     reg_path = os.path.join(corpus_dir, "registry.jsonl")
     out: List[Dict[str, Any]] = []
     if os.path.isfile(reg_path):
         with open(reg_path) as fh:
             for line in fh:
                 line = line.strip()
-                if line:
-                    out.append(json.loads(line))
+                if not line:
+                    continue
+                entry = json.loads(line)
+                recorded = entry.get("dir")
+                if recorded:
+                    resolved = resolve_registry_dir(recorded, corpus_dir)
+                    if resolved is None:
+                        resolved = recorded          # leave it: the loader will report
+                    if os.path.abspath(resolved) != os.path.abspath(recorded):
+                        entry["recorded_dir"] = recorded
+                    entry["dir"] = os.path.abspath(resolved)
+                out.append(entry)
         return out
     for name in sorted(os.listdir(corpus_dir)) if os.path.isdir(corpus_dir) else []:
         mpath = os.path.join(corpus_dir, name, "manifest.json")
