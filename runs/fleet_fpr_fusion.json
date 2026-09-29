@@ -1,6 +1,44 @@
 {
  "schema": "cviaf.fusion-fpr-report.v1",
  "ledger_schema": "cviaf.fpr-tpr-ledger.v1",
+ "quotable_rules": [
+  "ctc_mean_clean",
+  "fused_all_bonferroni",
+  "fused_all_by",
+  "fused_all_cauchy",
+  "fused_live_bonferroni",
+  "fused_live_by",
+  "fused_live_cauchy",
+  "refdiv_mean_clean"
+ ],
+ "appendix_rules": {
+  "ctc_peak_clean": {
+   "signal": "ctc_peak_clean",
+   "threshold": 1.0,
+   "calibration_ceiling": 1.0,
+   "corpus_extreme": 1.0,
+   "at_calibration_ceiling": true,
+   "at_corpus_extreme": true,
+   "p_floor": 0.4297895017319478,
+   "p_floor_above_alpha": true,
+   "calibration_ties_at_extreme": 1612,
+   "retire": true,
+   "warning": "threshold 1 equals the largest score any asset in this corpus attains (1): the rule cannot fire, so its 0.000 is a property of the statistic's range, not evidence of specificity. Retired from the headline tables; the column stays in the ledger for continuity."
+  },
+  "ctc_q95_clean": {
+   "signal": "ctc_q95_clean",
+   "threshold": 1.0,
+   "calibration_ceiling": 1.0,
+   "corpus_extreme": 1.0,
+   "at_calibration_ceiling": true,
+   "at_corpus_extreme": true,
+   "p_floor": 0.2869704236610711,
+   "p_floor_above_alpha": true,
+   "calibration_ties_at_extreme": 1076,
+   "retire": true,
+   "warning": "threshold 1 equals the largest score any asset in this corpus attains (1): the rule cannot fire, so its 0.000 is a property of the statistic's range, not evidence of specificity. Retired from the headline tables; the column stays in the ledger for continuity."
+  }
+ },
  "alpha": 0.05,
  "min_negatives": 20,
  "higher_is_more_anomalous": true,
@@ -659,60 +697,70 @@
   "ctc_mean_clean": {
    "status": "measured",
    "threshold": 0.9847407860980113,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "ctc_peak_clean": {
    "status": "measured",
    "threshold": 1.0,
+   "retired": true,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "ctc_q95_clean": {
    "status": "measured",
    "threshold": 1.0,
+   "retired": true,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "fused_all_bonferroni": {
    "status": "measured",
    "threshold": 0.8981614708233412,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "fused_all_by": {
    "status": "measured",
    "threshold": 0.7890576427746692,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "fused_all_cauchy": {
    "status": "measured",
    "threshold": 0.8930868204825757,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "fused_live_bonferroni": {
    "status": "measured",
    "threshold": 0.9490807354116706,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "fused_live_by": {
    "status": "measured",
    "threshold": 0.9240607513988809,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "fused_live_cauchy": {
    "status": "measured",
    "threshold": 0.946866770148157,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   },
   "refdiv_mean_clean": {
    "status": "measured",
    "threshold": 0.7815411706349206,
+   "retired": false,
    "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
    "kinds": {}
   }
@@ -817,6 +865,7 @@
  "fpr_measured": true,
  "positives_measured": false,
  "headline": "FPR measured on 3751 clean assets; TPR not measurable (no attacked assets in this ledger)",
+ "headline_note": "2 rule(s) retired to the appendix because their threshold equals a score no asset in this corpus reaches: ctc_peak_clean, ctc_q95_clean. Their FPR is a bound from the statistic's range, not a measurement of specificity.",
  "fusion": {
   "schema": "cviaf.fusion-fpr.v1",
   "all_signals": {
@@ -2912,7 +2961,7 @@
   "ledger": "runs/fleet_fpr_ledger.json",
   "ledger_sha256": "5ffe82310d86ab0ac840441e5a6b4f22eb71a44ce46b0cd5c223771214e7be38",
   "published_per_signal_report": "runs/fleet_fpr_ledger_report.json",
-  "published_per_signal_report_sha256": "8fa8847afa6a0d8137813c444d5d550c2f40ed0f6e41a682aa350abaa288aee5",
+  "published_per_signal_report_sha256": "ad155f99800975ddd0417310824fd5605d9381f1adfed259079cb59480986b96",
   "per_signal_reproduced": true,
   "split_seed": 7
  }

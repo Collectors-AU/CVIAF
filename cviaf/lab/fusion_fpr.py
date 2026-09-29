@@ -59,15 +59,15 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import numpy as np
 
 from cviaf.lab.calibrate import cauchy_combine, conformal_pvalues
-from cviaf.lab.fpr_tpr import LedgerError, assign_splits, evaluate_corpus, rate, validate_ledger
+from cviaf.lab.fpr_tpr import (CEILING_TOL, LedgerError, assign_splits, evaluate_corpus,
+                               rate, signal_degeneracy, validate_ledger)
 from cviaf.lab.fusion import by_global_pvalue
 
 FUSION_SCHEMA = "cviaf.fusion-fpr.v1"
 DEFAULT_METHODS = ("cauchy", "bonferroni", "by")
-# How close to the ceiling a quantile threshold must be before the signal is called
-# unable to fire. The ceiling is the maximum of the calibration negatives, not 1.0:
-# a signal can be saturated on this population without ever reaching 1.0.
-CEILING_TOL = 1e-9
+# CEILING_TOL and the degeneracy check itself live in the harness (fpr_tpr), so the
+# appendix that retires a saturated signal and the fusion that excludes it cannot
+# disagree about which signals those are.
 
 
 def degenerate_signals(records: Sequence[Dict[str, Any]], signals: Sequence[str],
@@ -75,47 +75,32 @@ def degenerate_signals(records: Sequence[Dict[str, Any]], signals: Sequence[str]
                        ) -> Dict[str, Dict[str, Any]]:
     """Signals that cannot fire, and the p-value floor that explains why.
 
-    A rule whose threshold equals the largest clean score can only fire on a score
-    strictly above every trusted asset. On a signal that has saturated (every model
-    pins at the same maximum, which is what a max-statistic does once the statistic
-    is a bounded ratio) that never happens, so the rule reports FPR 0.000 forever --
-    a bound that reads as precision. The honest label is "cannot fire".
+    A thin view over ``fpr_tpr.signal_degeneracy`` (one implementation, so the
+    appendix that retires a saturated signal and the fusion that excludes it cannot
+    disagree), keeping the key names the fusion report and its tests read.
 
     ``p_floor`` is the smallest conformal p-value any model on this population
-    *could* have gotten, and it is the mechanism: when a large share of the
-    calibration models tie at the extreme, ``(1 + #{cal >= x}) / (n + 1)`` has a
-    floor well above zero, and a signal whose floor exceeds alpha can never carry a
-    rejection at alpha -- on its own or as the minimum of a fusion. Both facts are
-    returned because the threshold is what a table shows and the floor is what a
-    fusion feels.
+    *could* have gotten, and it is the mechanism of the damage a dead signal does
+    inside a MEAN-based fusion: when a large share of the calibration models tie at
+    the extreme, ``(1 + #{cal >= x}) / (n + 1)`` has a floor well above zero, and
+    every such signal contributes a positive ``tan`` term to the combined statistic
+    on every row. Both facts are returned because the threshold is what a table
+    shows and the floor is what a fusion feels.
     """
     out: Dict[str, Dict[str, Any]] = {}
-    cal_neg = [r for r in records if r["split"] == "calibration" and not r["is_positive"]]
     for signal in signals:
-        arr = np.asarray([r["scores"][signal] for r in cal_neg], np.float64)
-        if not arr.size:
-            continue
-        q = alpha if higher_is_more_anomalous else 1.0 - alpha
-        threshold = float(np.quantile(arr, 1.0 - q))
-        ceiling = float(np.max(arr)) if higher_is_more_anomalous else float(np.min(arr))
-        at_ceiling = (threshold >= ceiling - CEILING_TOL if higher_is_more_anomalous
-                      else threshold <= ceiling + CEILING_TOL)
-        allv = np.asarray([r["scores"][signal] for r in records], np.float64)
-        p_floor = float(np.min(conformal_pvalues(
-            arr, allv, higher_is_more_anomalous=higher_is_more_anomalous)))
+        d = signal_degeneracy(records, signal, alpha, higher_is_more_anomalous)
         out[signal] = {
-            "threshold": threshold,
-            "ceiling": ceiling,
-            "at_ceiling": bool(at_ceiling),
-            "p_floor": p_floor,
-            "blind_at_alpha": bool(p_floor > alpha),
-            "calibration_ties_at_extreme": int(np.sum(arr >= ceiling - CEILING_TOL)
-                                               if higher_is_more_anomalous
-                                               else np.sum(arr <= ceiling + CEILING_TOL)),
+            "threshold": d["threshold"],
+            "ceiling": d["calibration_ceiling"],
+            "at_ceiling": d["at_calibration_ceiling"],
+            "p_floor": d["p_floor"],
+            "blind_at_alpha": d["p_floor_above_alpha"],
+            "calibration_ties_at_extreme": d["calibration_ties_at_extreme"],
             "note": ("threshold is the maximum calibration-negative score, so on this "
                      "population the rule cannot fire and its FPR bound is a "
                      "statement about the ceiling, not about the detector"
-                     if at_ceiling else "off the ceiling: the rule can fire"),
+                     if d["at_calibration_ceiling"] else "off the ceiling: the rule can fire"),
         }
     return out
 
@@ -377,7 +362,10 @@ def render_fusion(report: Dict[str, Any]) -> str:
              f"{'rule':26s} {'threshold':>11s} {'FPR':>7s} {'FPR 95% CI':>16s} "
              f"{'status':>10s}",
              "-" * 74]
+    quotable = set(report.get("quotable_rules") or report["rules"])
     for name, rule in sorted(report["rules"].items()):
+        if name not in quotable:
+            continue                  # retired: printed in the appendix of the report
         if rule.get("status") == "refused":
             lines.append(f"{name:26s} {'-':>11s} {'-':>7s} {'-':>16s} {'refused':>10s}")
             continue
@@ -401,6 +389,16 @@ def render_fusion(report: Dict[str, Any]) -> str:
                          f"{d['ceiling']}; p-value floor {d['p_floor']:.3f} over "
                          f"{d['calibration_ties_at_extreme']} tied calibration "
                          f"models, so it cannot carry a rejection at alpha")
+
+    if report.get("appendix_rules"):
+        lines += ["", "appendix (measured, not quotable: the threshold is a score no "
+                      "asset in this corpus reaches)"]
+        for name in sorted(report["appendix_rules"]):
+            d = report["appendix_rules"][name]
+            lines.append(f"  {name:24s} FPR "
+                         f"{(report['rules'].get(name, {}).get('fpr') or {}).get('point_estimate')} "
+                         f"thr {d['threshold']:.6g} == corpus max "
+                         f"{d['corpus_extreme']:.6g}")
 
     lines += ["", "the same fused columns read through the nominal-alpha rule "
                   "(p <= alpha), which is what a p-value means without a quantile cut"]

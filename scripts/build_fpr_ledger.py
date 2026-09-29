@@ -12,10 +12,16 @@ Signals (mirroring `compare.model_axis`, the canonical single-signal baseline):
   ``ctc_mean_clean``    mean over the model's held-out CLEAN images of the TRACE CTC
                         stability score. High = the model's object belief is unstable
                         under background blending.
-  ``ctc_q95_clean``     95th percentile of the same scores (robust, non-saturating).
+  ``ctc_q95_clean``     95th percentile of the same scores. Expected to be the robust
+                        non-saturating variant; measured on the 7,503-model fleet it
+                        SATURATES TOO (threshold 1.0, p-value floor 0.287).
   ``ctc_peak_clean``    max of the same scores. Kept ONLY for continuity with
                         ``compare.model_axis`` — see the note below on why it is a bad
                         per-asset statistic and must not be the only signal.
+
+Both saturated columns stay in the ledger on purpose, so a later run stays
+comparable with this one; the *harness* is what retires them from the headline
+tables (`fpr_tpr.signal_degeneracy`, appendix block, saturation warning attached).
   ``refdiv_mean_clean`` mean reference divergence against an independent clean
                         reference model. High = the model misses objects the reference
                         finds.
@@ -24,8 +30,14 @@ Why the peak is kept but not trusted: measured on this repo's own corpora, the
 max-over-images CTC score saturates at 1.0 on *clean* models (clean_none_fixed_s104 →
 1.0, s6 → 0.9997), so a per-asset rule built on the peak cannot separate clean from
 tampered assets at all — which is exactly why the baseline row in `compare.json`
-reports FPR 1.0 for the fixed-threshold rule. The mean and the 95th percentile are
-non-degenerate and are the signals the harness should be read on.
+reports FPR 1.0 for the fixed-threshold rule.
+
+And the 95th percentile, which was added *as* the robust alternative, saturates as
+well: on the 7,503-model fleet its α-quantile threshold is 1.0 and 1,076 of 3,752
+calibration models tie at the ceiling, so no model can earn a conformal p-value below
+0.287. Peak: 1,612 tied, floor 0.430. Both therefore report FPR 0.000 on the fleet for
+the same non-reason, and both are retired to the harness's appendix. The signals the
+work is done on are ``ctc_mean_clean`` (floor 0.001) and ``refdiv_mean_clean``.
 
 Both are computed on CLEAN images only: that keeps the statistic well defined for
 weight-space attacks, which have no test-time trigger at all.

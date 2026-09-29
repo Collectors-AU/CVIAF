@@ -76,6 +76,7 @@ LEDGER_SCHEMA = "cviaf.fpr-tpr-ledger.v1"
 REPORT_SCHEMA = "cviaf.fpr-tpr-report.v1"
 SPLITS = ("calibration", "evaluation", "unassigned")
 FPR_FLOOR = 0.01          # the smallest FPR a 50-negative population can resolve
+CEILING_TOL = 1e-9        # how close to an attainable maximum counts as "at" it
 
 
 class LedgerError(ValueError):
@@ -155,6 +156,90 @@ def rate(k: int, n: int, min_n: int) -> Dict[str, Any]:
         out["point_estimate"] = None
         out["ci95_wilson"] = None
     return out
+
+
+# --------------------------------------------------------------------------- #
+# signal saturation — a rule that cannot fire is not a precise rule
+# --------------------------------------------------------------------------- #
+
+def signal_degeneracy(records: Sequence[Dict[str, Any]], signal: str,
+                      alpha: float = 0.05,
+                      higher_is_more_anomalous: bool = True) -> Dict[str, Any]:
+    """Does this rule's operating point sit on a score the corpus cannot exceed?
+
+    A rule whose threshold equals the largest score *any* asset attains cannot fire,
+    on a clean asset or an attacked one. Its measured FPR of 0.000 then says nothing
+    about specificity -- it is a statement about the range of the statistic -- and a
+    table that prints it beside a working rule's 0.048 invites the reader to
+    conclude the opposite. That is the exact failure this function exists to make
+    visible and machine-checkable, because it is invisible by eye: 0.000 looks like
+    the best number in the table.
+
+    Three levels are reported, because they support different sentences:
+
+    * ``at_corpus_extreme`` -- the threshold is the largest score in the corpus, so
+      the rule cannot fire **at all**. This is the retirement criterion.
+    * ``at_calibration_ceiling`` -- the threshold is the largest *calibration* score.
+      Weaker, and true far more often: it says the rule cannot fire on held-out
+      assets drawn from the same population.
+    * ``p_floor`` -- the smallest conformal p-value any record on this population
+      could have been assigned. When the floor is above alpha, the signal cannot
+      carry a rejection through the p-value route either, which is what makes a
+      saturated signal actively harmful inside a *mean-based* fusion rather than
+      merely useless.
+    """
+    from cviaf.lab.calibrate import conformal_pvalues
+
+    cal_neg = [r for r in records if r["split"] == "calibration"
+               and not r["is_positive"]]
+    if not cal_neg:
+        raise ValueError(f"no calibration negatives; {signal}'s operating point is "
+                         f"undefined")
+    arr = np.asarray([r["scores"][signal] for r in cal_neg], np.float64)
+    allv = np.asarray([r["scores"][signal] for r in records], np.float64)
+    q = alpha if higher_is_more_anomalous else 1.0 - alpha
+    threshold = float(np.quantile(arr, 1.0 - q))
+    cal_ceiling = float(np.max(arr) if higher_is_more_anomalous else np.min(arr))
+    corpus_extreme = float(np.max(allv) if higher_is_more_anomalous else np.min(allv))
+
+    def at(value: float, other: float) -> bool:
+        return (value >= other - CEILING_TOL if higher_is_more_anomalous
+                else value <= other + CEILING_TOL)
+
+    p_floor = float(np.min(conformal_pvalues(
+        arr, allv, higher_is_more_anomalous=higher_is_more_anomalous)))
+    at_corpus = at(threshold, corpus_extreme)
+    at_cal = at(threshold, cal_ceiling)
+    # The calibration population's extreme is the score that matters for "how much
+    # of the trusted population is pinned there": with a max-statistic that
+    # saturates, that count is the reason the p-value floor is not near zero.
+    ties = int(np.sum(arr >= cal_ceiling - CEILING_TOL) if higher_is_more_anomalous
+               else np.sum(arr <= cal_ceiling + CEILING_TOL))
+    if at_corpus:
+        warning = (f"threshold {threshold:.6g} equals the largest score any asset in "
+                   f"this corpus attains ({corpus_extreme:.6g}): the rule cannot "
+                   f"fire, so its 0.000 is a property of the statistic's range, not "
+                   f"evidence of specificity. Retired from the headline tables; the "
+                   f"column stays in the ledger for continuity.")
+    elif at_cal:
+        warning = (f"threshold {threshold:.6g} is the largest calibration score: on "
+                   f"held-out assets from this population the rule cannot fire, so "
+                   f"its FPR is not measured, it is bounded by construction")
+    else:
+        warning = None
+    return {
+        "signal": signal,
+        "threshold": threshold,
+        "calibration_ceiling": cal_ceiling,
+        "corpus_extreme": corpus_extreme,
+        "at_calibration_ceiling": bool(at_cal),
+        "at_corpus_extreme": bool(at_corpus),
+        "p_floor": p_floor,
+        "p_floor_above_alpha": bool(p_floor > alpha),
+        "calibration_ties_at_extreme": ties,
+        "retire": bool(at_corpus),
+        "warning": warning,
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -537,6 +622,14 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
     rules = {s: evaluate_rule(records, s, alpha, higher, min_negatives)
              for s in signals}
 
+    # Saturated signals are measured like any other rule, then moved out of the
+    # headline tables and into an appendix that carries the reason. The ledger keeps
+    # their columns: the point is not to stop measuring them, it is to stop quoting
+    # a 0.000 that a reader will compare against a real rule's 0.048.
+    degeneracy = {s: signal_degeneracy(records, s, alpha, higher)
+                  for s in signals if rules[s].get("status") != "refused"}
+    retired = sorted(s for s, d in degeneracy.items() if d["retire"])
+
     def census(pred) -> Dict[str, int]:
         out: Dict[str, int] = {}
         for r in records:
@@ -555,6 +648,7 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
     per_kind = {
         s: ({"status": "refused", "kinds": {}} if rules[s].get("status") == "refused"
             else {"status": "measured", "threshold": rules[s]["threshold"],
+                  "retired": s in retired,
                   "threshold_note": "the corpus-level threshold; per-kind thresholds "
                                     "would let each kind pick its own operating point",
                   "kinds": kind_breakdown(records, s, rules[s]["threshold"], higher)})
@@ -588,6 +682,8 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
     report = {
         "schema": REPORT_SCHEMA,
         "ledger_schema": ledger["schema"],
+        "quotable_rules": sorted(s for s in rules if s not in retired),
+        "appendix_rules": {s: degeneracy[s] for s in retired},
         "alpha": alpha,
         "min_negatives": int(min_negatives),
         "higher_is_more_anomalous": higher,
@@ -618,6 +714,11 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
                       "assets in this ledger)" % n_ev_neg if n_ev_neg >= min_negatives
                       else "FPR NOT MEASURED: %d evaluation negatives < %d required; "
                            "report bounds, not rates" % (n_ev_neg, min_negatives))),
+        "headline_note": (None if not retired else
+                          f"{len(retired)} rule(s) retired to the appendix because "
+                          f"their threshold equals a score no asset in this corpus "
+                          f"reaches: {', '.join(retired)}. Their FPR is a bound from "
+                          f"the statistic's range, not a measurement of specificity."),
     }
     return report
 
@@ -678,10 +779,15 @@ def render_report(report: Dict[str, Any]) -> str:
              f"negatives={report['denominators']['evaluation_negatives']}  "
              f"positives={report['denominators']['evaluation_positives']}",
              report["headline"], ""]
+    if report.get("headline_note"):
+        lines += [report["headline_note"], ""]
+    quotable = set(report.get("quotable_rules") or report["rules"])
     hdr = (f"{'signal':26s} {'TPR':>7s} {'TPR 95% CI':>16s} {'FPR':>7s} "
            f"{'FPR 95% CI':>16s} {'status':>10s}")
     lines += [hdr, "-" * len(hdr)]
     for name, r in sorted(report["rules"].items()):
+        if name not in quotable:
+            continue                       # retired: printed in the appendix block
         if r.get("status") == "refused":
             lines.append(f"{name:26s} {'-':>7s} {'-':>16s} {'-':>7s} {'-':>16s} "
                          f"{'refused':>10s}")
@@ -700,6 +806,22 @@ def render_report(report: Dict[str, Any]) -> str:
         lines.append(f"{name:26s} {tpr_s:>7s} {tpr_ci:>16s} {fpr_s:>7s} {fpr_ci:>16s} "
                      f"{r['status']:>10s}")
 
+    appendix = report.get("appendix_rules") or {}
+    if appendix:
+        lines += ["", "APPENDIX — rules whose threshold no asset in this corpus can "
+                      "reach (kept in the ledger for continuity; NOT quotable as "
+                      "specificity)"]
+        for name in sorted(appendix):
+            d = appendix[name]
+            rule = report["rules"].get(name, {})
+            fpr = (rule.get("fpr") or {})
+            shown = (f"{fpr['point_estimate']:.3f}" if fpr.get("point_estimate") is not None
+                     else f"<={fpr.get('exact_upper_bound_95')}")
+            lines.append(f"  {name:24s} FPR {shown} thr {d['threshold']:.6g} == corpus "
+                         f"max {d['corpus_extreme']:.6g}; p-value floor "
+                         f"{d['p_floor']:.3f} over {d['calibration_ties_at_extreme']} "
+                         f"tied calibration models")
+
     if report.get("positives_measured"):
         lines += ["", "recall by attack kind, at the same threshold the TPR used",
                   "(tp/n; 'not measured' means no evaluation-half assets of that kind)"]
@@ -708,6 +830,8 @@ def render_report(report: Dict[str, Any]) -> str:
             if entry.get("status") == "refused":
                 lines.append(f"  {name:24s} refused")
                 continue
+            if entry.get("retired"):
+                continue                   # appendix, not a quotable per-kind cell
             parts = []
             for kind, k in sorted(entry["kinds"].items()):
                 if k.get("status") == "not_measured":
@@ -715,6 +839,12 @@ def render_report(report: Dict[str, Any]) -> str:
                 else:
                     parts.append(f"{kind}={k['tp']}/{k['n_evaluation']}")
             lines.append(f"  {name:24s} {'  '.join(parts)}")
+        retired_names = sorted(n for n, e in report.get("per_kind", {}).items()
+                               if e.get("retired"))
+        if retired_names:
+            lines.append(f"  {'(retired)':24s} " + "  ".join(retired_names) +
+                         "  -- per-kind cells for a rule that cannot fire are "
+                         "listed in the appendix, not here")
 
     # The calibration check is the headline of a clean-only run, so it gets its own
     # block rather than hiding in the JSON.
