@@ -150,6 +150,55 @@ def test_census_treats_a_stale_unselected_copy_as_a_warning_only(tmp_path):
     assert any("stale copy" in w for w in report["warnings"])
 
 
+def make_box_tar(path, seeds, weights=b"weights", worker="b1w1"):
+    """A box corpus tar laid out exactly as the boxes ship it."""
+    staging = path.parent / f"staging-{path.name}"
+    for seed in seeds:
+        write_model(
+            staging / "box-corpus" / f"clean_null_lab_{worker}",
+            f"clean_none_fixed_s{seed}",
+            seed=seed,
+            weights=weights,
+        )
+    with tarfile.open(path, "w:gz") as tar:
+        for seed in seeds:
+            base = f"box-corpus/clean_null_lab_{worker}/clean_none_fixed_s{seed}"
+            tar.add(staging / base / "manifest.json", arcname=f"{base}/manifest.json")
+            tar.add(staging / base / "weights.npz", arcname=f"{base}/weights.npz")
+    return path
+
+
+def test_census_compares_the_weights_inside_two_archives_instead_of_guessing(tmp_path):
+    """Two box exports of the same seeds: the member bytes decide, not the label."""
+    first = make_box_tar(tmp_path / "box1-corpus-v1.tar.gz", [60152], weights=b"export-one")
+    second = make_box_tar(tmp_path / "box1-corpus-v2.tar.gz", [60152], weights=b"export-two")
+    sources = [
+        {"id": "box1-corpus-v1", "kind": "lab_corpus", "role": "input", "path": str(first), "entries": scan_archive(first)},
+        {"id": "box1-corpus-v2", "kind": "lab_corpus", "role": "input", "path": str(second), "entries": scan_archive(second)},
+    ]
+
+    report = judge(sources)
+
+    assert report["collisions"][0]["verdict"] == "different_weights"
+    assert report["exit_code"] == 4
+
+
+def test_census_resolves_two_archives_of_one_box_as_a_re_export(tmp_path):
+    """Same seeds, same member bytes: one box exported twice, not two boxes."""
+    first = make_box_tar(tmp_path / "box1-corpus-v1.tar.gz", [60152, 60153])
+    second = make_box_tar(tmp_path / "box1-corpus-v2.tar.gz", [60152, 60153])
+    sources = [
+        {"id": "box1-corpus-v1", "kind": "lab_corpus", "role": "input", "path": str(first), "entries": scan_archive(first)},
+        {"id": "box1-corpus-v2", "kind": "lab_corpus", "role": "input", "path": str(second), "entries": scan_archive(second)},
+    ]
+
+    report = judge(sources)
+
+    assert {c["verdict"] for c in report["collisions"]} == {"identical_weights"}
+    assert report["exit_code"] == 0
+    assert not report["collisions_fatal"]
+
+
 def test_census_fails_when_an_archive_digest_disagrees_with_the_declared_bytes(tmp_path, monkeypatch):
     """An archive that is not the promised bytes is a hard failure, never a note."""
     from scripts import integration
@@ -218,6 +267,32 @@ def test_seed_ranges_keep_a_gap_visible_instead_of_reporting_min_to_max():
     assert seed_ranges([1, 2, 3, 7, 8, 20]) == [[1, 3], [7, 8], [20, 20]]
     assert seed_ranges([]) == []
     assert seed_ranges([5]) == [[5, 5]]
+
+
+def test_census_reports_a_box_with_no_results_as_a_gap_not_a_corrupt_source(tmp_path, monkeypatch):
+    """Box 5's run died at row 1,467: a missing result is a hole, not a bad corpus."""
+    from scripts import integration
+
+    monkeypatch.setattr(integration, "EXPECTED_ARCHIVES", {})
+    cviaf = tmp_path / "models_results" / "cviaf"
+    (cviaf / "full-results5").mkdir(parents=True)
+    (cviaf / "full-results5" / "registry_seed_80152_85151.jsonl").write_text("{\n")
+    (cviaf / "full-results5" / "registry_seed_80152_85151.meta.json").write_text("{}")
+    (cviaf / "full-results4").mkdir()
+    (cviaf / "full-results4" / "results_seed_75152_80151.npz").write_bytes(b"npz")
+    (cviaf / "full-results4" / "report_seed_75152_80151.json").write_text("{}")
+    (cviaf / "full-results4" / "registry_seed_75152_80151.meta.json").write_text("{}")
+
+    sources, archives, gaps = discover_sources(tmp_path, None)
+    report = build_report(sources, archives, gaps, selected=[])
+    whats = " | ".join(g["what"] for g in report["gaps"])
+
+    assert "full-results5" in whats
+    assert "full-results4" not in whats
+    assert report["exit_code"] == 0
+    assert not any("empty" in p for p in report["problems"])
+    scored = [s for s in report["sources"] if s["id"] == "full-results4"][0]
+    assert scored["result_seed_ranges"] == [[75152, 80151]]
 
 
 def test_census_reports_lab_boxes_missing_from_the_integration_folder(tmp_path):

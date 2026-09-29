@@ -41,6 +41,7 @@ Run:
 from __future__ import annotations
 
 import argparse
+import glob
 import hashlib
 import json
 import os
@@ -187,6 +188,9 @@ def scan_archive(path: Path, base: str = "box-corpus") -> List[Dict[str, Any]]:
                     "kind": None,
                     "rel": rel,
                     "weights_present": None,
+                    "abs_dir": None,
+                    "tar_path": str(path),
+                    "tar_member": "/".join(parts[:-1]) + "/weights.npz",
                 }
             )
     return entries
@@ -225,6 +229,48 @@ def _in_lab_range(seed: Optional[int]) -> bool:
     return isinstance(seed, int) and LAB_SEED_MIN <= seed <= LAB_SEED_MAX
 
 
+def _collect_weight_digests(
+    needed: Dict[str, List[Dict[str, Any]]]
+) -> Dict[str, Dict[int, Optional[str]]]:
+    """Weight digests for the colliding seeds of each source, in one pass per archive.
+
+    A gzip tar has to be read from the start to reach a member, so hashing members one
+    seed at a time would rescan 94 MB per collision. Each archive is therefore opened
+    once and only the members that are actually in dispute are hashed.
+    """
+    out: Dict[str, Dict[int, Optional[str]]] = {}
+    for source_id, claims in needed.items():
+        result: Dict[int, Optional[str]] = {c["seed"]: None for c in claims}
+        by_archive: Dict[str, List[Dict[str, Any]]] = {}
+        for claim in claims:
+            if claim.get("tar_member"):
+                by_archive.setdefault(claim["tar_path"], []).append(claim)
+            else:
+                path = Path(claim.get("abs_dir") or claim["rel"]) / "weights.npz"
+                try:
+                    result[claim["seed"]] = sha256_file(path)
+                except OSError:
+                    result[claim["seed"]] = None
+        for tar_path, archive_claims in by_archive.items():
+            wanted = {c["tar_member"]: c["seed"] for c in archive_claims}
+            try:
+                with tarfile.open(tar_path, "r:gz") as tar:
+                    for member in tar:
+                        if member.name not in wanted or not member.isfile():
+                            continue
+                        handle = tar.extractfile(member)
+                        if handle is None:
+                            continue
+                        digest = hashlib.sha256()
+                        for block in iter(lambda: handle.read(1024 * 1024), b""):
+                            digest.update(block)
+                        result[wanted[member.name]] = digest.hexdigest()
+            except (OSError, tarfile.TarError):
+                pass
+        out[source_id] = result
+    return out
+
+
 def find_collisions(
     sources: Sequence[Dict[str, Any]], selected: Optional[Sequence[str]] = None
 ) -> List[Dict[str, Any]]:
@@ -242,7 +288,8 @@ def find_collisions(
         for entry in source["entries"]:
             if isinstance(entry.get("seed"), int):
                 by_seed.setdefault(entry["seed"], []).append({**entry, "source": source["id"]})
-    collisions = []
+    disputed = []
+    needed: Dict[str, List[Dict[str, Any]]] = {}
     for seed, claims in sorted(by_seed.items()):
         distinct = sorted({c["source"] for c in claims})
         if len(distinct) < 2:
@@ -251,14 +298,27 @@ def find_collisions(
             c for c in claims if selected_set is None or c["source"] in selected_set
         ]
         selected_sources = sorted({c["source"] for c in selected_claims})
-        digests: Dict[str, Optional[str]] = {}
         if len(selected_sources) >= 2:
             for claim in selected_claims:
-                path = Path(claim.get("abs_dir") or claim["rel"]) / "weights.npz"
-                try:
-                    digests[claim["source"]] = sha256_file(path)
-                except OSError:
-                    digests[claim["source"]] = None
+                needed.setdefault(claim["source"], []).append(claim)
+        disputed.append(
+            {
+                "seed": seed,
+                "sources": distinct,
+                "selected_sources": selected_sources,
+                "model_ids": sorted({c["model_id"] for c in claims}),
+            }
+        )
+
+    collected = _collect_weight_digests(needed)
+    collisions = []
+    for row in disputed:
+        seed = row["seed"]
+        selected_sources = row["selected_sources"]
+        digests: Dict[str, Optional[str]] = {
+            source: (collected.get(source) or {}).get(seed) for source in selected_sources
+        }
+        if len(selected_sources) >= 2:
             known = [d for d in digests.values() if d]
             if known and len(known) == len(digests) and len(set(known)) == 1:
                 verdict = "identical_weights"
@@ -269,16 +329,7 @@ def find_collisions(
         else:
             # Nothing to compare: the other claim is a copy or a derived view.
             verdict = "not_compared"
-        collisions.append(
-            {
-                "seed": seed,
-                "sources": distinct,
-                "selected_sources": selected_sources,
-                "model_ids": sorted({c["model_id"] for c in claims}),
-                "weights_sha256": digests,
-                "verdict": verdict,
-            }
-        )
+        collisions.append({**row, "weights_sha256": digests, "verdict": verdict})
     return collisions
 
 
@@ -302,7 +353,26 @@ def judge(report: Dict[str, Any], selected: Sequence[str]) -> Dict[str, Any]:
                 f"declared {archive['n_models_expected']}"
             )
 
+    gaps = list(report.get("gaps", []))
     for summary in report["sources"]:
+        if summary["kind"] == "lab_results":
+            # A box whose results are absent has not been scored; that is a hole in the
+            # population to report, not a corrupt source to fail on.
+            if not summary.get("has_npz"):
+                gaps.append(
+                    {
+                        "what": summary["id"],
+                        "why": "no results_seed_*.npz (box not scored here)",
+                    }
+                )
+            elif not (summary.get("has_report") and summary.get("has_meta")):
+                gaps.append(
+                    {
+                        "what": summary["id"],
+                        "why": "results without a report/meta pair",
+                    }
+                )
+            continue
         if summary["n_models"] == 0:
             problems.append(f"source {summary['id']}: empty (0 manifests)")
         if summary["duplicate_seeds"]:
@@ -381,6 +451,7 @@ def judge(report: Dict[str, Any], selected: Sequence[str]) -> Dict[str, Any]:
     report["stop_on_lab_overlap"] = stop
     report["problems"] = problems
     report["warnings"] = warnings
+    report["gaps"] = gaps
     if stop:
         report["exit_code"] = 3
     elif problems:
@@ -393,11 +464,11 @@ def judge(report: Dict[str, Any], selected: Sequence[str]) -> Dict[str, Any]:
 
 def render(report: Dict[str, Any]) -> str:
     lines = [f"CVIAF integration census ({CENSUS_SCHEMA})", ""]
-    lines.append(f"{'source':<28}{'kind':<14}{'n':>7}  {'seeds':<18}{'ranges':>7}")
+    lines.append(f"{'source':<28}{'kind':<16}{'n':>7}  {'seeds':<18}{'ranges':>7}")
     for summary in report["sources"]:
         rng = f"{summary['seed_min']}..{summary['seed_max']}"
         lines.append(
-            f"{summary['id']:<28}{summary['kind']:<14}{summary['n_models']:>7}  "
+            f"{summary['id']:<28}{summary['kind']:<16}{summary['n_models']:>7}  "
             f"{rng:<18}{len(summary['seed_ranges']):>7}"
         )
     lines.append("")
@@ -519,26 +590,23 @@ def discover_sources(
                 }
             )
         for res_dir in sorted(p for p in cviaf.glob("full-results*") if p.is_dir()):
-            entries = []
-            for npz in sorted(res_dir.glob("results_seed_*.npz")):
-                entries.append(
-                    {
-                        "model_id": npz.name,
-                        "seed": None,
-                        "kind": None,
-                        "rel": str(npz),
-                        "weights_present": None,
-                    }
-                )
+            npz_files = sorted(res_dir.glob("results_seed_*.npz"))
+            ranges = []
+            for npz in npz_files:
+                bounds = re.findall(r"seed_(\d+)_(\d+)", npz.name)
+                if bounds:
+                    ranges.append([int(bounds[0][0]), int(bounds[0][1])])
             sources.append(
                 {
                     "id": res_dir.name,
                     "kind": "lab_results",
                     "role": "derived",
                     "path": str(res_dir),
-                    "entries": entries,
+                    "entries": [],
                     "meta": {
-                        "has_npz": bool(list(res_dir.glob("results_seed_*.npz"))),
+                        "result_files": [p.name for p in npz_files],
+                        "result_seed_ranges": ranges,
+                        "has_npz": bool(npz_files),
                         "has_report": bool(list(res_dir.glob("report_seed_*.json"))),
                         "has_meta": bool(list(res_dir.glob("registry_seed_*.meta.json"))),
                     },
@@ -623,6 +691,26 @@ def _tar_names(path: Path) -> List[str]:
         return tar.getnames()
 
 
+def sha256_tar_member(tar_path: Path, member_name: str) -> Optional[str]:
+    """SHA-256 of one member inside an archive, or None if it is not there.
+
+    Archive-derived entries have no directory to hash, so a collision between two
+    archives would otherwise come out "unresolved" - and an unresolved collision is
+    indistinguishable from a real clash. Comparing the member bytes settles it.
+    """
+    try:
+        with tarfile.open(tar_path, "r:gz") as tar:
+            handle = tar.extractfile(member_name)
+            if handle is None:
+                return None
+            digest = hashlib.sha256()
+            for block in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(block)
+            return digest.hexdigest()
+    except (OSError, tarfile.TarError, KeyError):
+        return None
+
+
 def build_report(
     sources: Sequence[Dict[str, Any]],
     archives: Sequence[Dict[str, Any]],
@@ -639,6 +727,203 @@ def build_report(
         "selected": list(selected),
     }
     return judge(report, selected)
+
+
+VERIFY_SCHEMA = "cviaf.integration-verify.v1"
+
+
+def verify_model_dir(
+    model_dir: Path, plan_entry: Optional[Dict[str, Any]] = None
+) -> List[str]:
+    """Every reason this model directory cannot be scored. Empty list = it can.
+
+    Two independent checks, because they catch different accidents: the repo's native
+    validator catches a manifest that is structurally wrong, and the plan entry catches
+    a file that is structurally fine but is not the bytes the box scored (a re-export, a
+    truncated copy, a partial transfer).
+    """
+    problems: List[str] = []
+    manifest_path = model_dir / "manifest.json"
+    weights_path = model_dir / "weights.npz"
+    if not manifest_path.is_file():
+        return ["missing manifest.json"]
+    if not weights_path.is_file():
+        problems.append("missing weights.npz")
+    try:
+        from cviaf.lab.manifest_schema import validate_model_dir
+
+        problems.extend(validate_model_dir(str(model_dir)))
+    except Exception as exc:  # noqa: BLE001 - a validator crash is a verification failure
+        problems.append(f"native validator raised {type(exc).__name__}: {exc}")
+    if plan_entry is not None:
+        try:
+            actual_manifest = sha256_file(manifest_path)
+        except OSError as exc:
+            actual_manifest = f"unreadable: {exc}"
+        if plan_entry.get("manifest_sha256") and actual_manifest != plan_entry["manifest_sha256"]:
+            problems.append(
+                f"manifest_sha256 {actual_manifest} != plan {plan_entry['manifest_sha256']}"
+            )
+        if plan_entry.get("weights_sha256") and weights_path.is_file():
+            actual_weights = sha256_file(weights_path)
+            if actual_weights != plan_entry["weights_sha256"]:
+                problems.append(
+                    f"weights_sha256 {actual_weights} != plan {plan_entry['weights_sha256']}"
+                )
+    return problems
+
+
+def plan_entries(plan_shards: Sequence[Path]) -> Dict[str, Dict[str, Any]]:
+    """model_id -> pinned digests, from one or more shard files."""
+    entries: Dict[str, Dict[str, Any]] = {}
+    for shard_path in plan_shards:
+        shard = json.loads(Path(shard_path).read_text(encoding="utf-8"))
+        for model in shard.get("models", []):
+            entries[model["model_id"]] = model
+    return entries
+
+
+def quarantine_dir(
+    model_dir: Path, quarantine_root: Path, source_id: str, owned_root: Optional[Path]
+) -> Dict[str, Any]:
+    """Move a failing model directory aside. Never delete, never leave the workspace.
+
+    Models that live in a directory this pass does not own (the user's `runs/`) are
+    recorded but not moved: a verification failure is not permission to relocate
+    somebody else's training output.
+    """
+    model_dir = Path(model_dir)
+    if owned_root is None or not str(model_dir.resolve()).startswith(
+        str(Path(owned_root).resolve()) + os.sep
+    ):
+        return {"moved": False, "reason": "in place, not owned by this pass", "target": None}
+    target = Path(quarantine_root) / source_id / model_dir.name
+    if target.exists():
+        return {"moved": False, "reason": "quarantine target already exists", "target": str(target)}
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        os.rename(model_dir, target)
+    except OSError as exc:
+        return {"moved": False, "reason": f"rename failed: {exc}", "target": str(target)}
+    return {"moved": True, "reason": "quarantined", "target": str(target)}
+
+
+def verify_source(
+    source_id: str,
+    root: Path,
+    plan: Optional[Dict[str, Dict[str, Any]]] = None,
+    quarantine_root: Optional[Path] = None,
+    owned_root: Optional[Path] = None,
+    limit: Optional[int] = None,
+) -> Dict[str, Any]:
+    """Check every model dir under one source root, quarantining what fails."""
+    root = Path(root)
+    models = sorted(p.parent for p in root.rglob("manifest.json"))
+    if limit is not None:
+        models = models[:limit]
+    verified: List[str] = []
+    failures: List[Dict[str, Any]] = []
+    missing_from_plan: List[str] = []
+    seen: set = set()
+    for model_dir in models:
+        entry = None
+        if plan is not None:
+            entry = plan.get(model_dir.name)
+            seen.add(model_dir.name)
+            if entry is None:
+                missing_from_plan.append(model_dir.name)
+        problems = verify_model_dir(model_dir, entry)
+        if not problems:
+            verified.append(model_dir.name)
+            continue
+        action = {"moved": False, "reason": "quarantine not requested", "target": None}
+        if quarantine_root is not None:
+            action = quarantine_dir(model_dir, quarantine_root, source_id, owned_root)
+        failures.append(
+            {
+                "model_id": model_dir.name,
+                "path": str(model_dir),
+                "problems": problems,
+                "quarantine": action,
+            }
+        )
+    unaccounted = sorted(set(plan or {}) - seen)
+    return {
+        "id": source_id,
+        "root": str(root),
+        "n_models": len(models),
+        "n_verified": len(verified),
+        "n_failed": len(failures),
+        "n_plan_entries": len(plan or {}),
+        "n_missing_from_plan": len(missing_from_plan),
+        "n_plan_entries_not_seen": len(unaccounted),
+        "failures": failures,
+        "missing_from_plan": missing_from_plan[:50],
+        "plan_entries_not_seen": unaccounted[:50],
+    }
+
+
+def verify_judge(report: Dict[str, Any]) -> Dict[str, Any]:
+    """A failed model is a hole in the population; say how big and where."""
+    problems: List[str] = []
+    warnings: List[str] = []
+    for source in report["sources"]:
+        if source["n_failed"]:
+            problems.append(
+                f"source {source['id']}: {source['n_failed']} of {source['n_models']} models "
+                "failed verification and are excluded from the ledger"
+            )
+        if source["n_missing_from_plan"]:
+            problems.append(
+                f"source {source['id']}: {source['n_missing_from_plan']} models have no "
+                "entry in the pinned plan (unscored by construction)"
+            )
+        if source["n_plan_entries_not_seen"]:
+            problems.append(
+                f"source {source['id']}: {source['n_plan_entries_not_seen']} pinned plan "
+                "entries have no model on disk"
+            )
+        unmoved = [f for f in source["failures"] if not f["quarantine"]["moved"]]
+        if unmoved:
+            warnings.append(
+                f"source {source['id']}: {len(unmoved)} failed models were recorded but "
+                "not moved (in place, or quarantine not requested)"
+            )
+    report["problems"] = problems
+    report["warnings"] = warnings
+    report["ok"] = not problems
+    report["exit_code"] = 0 if report["ok"] else 7
+    return report
+
+
+def render_verify(report: Dict[str, Any]) -> str:
+    lines = [f"CVIAF integration verify ({VERIFY_SCHEMA})", ""]
+    lines.append(f"{'source':<28}{'checked':>8}{'verified':>9}{'failed':>7}{'no plan':>8}")
+    for source in report["sources"]:
+        lines.append(
+            f"{source['id']:<28}{source['n_models']:>8}{source['n_verified']:>9}"
+            f"{source['n_failed']:>7}{source['n_missing_from_plan']:>8}"
+        )
+    for source in report["sources"]:
+        for failure in source["failures"][:20]:
+            lines.append("")
+            lines.append(f"  FAIL {source['id']}/{failure['model_id']}")
+            for problem in failure["problems"][:3]:
+                lines.append(f"    - {problem}")
+            lines.append(f"    quarantine: {failure['quarantine']}")
+    if report.get("problems"):
+        lines.append("")
+        lines.append("problems:")
+        for problem in report["problems"]:
+            lines.append(f"  - {problem}")
+    lines.append("")
+    total = sum(s["n_models"] for s in report["sources"])
+    verified = sum(s["n_verified"] for s in report["sources"])
+    lines.append(
+        f"verdict: {'PASS' if report['ok'] else 'FAIL'} (exit {report['exit_code']}) "
+        f"verified {verified}/{total}"
+    )
+    return "\n".join(lines)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -660,7 +945,57 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="also list staged corpora (copies of inputs; off by default)",
     )
+    verify = sub.add_parser("verify", help="validate every model dir, quarantine failures")
+    verify.add_argument("--source", action="append", required=True, help="id=path")
+    verify.add_argument("--plan", action="append", default=[], help="id=shard.json (or a glob)")
+    verify.add_argument(
+        "--owned-root",
+        default=str(Path.home() / "cviaf-analysis"),
+        help="only models under this root may be moved; the rest are only recorded",
+    )
+    verify.add_argument(
+        "--quarantine",
+        default=str(Path.home() / "cviaf-analysis" / "quarantine"),
+        help="where failing models are moved (never deleted)",
+    )
+    verify.add_argument("--limit", type=int, default=None, help="check at most N models per source")
+    verify.add_argument("--out", default=None)
     args = parser.parse_args(argv)
+
+    if args.command == "verify":
+        plans: Dict[str, Dict[str, Dict[str, Any]]] = {}
+        for spec in args.plan:
+            source_id, _, pattern = spec.partition("=")
+            shards = [Path(p) for p in sorted(glob.glob(pattern))]
+            if not shards:
+                print(f"verify: no shard files matched {pattern!r}", file=sys.stderr)
+                return 8
+            plans[source_id] = plan_entries(shards)
+        sources = []
+        for spec in args.source:
+            source_id, _, root = spec.partition("=")
+            if not root:
+                print(f"verify: bad --source {spec!r} (want id=path)", file=sys.stderr)
+                return 8
+            sources.append(
+                verify_source(
+                    source_id,
+                    Path(root),
+                    plan=plans.get(source_id),
+                    quarantine_root=Path(args.quarantine) if args.quarantine else None,
+                    owned_root=Path(args.owned_root) if args.owned_root else None,
+                    limit=args.limit,
+                )
+            )
+        report = verify_judge(
+            {"schema": VERIFY_SCHEMA, "sources": sources, "quarantine": args.quarantine}
+        )
+        print(render_verify(report))
+        if args.out:
+            out = Path(args.out)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return int(report["exit_code"])
 
     sources, archives, gaps = discover_sources(
         Path(args.integration_root),
