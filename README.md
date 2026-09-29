@@ -1,6 +1,6 @@
 # False-Alarm Behaviour of Clean-Null Vision Detectors at Scale
 
-### A 56,627-model false-alarm calibration, a 198-arm detection measurement taken at those frozen thresholds, and the refusal-first pipeline that produced both
+### A 56,627-model false-alarm calibration, a 1,188-arm detection ladder taken at those frozen thresholds, and the refusal-first pipeline that produced both
 
 **Status:** false-alarm calibration complete; detection measured on a separate, additive attack set at the frozen operating point
 **Population:** 56,627 clean-null models from 11 shards across 3 machines (FPR) · 1,188 attacked variants, 3 classes × 4 doses (TPR)
@@ -81,6 +81,16 @@ laboratory (`cviaf/lab/`) that manufactures assets with known ground truth, and 
 integration pipeline (`scripts/integration.py`) that counts them, verifies them against
 the plan that claims them, merges them under a single pinned reference, and refuses to
 publish a number unless every shard can prove what it is.
+
+**Offline is a checked property here, not an adjective.** The assurance path imports nothing
+that can reach a network — `python -m cviaf.lab.coverage` AST-scans `cviaf/` and reports
+**0 network imports in the assurance path** with one fetch-once call site in *corpus
+construction* (`cviaf/lab/cifar.py`, `urllib.request.urlretrieve`), which refuses by name under
+`CVIAF_OFFLINE=1` instead of stalling on a connect retry; [`tests/test_offline_guard.py`](tests/test_offline_guard.py)
+pins the refusal, the empty-cache case, and the populated-cache case. Everything in this
+document was produced with no network. The clauses and their live states are in
+[`docs/COVERAGE_STATEMENT.md`](docs/COVERAGE_STATEMENT.md) §2.2.6-a and
+[`docs/PS26228_ALIGNMENT_MATRIX.md`](docs/PS26228_ALIGNMENT_MATRIX.md) §2.
 
 ---
 
@@ -589,7 +599,8 @@ Recorded so nobody re-invents them:
 | [`docs/MODEL_INVENTORY.md`](docs/MODEL_INVENTORY.md) | every model generated: 56,627 rows by source, seed range, path and digest |
 | [`docs/REPRODUCE.md`](docs/REPRODUCE.md) | exact end-to-end reproduction, including the live 1.8 s poison replay |
 | [`docs/COVERAGE_STATEMENT.md`](docs/COVERAGE_STATEMENT.md) | what the engine claims to detect, and what it declares out of scope |
-| [`docs/PS26228_REQUIREMENT_TRACE.md`](docs/PS26228_REQUIREMENT_TRACE.md) | problem-statement clause → artefact that satisfies it |
+| [`docs/PS26228_ALIGNMENT_MATRIX.md`](docs/PS26228_ALIGNMENT_MATRIX.md) | **problem statement → as-built code**: the five capabilities and five constraints, each SATISFIED / PARTIAL / ABSENT, with the shortfall named |
+| [`docs/PS26228_REQUIREMENT_TRACE.md`](docs/PS26228_REQUIREMENT_TRACE.md) | the v3 *design* trace — clause → planned module. Historical intent, not as-built; most clauses read 🟠 |
 | [`docs/CLEAN_NULL_CORPUS.md`](docs/CLEAN_NULL_CORPUS.md) | how the null corpus is generated |
 | [`docs/ATTESTATION.md`](docs/ATTESTATION.md) | content-addressing and the (unsigned) bundle |
 | [`demo/fpr_dashboard.html`](demo/fpr_dashboard.html) | the results, interactively, offline |

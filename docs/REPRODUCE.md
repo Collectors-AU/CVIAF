@@ -353,5 +353,21 @@ Integration subset only:
 python -m pytest tests/test_integration_census.py tests/test_integration_verify.py \
     tests/test_integration_plans.py tests/test_integration_score.py \
     tests/test_integration_merge.py tests/test_tpr_arms.py \
-    tests/test_demo_dashboard.py -q
+    tests/test_demo_dashboard.py tests/test_number_audit.py -q
 ```
+
+## 11. Check the prose against the receipts (≈1 s)
+
+Every figure quoted in the README and the docs is re-derived from the committed receipts and
+required to appear where it is allowed to appear — and superseded figures are required *not*
+to appear outside the section that keeps them as history ([`docs/PS26228_ALIGNMENT_MATRIX.md`](PS26228_ALIGNMENT_MATRIX.md) §3
+explains both directions):
+
+```bash
+python scripts/number_audit.py
+# -> number-audit: clean (18 checks), figures recomputed from the receipts
+#    exit 3 = a document and a receipt disagree; exit 4 = a receipt is unreadable
+```
+
+A receipt that disagrees with itself (cells that do not sum to `n_arms`, a survivorship map
+that contradicts its own cells) is refused before the prose is even consulted.
