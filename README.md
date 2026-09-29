@@ -3,9 +3,9 @@
 ### A 56,627-model false-alarm calibration, a 198-arm detection measurement taken at those frozen thresholds, and the refusal-first pipeline that produced both
 
 **Status:** false-alarm calibration complete; detection measured on a separate, additive attack set at the frozen operating point
-**Population:** 56,627 clean-null models from 11 shards across 3 machines (FPR) · 198 attacked variants in 2 classes (TPR)
+**Population:** 56,627 clean-null models from 11 shards across 3 machines (FPR) · 1,188 attacked variants, 3 classes × 4 doses (TPR)
 **Headline (FPR):** `ctc_mean_clean` **5.23%** [4.98%, 5.50%] and `refdiv_mean_clean` **5.18%** [4.93%, 5.45%] on 28,313 held-out clean assets at α = 0.05
-**Headline (TPR, at that same frozen FPR):** `refdiv_mean_clean` **34.7%** [28.4%, 41.7%] · `ctc_mean_clean` **3.6%** [1.8%, 7.3%]
+**Headline (TPR, same frozen FPR, per class, never pooled):** at a prune fraction of 0.25 `refdiv_mean_clean` catches **47.9%** [38.1%, 57.9%] of `substitution` attacks, rising to **93.7%** at 0.50; it catches **92.9%** of `weight_tamper` at dose 1.00 — and **5.1%** of the behaviour-preserving `bias_lift` attacks, which is its own false-alarm rate
 **Reference:** `clean_none_fixed_s5800`, manifest `fd84409c…`, weights `434561bb…`
 **Scorer:** pinned at `a9e4ce02` (tree `5fbd7368`)
 
@@ -34,14 +34,26 @@ TPR and are emitted as `null`, not `0`. A pipeline that could not say this would
 dangerous than one that measured nothing.
 
 Detection is therefore measured *elsewhere, additively, and without moving anything*. A
-separate **198-arm attack set** is derived from models already in this corpus by weight-space
-tampering only — head noise and structural pruning, no retraining, no new data — scored
-through the same adapter against the same pinned reference, and judged at **the thresholds
-the clean half had already frozen**. That yields the one result a calibration study cannot
-reach: at a false-alarm rate of 5.2%, the two live rules are not equally useful.
-`refdiv_mean_clean` catches **34.7%** [28.4%, 41.7%] of attacks; `ctc_mean_clean` catches
-**3.6%** [1.8%, 7.3%]. The best rule by false alarms is not the best rule by detection, and
-no quantity of clean data would have revealed it.
+separate **1,188-arm attack set** is derived from models already in this corpus by
+weight-space tampering only — head noise, structural pruning, and a targeted class-bias
+lift, across four doses, with no retraining and no new data — scored through the same
+adapter against the same pinned reference, and judged at **the thresholds the clean half had
+already frozen**. Three findings follow, and none of them was reachable from clean data:
+
+1. **The two live rules are not two versions of one rule.** Their false-alarm rates differ by
+   0.05 points and their detection rates differ by an order of magnitude. `ctc_mean_clean`
+   stays near its 5.2% false-alarm rate at almost every dose; `refdiv_mean_clean` rises to
+   47.9% and then 93.7% as the attack gets worse.
+2. **Detection tracks damage, not deviation.** The targeted family moves the weights at every
+   dose and leaves the repository's behaviour metric at exactly 0.000 relative change in all
+   396 arms — and it is caught at 5.1%, i.e. at the false-alarm rate. Signals built on
+   behaviour are blind to a modification behaviour cannot see.
+3. **Detection is measured on a shrinking population, and the receipt says so.** Pruning
+   leaves 92 of 99 arms unscorable at the top dose: the attack destroys most of its own
+   subjects before any rule can look at them (§4.3).
+
+Every rate in §4.2 is reported **per attack class and per dose**. No pooled detection rate
+appears anywhere in this document, on either axis.
 
 The methodology is the contribution as much as the number. The FPR below survived seven
 machine-generated archives, two byte-identical re-exports, one corpus hole, one model that
@@ -126,20 +138,36 @@ clean model.
 
 | | |
 |---|---|
-| Attacked variants built | **198** — 99 `weight_tamper`, 99 `substitution` |
-| Variants scored | **193** — 99 + 94 (5 `substitution` arms unscorable) |
-| Derived from | 9 clean models per shard × 11 shards, drawn from the corpus in §2.1 |
-| Perturbation | weight-space only — Gaussian head noise / structural pruning, magnitude 0.25 |
+| Attacked variants built | **1,188** — 3 classes × 4 doses × 99 clean parents |
+| Variants scored | **1,055**; 133 unscorable, all in one class (§4.3) |
+| Parents | 9 clean models per shard × 11 shards, drawn from the corpus in §2.1 |
+| Perturbation | weight-space only — head noise, structural pruning, targeted bias lift |
+| Doses | **0.10, 0.25, 0.50, 1.00** (units differ by class — see below) |
 | Retraining, new data, new reference | **none** |
 | Thresholds | **frozen** from the clean half; never recalibrated |
-| Cost | 38.6 s to build all 198 arms; 19.5 s to score 193 at 5 workers |
+| Cost | 3 m 49 s to build all 1,188 arms; 1 m 53 s to score 1,055 at 5 workers |
 
-Every arm is a model directory that passes the same `validate_model_dir` the corpus does,
-so an arm is admissible evidence by exactly the standard a clean model is. The five
-unscorable arms are §7.3 recurring one level up — pruning can destroy the *statistic* as
-well as the model — and they are named in `skipped_tpr_arms.json`, grouped by class on the
-dashboard, and excluded from the denominator rather than counted as misses. §4.3 states what
-that exclusion costs.
+**The dose axes are not the same units**, and this is the one thing that has to be said
+before the table in §4.2 is read:
+
+| attack class | what one unit of dose means |
+|---|---|
+| `weight_tamper` | standard deviation of the zero-mean Gaussian noise added to the head weights |
+| `substitution` | fraction of hidden units zeroed |
+| `bias_lift` | absolute logit units added to one class's output bias |
+
+So the ladder is comparable **within** a class and not across classes, which is why §4.2 has
+a class column rather than one shared x-axis. The third family is a targeted/insider
+modification — a single class's bias nudged, the way a re-exported checkpoint would be — and
+it is deliberately **not called a backdoor**: it has no trigger and no source-specific
+behaviour, so that name would be a claim these arms cannot support.
+
+Every arm is a model directory that passes the same `validate_model_dir` the corpus does, so
+an arm is admissible evidence by exactly the standard a clean model is. Three refusals keep
+the set honest: a no-op tamper is rejected *before* the expensive measurement rather than
+recorded as an attack, an arm set containing a clean parent is flagged rather than scored,
+and each arm carries its **measured** `f1_relative_drop` on its own held-out split — never
+the parent's f1 copied onto a tampered artifact.
 
 ---
 
@@ -225,41 +253,61 @@ score in the corpus. A threshold at the ceiling means the rule **cannot** fire, 
 continuity and label them everywhere they appear. This is the single most likely
 misreading of this study (see §5, T2).
 
-### 4.2 The detection rate, at the frozen operating point
+### 4.2 The detection rate, per attack class and per dose
 
-193 arms, judged at thresholds that were fixed before the arms existed. Wilson intervals
-throughout; `null` where a rule cannot fire at all.
+1,055 arms, judged at thresholds that were fixed before any arm existed. Wilson intervals
+throughout. **No pooled rate is reported, on either axis.** A rate averaged over attack
+classes survives exactly one follow-up question; a rate averaged over doses hides whether a
+rule is detecting harm or merely noticing that weights changed. Every cell stands alone,
+including the cells where the rule misses.
 
-| rule | frozen threshold | pooled TPR (95% Wilson) | `substitution` (94) | `weight_tamper` (99) |
-|---|---|---|---|---|
-| `refdiv_mean_clean` | 0.727659 | **34.7%** [28.4%, 41.7%] — 67/193 | 48.9% [39.1%, 58.9%] | 21.2% [14.3%, 30.3%] |
-| `ctc_mean_clean` | 0.984509 | **3.6%** [1.8%, 7.3%] — 7/193 | 2.1% [0.6%, 7.4%] | 5.1% [2.2%, 11.3%] |
-| `ctc_peak_clean` | 1.000000 | `null` — **degenerate** | `null` (≤3.1%) | `null` (≤3.0%) |
-| `ctc_q95_clean` | 1.000000 | `null` — **degenerate** | `null` (≤3.1%) | `null` (≤3.0%) |
+"unmoved" counts the arms in that cell whose attack left the repository's behaviour metric
+(`f1_relative_drop`) at its floor — arms that behaviour cannot distinguish from clean.
 
-**The headline finding is that the two tables disagree.** `ctc_mean_clean` and
-`refdiv_mean_clean` hold the false-alarm rate at 5.23% and 5.18% — indistinguishable at this
-*n* — and differ by a factor of ten in what they catch. A calibration study on its own would
-have published two correct rules and left the reader to assume they detect equally well.
-`ctc_mean_clean` meets the budget by being nearly blind at this operating point: that is a
-real property of the rule, and it becomes visible only when both rules are scored against the
-same positives.
+| attack class | dose | arms | unmoved | `ctc_mean_clean` | `refdiv_mean_clean` |
+|---|---|---:|---:|---|---|
+| `bias_lift` | 0.10 | 99 | **99** | 6.1% [2.8, 12.6] | 5.1% [2.2, 11.3] |
+| `bias_lift` | 0.25 | 99 | **99** | 6.1% [2.8, 12.6] | 5.1% [2.2, 11.3] |
+| `bias_lift` | 0.50 | 99 | **99** | 6.1% [2.8, 12.6] | 5.1% [2.2, 11.3] |
+| `bias_lift` | 1.00 | 99 | **99** | 6.1% [2.8, 12.6] | 5.1% [2.2, 11.3] |
+| `substitution` | 0.10 | 99 | 88 | 4.0% [1.6, 9.9] | 13.1% [7.8, 21.2] |
+| `substitution` | 0.25 | 94 | 40 | 2.1% [0.6, 7.4] | **47.9%** [38.1, 57.9] |
+| `substitution` | 0.50 | 63 | 6 | 3.2% [0.9, 10.9] | **93.7%** [84.8, 97.5] |
+| `substitution` | 1.00 | **7** | 0 | 7/7 — *too few to conclude* | 7/7 — *too few to conclude* |
+| `weight_tamper` | 0.10 | 99 | 73 | 5.1% [2.2, 11.3] | 7.1% [3.5, 13.9] |
+| `weight_tamper` | 0.25 | 99 | 23 | 5.1% [2.2, 11.3] | 22.2% [15.2, 31.4] |
+| `weight_tamper` | 0.50 | 99 | 4 | 11.1% [6.3, 18.8] | **59.6%** [49.7, 68.7] |
+| `weight_tamper` | 1.00 | 99 | 0 | 29.3% [21.2, 38.9] | **92.9%** [86.1, 96.5] |
 
-The two degenerate rules are reported here exactly as they are in §4.1 — as `null` with an
-exact upper bound, never as `0%`. A rule whose threshold is the corpus ceiling cannot fire on
-an attack any more than it can on a clean model, so its detection rate is undefined; the
-table gives the bound that a reader can actually use.
+`ctc_peak_clean` and `ctc_q95_clean` have no columns, for the same reason they are degenerate
+in §4.1: their frozen threshold **is** the ceiling of the clean corpus, so they cannot fire on
+an attack either. Their rate is `null` in every cell — never `0`, and never a claim.
 
-**Severity within a class is wide and that is not a defect.** Zero-mean noise on a trained
-head is closer to regularisation than to sabotage — some `weight_tamper` arms score *higher*
-f1 than their clean parent. A 21% rate on that class is a statement about the weakest rung of
-a dose ladder, not about the detector's ceiling.
+**1. The best rule by false alarms is not the best rule by detection.** `ctc_mean_clean` and
+`refdiv_mean_clean` hold the false-alarm rate 0.05 points apart (5.23% and 5.18%, §4.1) and
+differ by an order of magnitude in what they catch. `ctc_mean_clean` sits at its own
+false-alarm rate at nearly every dose — 2.1% against a 5.2% budget at the dose where the
+other rule catches 47.9%. A calibration study on its own would have published these as two
+correct rules and let every reader assume they detect equally well.
 
-**What this table does not say.** One magnitude (0.25), two families, ~95 arms per class: a
-class-level rate quoted to three decimals overstates its own resolution, and the interval —
-roughly ±10 points — is the honest version of the number. Nothing here transfers to an
-adversary who picks a different magnitude, and the `substitution` column is measured on
-survivors (§4.3).
+**2. Detection tracks damage, not deviation.** The targeted family moved the weights in all
+396 arms, at four doses spanning a factor of ten, and left the behaviour metric at exactly
+0.000 relative change in every one of them. It is caught at **5.1%** — the false-alarm rate.
+A signal derived from behaviour cannot see a modification that behaviour does not reflect,
+whatever the weights look like; the receipt records how much of each cell is inert precisely
+so that this row is not read as a statement about harm.
+
+**3. The class that matters most is the one measured least.** Pruning is the destructive
+family — 93.7% caught at dose 0.50 — and it is also the family that destroys its own
+subjects: 92 of 99 arms are unscorable at dose 1.00. At that dose the surviving 7/7 carries
+`insufficient_denominator` and is reported with its count rather than as 100%. §4.3 states
+what that costs.
+
+**Reading the table safely.** Within a cell, the comparison between rules is exact and is the
+only cross-rule comparison the dose units allow. Across doses, the ratio is meaningful;
+across classes, it is not, because a dose is a different physical quantity in each family. And
+the honest resolution of any single cell is its interval — roughly ±10 points at n ≈ 99 — not
+the three decimals it is printed to.
 
 ### 4.3 What is still absent — and the caveat that qualifies §4.2
 
@@ -278,12 +326,24 @@ impossible. §4.2 supplies a detection rate for a *different*, declared populati
 not back-fill these cells, and the two must not be multiplied together — expected loss needs
 the base rate of the population being defended, and this corpus is not that population.
 
-**The survivorship caveat, stated plainly.** Five arms were built and could not be scored,
-and **all five are `substitution`**. The class whose detection rate matters most is therefore
-the one measured on the subset that survived its own attack: pruning that destroys a model's
-measurability removes that model from the *denominator*, not from the adversary's arsenal.
-The `substitution` figure above is an upper bound on the truth, not an estimate of it, and it
-is the single largest qualification of §4.2.
+**The survivorship caveat, stated plainly, and now as a curve.** 133 of the 1,188 arms were
+built and could not be scored, and **every one of them is `substitution`**. The dose column
+turns that from a footnote into a measurement:
+
+| prune dose | arms scored | unscorable | what the rate above is measured on |
+|---|---:|---:|---|
+| 0.10 | 99 | 0 | the whole cell |
+| 0.25 | 94 | 5 | 95% of the cell |
+| 0.50 | **63** | **36** | **64% of the cell** |
+| 1.00 | **7** | **92** | **7% of the cell — not a rate** |
+
+The class whose detection rate matters most is the one measured on the subset that survived
+its own attack: pruning that destroys a model's measurability removes that model from the
+*denominator*, not from the adversary's arsenal, so every `substitution` figure in §4.2 is an
+upper bound. The bias is not uniform — it grows with the dose, exactly as the damage does —
+which is why §4.2 has a dose column rather than a single row. This is the largest
+qualification of the detection result, and it is a property of the attack, not of the
+detector: no rule can be credited or blamed for a model it was never shown.
 
 ### 4.4 Supporting measurements (retired populations, for continuity)
 
@@ -301,8 +361,8 @@ conclusions depend on population size, not because they are the current result.
 
 The last three are the detection-side numbers from the *retired* corpora, and the interval on
 14.6% spanned roughly 7–28%: at 48 arms it was never able to decide anything, which is why it
-is superseded here rather than extended. §4.2 replaces it with 193 arms, two classes and a
-frozen operating point. Two things remain unmeasured and are not to be inferred from §4.2:
+is superseded here rather than extended. §4.2 replaces it with 1,055 scored arms, three
+classes, four doses and a frozen operating point. Two things remain unmeasured and are not to be inferred from §4.2:
 the **fusion rule** has not been scored on either population, and nothing in this repository
 has been tested against a real third-party backbone.
 
@@ -327,11 +387,12 @@ identical to four decimals, so this is *not proven causal* — which is worse th
 confirmed effect: it is an unexplained parameter that moves the operating point and could
 be tuned to hit a target FPR without touching a detector.
 
-**T4 — One dose, two families.** The detection table (§4.2) rests on a single perturbation
-magnitude and two attack classes. That is enough to rank two rules against each other at one
-operating point and not enough to characterise either. A threshold change will still
-"improve" a 193-arm number in a way that will not replicate, because severity within a class
-is wide and the weakest rung dominates the rate.
+**T4 — Target selection by dose.** The dose column in §4.2 is a gift to a careless reader:
+of twelve cells, the four that flatter the detector most are easy to quote, and "93.7%" is
+much more memorable than the 13.1% at the dose where the attack is subtle. The ladder does
+not remove this risk, it multiplies the opportunities for it. The mitigation is structural —
+every cell is shown, the cells below the floor are flagged rather than dropped, and no
+average exists to be quoted instead.
 
 **T5 — The study multiplies precision, not validity.** The population grew roughly 7× and
 added nothing to external validity. This is the honest summary of the last pass.
@@ -342,10 +403,18 @@ committed dashboard, but cannot recompute the headline without the archives. The
 detection set is smaller and cheaper to rebuild (38.6 s + 19.5 s), which makes §4.2 the more
 reproducible of the two results — and the one a sceptic should attack first.
 
-**T7 — The class we measured best is the class we could measure least.** All five unscorable
-arms are `substitution`, so the reported rate for the most destructive class is computed on
-the attacks that left the statistic computable (§4.3). The number is an upper bound that
-looks like an estimate, which is the most dangerous kind of number in this document.
+**T7 — The class we measured best is the class we could measure least.** All 133 unscorable
+arms are `substitution`, and they concentrate at the doses where the attack works: 36 of 99
+gone at 0.50, 92 of 99 at 1.00 (§4.3). The reported rates for the most destructive class are
+computed on the attacks that left the statistic computable, so they are upper bounds that
+look like estimates — the most dangerous kind of number in this document.
+
+**T8 — The inert family invites the wrong conclusion in either direction.** `bias_lift` is
+caught at 5.1%, which can be read as "the detector is blind to backdoors" (it is not: no
+backdoor was built) or as "backdoors are undetectable" (unsupported: the arms carry no
+trigger, so they are not backdoors). The honest statement is narrower and less quotable — a
+targeted weight change that leaves the behaviour metric at zero is not caught above chance by
+two behaviour-derived signals.
 
 ---
 
@@ -383,16 +452,22 @@ python scripts/integration.py merge-results --plan <plan> --results <results> --
 # 6. attack  - ADDITIVE, and it never writes to the FPR ledger:
 #              derive arms from the clean corpus, score them, judge at the frozen thresholds
 python scripts/tpr_arms.py build --shard <id>=<shard.json> --corpus <id>=<corpus> \
-    --out <arms-dir> --per-shard 9 --magnitude 0.25
-python scripts/integration.py score --shard <arms-dir>/plan/shards/tpr_arms.json \
+    --out <arms-dir> --per-shard 9 --magnitudes 0.1 0.25 0.5 1.0 \
+    --kinds weight_tamper substitution bias_lift
+python scripts/integration.py score --shard <arms-dir>/plan/shards/tpr_ladder.json \
     --corpus <arms-dir> --out <tpr-results> --reference <same-ref> --workers 5 --rewrite-shard
-python scripts/tpr_arms.py evaluate --results <tpr-results> \
-    --frozen-report runs/merged_fpr_tpr_report.json --out runs/tpr_at_frozen.json
+# 6b. per class, per dose - the pooled table is refused by name
+python scripts/tpr_arms.py evaluate-ladder --results <tpr-results> \
+    --registry <arms-dir>/registry.jsonl \
+    --skipped <tpr-results>/skipped_tpr_ladder.json \
+    --frozen-report runs/merged_fpr_tpr_report.json --out runs/tpr_ladder_at_frozen.json
 ```
 
 Stage 6 reads the merged report to *borrow* its thresholds and writes a separate receipt. It
 cannot recalibrate anything: the thresholds are read from committed bytes, and the arm set is
-built from the corpus without touching it.
+built from the corpus without touching it. `evaluate` (single dose) is still there and still
+reproduces `runs/tpr_at_frozen.json` byte-for-byte; `evaluate-ladder` is the per-class,
+per-dose one and is the receipt §4.2 quotes.
 
 Cheap and immediate: the **interactive dashboard** is one self-contained file needing no
 server, no network and no installation —
@@ -406,9 +481,10 @@ attack these numbers:
 * press **push to the ceiling** on `ctc_peak_clean` and watch the rate become `0.00%` while
   a banner explains the rule cannot fire (T2, defused);
 * read the **split-seed spread** that a single headline hides (T1, defused);
-* open the **detection** tab to see what the frozen thresholds actually buy — including the
-  rules that cannot fire, labelled as such rather than as `0%`, and the attack class whose
-  rate is measured only on survivors.
+* open the **detection** tab to see what the frozen thresholds actually buy, **class by class
+  and dose by dose**, with no pooled row to hide behind — including the rules that cannot fire
+  (labelled `not measurable`, never `0%`), the arms whose attack left behaviour untouched, and
+  the cells measured only on the survivors of their own attack.
 
 The page's generator **fails the build** if its arithmetic disagrees with the committed
 report, and embeds float64 rather than float32 for exactly that reason: a float32
@@ -526,7 +602,8 @@ Committed receipts backing every number in this document:
 | [`runs/integration_verify.json`](runs/integration_verify.json) | 56,628/56,628 verified against their own plans, 0 failed, 0 moved |
 | [`runs/merge_report.json`](runs/merge_report.json) | the published headline, denominators, per-rule FPR |
 | [`runs/merged_fpr_tpr_report.json`](runs/merged_fpr_tpr_report.json) | the evaluator's native report, including every refusal |
-| [`runs/tpr_at_frozen.json`](runs/tpr_at_frozen.json) | detection per rule per attack class at the frozen thresholds, Wilson intervals, degenerate rules as `null`, in-scorable arms named |
+| [`runs/tpr_at_frozen.json`](runs/tpr_at_frozen.json) | detection per rule per attack class at one dose, Wilson intervals, degenerate rules as `null`, unscorable arms named |
+| [`runs/tpr_ladder_at_frozen.json`](runs/tpr_ladder_at_frozen.json) | the dose ladder: every (class, dose) cell separately, units per class, per-cell unscorable and behaviour-inert counts, **and the pooling refused by name** |
 
 ---
 
@@ -536,19 +613,24 @@ Committed receipts backing every number in this document:
    retired 7,503-model fleet. The merged ledger already carries all four signals, so this
    is arithmetic, not compute — and it removes the one question a reviewer is most likely
    to ask that currently has no answer at large *n*.
-2. **Turn the attack set into a dose–response.** §4.2 reports one magnitude. A ladder across,
-   say, 0.05–1.0 per class would give the ROC an adversary-relevant axis and remove the
-   single point that currently carries the whole detection claim. It would also quantify the
-   survivorship problem instead of declaring it: at high magnitude, how many arms become
-   unscorable, and does the class disappear as a discrimination problem because it stops
-   producing measurable models at all?
-3. **Remove the reference free parameter** (T3) with a shard-wise or leave-one-shard-out
+2. **Fix the survivorship bias or stop quoting the low-dose substitution rate.** 92 of 99
+   pruning arms at dose 1.00 are unmeasurable (T7). Two ways out, and they are not equivalent:
+   give the scorer a fallback statistic that survives a destroyed head (so the removed attacks
+   re-enter the denominator), or declare the class unmeasurable *above a dose you publish* and
+   stop reporting cells below the floor. The first is a fix; the second is a smaller claim.
+3. **Make `bias_lift` a real backdoor, or stop letting it stand next to the word.** §4.2's
+   third family is caught at chance because it changes nothing behaviour can see. A trigger
+   condition would make it a genuine backdoor-like artifact and would put the problem
+   statement's hardest case into the measurement instead of beside it.
+4. **Remove the reference free parameter** (T3) with a shard-wise or leave-one-shard-out
    reference, and show the pathology disappear rather than documenting it.
-4. **Establish external validity.** A real-backbone clean null — a few hundred real
+5. **Establish external validity.** A real-backbone clean null — a few hundred real
    networks rather than synthetic detectors — is the only experiment that addresses T1
    without new data collection.
-5. **Replace, don't merely retire, the saturated statistics** (T2). The degeneracy is
-   diagnosed; a non-saturating tail statistic is the cure.
+6. **Replace, don't merely retire, the saturated statistics** (T2). The degeneracy is
+   diagnosed; a non-saturating tail statistic is the cure. §4.2 sharpens the case: two of
+   four rules have no detection column at all, so the detector is running on half the
+   signal set it declares.
 
 ---
 
@@ -556,7 +638,8 @@ Committed receipts backing every number in this document:
 
 One commit per unit; each carries its own tests. Newest first:
 
-`f289153` the agrees column that accused the report · `448e7bd` commit ledger ·
+`c92e5c5` the dose ladder, per class and per dose · `f289153` the agrees column that accused
+the report · `448e7bd` commit ledger ·
 `e784a8a` methodology / inventory / runbook docs · `292a205` the paper reports detection ·
 `bea29b0` dashboard detection panel · `f7bf09c` measured detection at frozen thresholds ·
 `44948c3` untrack compiled bytecode · `129b2bb` interactive dashboard ·
@@ -573,8 +656,8 @@ One commit per unit; each carries its own tests. Newest first:
 
 | lane | command | result |
 |---|---|---|
-| numpy (canonical) | `python -m pytest -q` from `.task3` | **639 passed, 5 skipped, 1 xfailed** (42 s) |
-| torch | `~/.venvs/cviaf-torch/bin/python -m pytest -q` | **648 passed, 1 xfailed** (51 s) |
+| numpy (canonical) | `python -m pytest -q` from `.task3` | **646 passed, 5 skipped, 1 xfailed** (42 s) |
+| torch | `~/.venvs/cviaf-torch/bin/python -m pytest -q` | **655 passed, 1 xfailed** (49 s) |
 
 Run the two lanes **sequentially**. Launched into the same rootdir in parallel they corrupt
 each other's cache, and one lane reports a fraction of its tests passing — 55 instead of 647 —

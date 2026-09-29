@@ -326,11 +326,15 @@ is also the reason §6 below exists.
 
 ```bash
 python scripts/tpr_arms.py build --shard <id>=<shard.json> --corpus <id>=<corpus> \
-    --out <arms-dir> --per-shard 9 --magnitude 0.25
-python scripts/integration.py score --shard <arms-dir>/plan/shards/tpr_arms.json \
+    --out <arms-dir> --per-shard 9 --magnitudes 0.1 0.25 0.5 1.0 \
+    --kinds weight_tamper substitution bias_lift
+python scripts/integration.py score --shard <arms-dir>/plan/shards/tpr_ladder.json \
     --corpus <arms-dir> --out <tpr-results> --reference <same-ref> --workers 5 --rewrite-shard
 python scripts/tpr_arms.py evaluate --results <tpr-results> \
     --frozen-report runs/merged_fpr_tpr_report.json --out runs/tpr_at_frozen.json
+python scripts/tpr_arms.py evaluate-ladder --results <tpr-results> \
+    --registry <arms-dir>/registry.jsonl --skipped <tpr-results>/skipped_tpr_ladder.json \
+    --frozen-report runs/merged_fpr_tpr_report.json --out runs/tpr_ladder_at_frozen.json
 ```
 
 **What it does.** Derives attacked variants from clean models **already in the population**,
@@ -349,7 +353,7 @@ move. The TPR pass is therefore structured so that it *cannot* move it:
 **Why adversarial arms rather than synthetic positives.** A synthetic positive measures the
 rule on tensors nothing ever trained. Weight-space tampering of trained models measures it on
 the kind of thing that actually reaches a deployed pipeline, and it needs no retraining:
-build is 38.6 s for 198 arms and scoring is 19.5 s.
+build is 3 m 49 s for 1,188 arms and scoring is 1 m 53 s for 1,055 of them.
 
 **Procedure.**
 
@@ -380,17 +384,43 @@ build is 38.6 s for 198 arms and scoring is 19.5 s.
    clean score cannot fire on anything: `tpr: null`,
    `status: degenerate_threshold_at_ceiling`, plus an exact one-sided upper bound so a reader
    still gets a usable number.
-9. **Name what could not be scored.** Unscorable arms are grouped **by class**. If a class's
-   unscorable arms are not spread evenly, that class's rate is measured on a biased subset
-   and the receipt says so.
+9. **Name what could not be scored.** Unscorable arms are grouped **by (class, dose)**. If a
+   class's unscorable arms are not spread evenly, that class's rate is measured on a biased
+   subset and the receipt says so — and in this pass they are spread very unevenly indeed
+   (0 / 5 / 36 / 92 across the four prune doses).
+10. **Report the cell, never the row or the column.** There is no pooled detection rate in
+    the ladder receipt at all — not across classes (which answers one follow-up question and
+    then falls apart) and not across doses (which hides whether a rule is detecting harm or
+    noticing a weight change). The refusal is a named field, `pooled_estimate: null` with
+    `pooled_refusal`, and a test asserts that no number as quotable as the pooled one exists
+    in the receipt.
+11. **Record how much of each cell the repository's behaviour metric cannot see.** Every arm
+    carries its own measured `f1_relative_drop`; the cell reports `n_behaviour_inert`. A cell
+    of inert arms measures whether a rule notices a weight perturbation, which is a weaker
+    claim than detecting a damaged model, and the row would otherwise be read as the latter.
 
-**What actually happened.** 198 arms built (99 + 99), 193 scored, 5 unscorable — **all five
-`substitution`**, all with the s81621 signature
-(`repository scorer omitted signals: dict_keys(['refdiv_mean_clean'])`). So the most
-destructive class is measured on the subset that survived its own attack; that rate is an
-upper bound. At the frozen thresholds `refdiv_mean_clean` catches 34.7% [28.4, 41.7] pooled
-and `ctc_mean_clean` 3.6% [1.8, 7.3] — at 5.18% and 5.23% FPR respectively. **The best-FPR
-rule is not the best-detecting rule.**
+**What actually happened.** 1,188 arms built (3 classes × 4 doses × 99 parents) in 3 m 49 s,
+1,055 scored in 1 m 53 s. 133 unscorable, and **every one of them `substitution`**, all with
+the s81621 signature `repository scorer omitted signals: dict_keys(['refdiv_mean_clean'])`
+— concentrated at the doses where the attack works: 0 / 5 / 36 / 92 across doses
+0.10 → 1.00. So the most destructive class is measured on the
+subset that survived its own attack, and the bias grows with the dose.
+
+At the frozen thresholds (5.23% and 5.18% false alarms for `ctc_mean_clean` and
+`refdiv_mean_clean`):
+
+| class | dose | `ctc_mean_clean` | `refdiv_mean_clean` |
+|---|---|---|---|
+| `substitution` | 0.25 / 0.50 | 2.1% / 3.2% | **47.9% / 93.7%** |
+| `weight_tamper` | 0.50 / 1.00 | 11.1% / 29.3% | **59.6% / 92.9%** |
+| `bias_lift` | any | 6.1% | 5.1% — at the false-alarm rate, all 396 arms behaviour-inert |
+
+Three findings, none of which the single-dose pass could produce: **the best-FPR rule is not
+the best-detecting rule** (0.05 points apart on false alarms, an order of magnitude apart on
+detection); **detection tracks damage, not deviation** (a targeted modification that leaves
+`f1_relative_drop` at 0.000 is not caught above chance); and **the strongest class is the one
+measured least** (92 of 99 pruning arms unmeasurable at the top dose, so that cell is not a
+rate at all).
 
 **The tests that pin it.**
 
@@ -456,8 +486,8 @@ Tests: `test_dashboard_refuses_to_publish_a_page_that_contradicts_the_report` ·
 
 ```bash
 cd .task3
-python -m pytest -q                       # numpy lane: 639 passed, 5 skipped, 1 xfailed
-~/.venvs/cviaf-torch/bin/python -m pytest -q   # torch lane: 648 passed, 1 xfailed
+python -m pytest -q                       # numpy lane: 646 passed, 5 skipped, 1 xfailed
+~/.venvs/cviaf-torch/bin/python -m pytest -q   # torch lane: 655 passed, 1 xfailed
 ```
 
 **Run the two lanes sequentially.** Launched into the same rootdir in parallel they corrupt
