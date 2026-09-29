@@ -46,6 +46,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sys
 import tarfile
 from pathlib import Path
@@ -729,6 +730,266 @@ def build_report(
     return judge(report, selected)
 
 
+SCORE_SCHEMA = "cviaf.integration-score.v1"
+
+def classify_signals(
+    values: Optional[Dict[str, Any]], signals: Sequence[str], error: Optional[str] = None
+) -> str:
+    """complete | incomplete | error. One undefined model is not a failed shard."""
+    if error is not None or not isinstance(values, dict):
+        return "error"
+    usable = 0
+    for name in signals:
+        value = values.get(name)
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and value == value:
+            usable += 1
+    if usable == len(signals):
+        return "complete"
+    if usable:
+        return "incomplete"
+    return "error"
+
+
+def score_records(
+    items: Sequence[Dict[str, Any]],
+    score_fn,
+    signals: Sequence[str],
+    workers: int = 1,
+    resume: Optional[Dict[str, Dict[str, Any]]] = None,
+    checkpoint=None,
+) -> Dict[str, Any]:
+    """Score models one at a time and classify rather than crash.
+
+    `shard_worker.py` calls `future.result()` and lets the first adapter exception take
+    the process down. That is how box 5 lost a 5,000-model run: one clean model whose CTC
+    score is undefined everywhere (so the producer emits only `refdiv_mean_clean`) raised
+    in the adapter, and 3,533 finished rows never became a results file. This keeps the
+    three outcomes separate and countable - scored, incomplete, error - so the ledger can
+    exclude the undefined models explicitly and say how many there were.
+    """
+    done = dict(resume or {})
+    pending = [item for item in items if item["model_id"] not in done]
+    results: List[Dict[str, Any]] = []
+    if workers <= 1 or len(pending) <= 1:
+        for item in pending:
+            row = _score_one((item, score_fn, signals))
+            results.append(row)
+            if checkpoint is not None:
+                done[item["model_id"]] = row
+                checkpoint(done)
+    else:  # pragma: no cover - exercised through the resume path, not in unit tests
+        import multiprocessing as mp
+
+        with mp.Pool(processes=workers) as pool:
+            for row in pool.imap_unordered(
+                _score_one, [(item, score_fn, signals) for item in pending]
+            ):
+                results.append(row)
+                if checkpoint is not None:
+                    done[row["model_id"]] = row
+                    checkpoint(done)
+    for row in results:
+        done[row["model_id"]] = row
+    ordered = [done[item["model_id"]] for item in items if item["model_id"] in done]
+    scored = [r for r in ordered if r["status"] == "complete"]
+    incomplete = [r for r in ordered if r["status"] == "incomplete"]
+    errors = [r for r in ordered if r["status"] == "error"]
+    return {
+        "schema": SCORE_SCHEMA,
+        "signals": list(signals),
+        "n_models": len(items),
+        "n_scored": len(scored),
+        "n_incomplete": len(incomplete),
+        "n_error": len(errors),
+        "rows": ordered,
+        "skipped": [
+            {"model_id": r["model_id"], "status": r["status"], "reason": r["reason"]}
+            for r in incomplete + errors
+        ],
+    }
+
+
+def _score_one(args) -> Dict[str, Any]:
+    item, score_fn, signals = args
+    values, error = None, None
+    try:
+        values = score_fn(Path(item["path"]), item["manifest"])
+    except BaseException as exc:  # noqa: BLE001 - the point is to survive it
+        error = f"{type(exc).__name__}: {exc}"
+    status = classify_signals(values, signals, error=error)
+    reasons = {
+        "incomplete": "scorer omitted "
+        + ", ".join(sorted(set(signals) - {k for k, v in (values or {}).items() if v is not None})),
+        "complete": "",
+        "error": error or "no finite signals returned",
+    }
+    return {
+        "model_id": item["model_id"],
+        "seed": item["seed"],
+        "kind": item.get("kind"),
+        "status": status,
+        "reason": reasons[status],
+        "scores": values if isinstance(values, dict) else None,
+    }
+
+
+def scored_shard(shard: Dict[str, Any], report: Dict[str, Any]) -> Dict[str, Any]:
+    """The shard as it was actually scored: the excluded models are named in it.
+
+    A merge validates shard membership against the shard file the worker used, so the
+    honest way to keep a shard self-consistent is to re-issue it without the models that
+    could not be scored - and to record their ids in the shard itself, not only in a log.
+    """
+    keep = {r["model_id"] for r in report["rows"] if r["status"] == "complete"}
+    dropped = [r["model_id"] for r in report["rows"] if r["status"] != "complete"]
+    models = [m for m in shard["models"] if m["model_id"] in keep]
+    seeds = [m["seed"] for m in models]
+    out = dict(shard)
+    out["models"] = models
+    out["count"] = len(models)
+    if seeds:
+        out["seed_min"], out["seed_max"] = min(seeds), max(seeds)
+    out["unscorable_model_ids"] = dropped
+    return out
+
+
+PLAN_SCHEMA = "cviaf.analysis-plan.v1"
+SHARD_SCHEMA = "cviaf.analysis-shard.v1"
+PLAN_SUMMARY_KEYS = ("shard_id", "seed_min", "seed_max", "count", "preferred_box", "local_count")
+
+
+class PlanError(ValueError):
+    """A combined plan that the merge would otherwise build out of a contradiction."""
+
+
+def load_shard(path: Path) -> Dict[str, Any]:
+    obj = json.loads(Path(path).read_text(encoding="utf-8"))
+    if obj.get("schema") != SHARD_SCHEMA:
+        raise PlanError(f"{path}: schema {obj.get('schema')!r} != {SHARD_SCHEMA!r}")
+    return obj
+
+
+def merge_plans(
+    specs: Sequence[Tuple[str, Path]],
+    out_dir: Path,
+    excluded: Sequence[str] = (),
+    reference: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Assemble one byte-pinned plan from per-source shards, refusing contradictions.
+
+    Each source keeps its own shard set: the shard file the worker hashed is the shard
+    file the merge validates against, byte for byte (`assemble_all_plans` relies on the
+    same property). What this refuses is the set of situations where a combined plan
+    would be arithmetically fine and scientifically wrong:
+
+      * the same detector seed in two sources - the honest response is to stop, not to
+        keep the first one and let the counts add up;
+      * the same model id twice;
+      * the same shard id twice (a stray copy of box 8's shard inside box 7's plan dir);
+      * a shard that still contains the reference model, which must never score itself;
+      * a shard that still contains a model this pass decided to exclude.
+    """
+    out_dir = Path(out_dir)
+    if out_dir.exists() and any(out_dir.iterdir()):
+        raise PlanError(f"{out_dir} is not empty; use a fresh output directory")
+    shards_dir = out_dir / "shards"
+    shards_dir.mkdir(parents=True, exist_ok=True)
+    excluded_set = set(excluded)
+
+    seen_shard_ids: Dict[str, str] = {}
+    seed_owner: Dict[int, str] = {}
+    id_owner: Dict[str, str] = {}
+    summaries: List[Dict[str, Any]] = []
+    sources: List[Dict[str, Any]] = []
+
+    for source_id, shard_path in specs:
+        shard = load_shard(shard_path)
+        shard_id = shard["shard_id"]
+        if shard_id in seen_shard_ids:
+            raise PlanError(
+                f"duplicate shard id {shard_id} in {seen_shard_ids[shard_id]} and {source_id}"
+            )
+        models = shard.get("models") or []
+        if not models:
+            raise PlanError(f"{source_id}: shard {shard_id} has no models")
+        if shard.get("count") != len(models):
+            raise PlanError(
+                f"{source_id}: shard count {shard.get('count')} != {len(models)} models"
+            )
+        seeds = [m["seed"] for m in models]
+        if min(seeds) != shard.get("seed_min") or max(seeds) != shard.get("seed_max"):
+            raise PlanError(
+                f"{source_id}: seed bounds {shard.get('seed_min')}..{shard.get('seed_max')} "
+                f"do not match the models ({min(seeds)}..{max(seeds)})"
+            )
+        for model in models:
+            model_id, seed = model["model_id"], model["seed"]
+            if reference is not None and model_id == reference:
+                raise PlanError(f"{source_id}: shard still contains the reference model {model_id}")
+            if model_id in excluded_set:
+                raise PlanError(f"{source_id}: shard still contains excluded model {model_id}")
+            if model_id in id_owner:
+                raise PlanError(
+                    f"duplicate model id {model_id} in {id_owner[model_id]} and {source_id}"
+                )
+            if seed in seed_owner:
+                raise PlanError(
+                    f"duplicate detector seed {seed} in {seed_owner[seed]} and {source_id}: "
+                    "refusing to dedupe"
+                )
+            id_owner[model_id] = source_id
+            seed_owner[seed] = source_id
+        target = shards_dir / f"{shard_id}.json"
+        target.write_bytes(Path(shard_path).read_bytes())
+        before, after = sha256_file(Path(shard_path)), sha256_file(target)
+        if before != after:
+            raise PlanError(f"{source_id}: copied shard bytes differ ({before} != {after})")
+        seen_shard_ids[shard_id] = source_id
+        summaries.append({k: shard[k] for k in PLAN_SUMMARY_KEYS if k in shard})
+        sources.append(
+            {
+                "id": source_id,
+                "shard_id": shard_id,
+                "count": len(models),
+                "seed_min": shard["seed_min"],
+                "seed_max": shard["seed_max"],
+                "shard_sha256": after,
+                "from": str(shard_path),
+            }
+        )
+
+    plan: Dict[str, Any] = {
+        "schema": PLAN_SCHEMA,
+        "corpus_count": len(id_owner),
+        "unique_model_ids": len(id_owner),
+        "unique_detector_seeds": len(seed_owner),
+        "excluded_model_ids": sorted(excluded_set),
+        "shards": summaries,
+        "sources": sources,
+        "scoring": "external adapter required; stub dry run is not CVIAF FPR/TPR",
+    }
+    (out_dir / "plan.json").write_text(
+        json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return plan
+
+
+def render_plan(plan: Dict[str, Any]) -> str:
+    lines = [f"combined plan ({plan['schema']})", ""]
+    lines.append(f"{'source':<28}{'shard':<22}{'n':>7}  seeds")
+    for source in plan["sources"]:
+        lines.append(
+            f"{source['id']:<28}{source['shard_id']:<22}{source['count']:>7}  "
+            f"{source['seed_min']}..{source['seed_max']}"
+        )
+    lines.append("")
+    lines.append(
+        f"corpus_count={plan['corpus_count']} shards={len(plan['shards'])} "
+        f"excluded={plan['excluded_model_ids']}"
+    )
+    return "\n".join(lines)
+
+
 VERIFY_SCHEMA = "cviaf.integration-verify.v1"
 
 
@@ -945,6 +1206,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="also list staged corpora (copies of inputs; off by default)",
     )
+    merge = sub.add_parser("merge-plans", help="assemble one byte-pinned plan")   
+    merge.add_argument("--source", action="append", required=True, help="id=shard.json")
+    merge.add_argument("--out", required=True, help="output directory for plan.json + shards/")
+    merge.add_argument("--exclude", action="append", default=[], help="model id to refuse")
+    merge.add_argument("--reference", default=None, help="reference model id, must not be in any shard")
+
     verify = sub.add_parser("verify", help="validate every model dir, quarantine failures")
     verify.add_argument("--source", action="append", required=True, help="id=path")
     verify.add_argument("--plan", action="append", default=[], help="id=shard.json (or a glob)")
@@ -961,6 +1228,24 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     verify.add_argument("--limit", type=int, default=None, help="check at most N models per source")
     verify.add_argument("--out", default=None)
     args = parser.parse_args(argv)
+
+    if args.command == "merge-plans":
+        specs = []
+        for spec in args.source:
+            source_id, _, shard_path = spec.partition("=")
+            if not shard_path:
+                print(f"merge-plans: bad --source {spec!r} (want id=shard.json)", file=sys.stderr)
+                return 8
+            specs.append((source_id, Path(shard_path)))
+        try:
+            plan = merge_plans(
+                specs, Path(args.out), excluded=args.exclude, reference=args.reference
+            )
+        except PlanError as exc:
+            print(f"merge-plans: REFUSED: {exc}", file=sys.stderr)
+            return 9
+        print(render_plan(plan))
+        return 0
 
     if args.command == "verify":
         plans: Dict[str, Dict[str, Dict[str, Any]]] = {}
