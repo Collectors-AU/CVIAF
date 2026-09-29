@@ -20,16 +20,16 @@ cd .task3 && PYTHONPATH=. <venv>/bin/python -m cviaf.lab.coverage --markdown doc
 | 2.2.1-a | Five data-attack families, each with a denominator | measured | 7 | `runs/fpr_ledger_report.json` — 7 kinds with an evaluation denominator in runs/fpr_ledger_report.json: ['dup_flood', 'gma', 'label_flip', 'oda', 'oga', 'ood_insert', 'rma'] |
 | 2.2.1-b | Sample evidence aggregated to contributor/source risk | measured | 30 | `runs/arm_b/arm_b_u3.json` — 30 contributor-level cell(s) in runs/arm_b/arm_b_u3.json (malicious contributor 'vendor_x') |
 | 2.2.2-a | Model integrity against a defined reference battery | measured | 4 | `runs/fpr_ledger_report.json` — 4 rule(s) with an FPR denominator in runs/fpr_ledger_report.json |
-| 2.2.3 | Inference provenance: hash-chained, replay-checked records | measured | 10 | `runs/provenance_ledger.jsonl` — 10 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl |
+| 2.2.3 | Inference provenance: hash-chained, replay-checked records | measured | 11 | `runs/provenance_ledger.jsonl` — 11 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl |
 | 2.2.4 | Distribution shift vs manipulation, with under-determined | measured | 8 | `runs/drift_cells/harness_report.json` — 8 drift decision(s) and 32 under-determined across 4 metrics in runs/drift_cells/harness_report.json |
 | 2.2.5-a | Findings carry reason, evidence, asset and disposition | measured | 13 | `runs/demo_assurance/assurance_report.json` — 13/15 findings carry a reason, evidence, affected asset and disposition in runs/demo_assurance/assurance_report.json |
 | 2.2.5-b | Supported classes and unsupported conditions declared | measured | 27 | `runs/demo_assurance/assurance_report.json` — declares 27 coverage entr(ies) {'supported_attack_classes': 14, 'unsupported_conditions': 8, 'assumptions': 5} and 7 limitation(s) in runs/demo_assurance/assurance_report.json |
 | 2.2.6-a | Offline / air-gapped: no network imports | measured | 0 | `check:offline` — AST scan of cviaf/: no network import in the assurance path; 1 fetch-once call site(s) in corpus construction (['./cviaf/lab/cifar.py']), guarded by CVIAF_OFFLINE |
 | 2.2.6-b | Ingest COCO and YOLO dataset formats | measured | 2 | `runs/format_ingest.json` — runs/format_ingest.json: ingested ['coco', 'yolo'] with box counts {'coco': 3, 'yolo': 3} |
 | 2.2.6-c | Reference model formats: ONNX and PyTorch/TorchScript | measured | 3 | `runs/format_ingest.json` — runs/format_ingest.json: loaded ['onnx', 'pytorch', 'torchscript'] (onnx forward [1, 64, 16, 16]) |
-| 2.3-a | Reproducible audit log of the assurance runs | measured | 10 | `runs/provenance_ledger.jsonl` — 10 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl |
+| 2.3-a | Reproducible audit log of the assurance runs | measured | 11 | `runs/provenance_ledger.jsonl` — 11 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl |
 | 2.3-b | Assurance-report schema shipped and validated | measured | 27 | `runs/demo_assurance/assurance_report.json` — declares 27 coverage entr(ies) {'supported_attack_classes': 14, 'unsupported_conditions': 8, 'assumptions': 5} and 7 limitation(s) in runs/demo_assurance/assurance_report.json |
-| 2.3-c | Coverage statement naming supported classes and limits | measured | 6660 | `docs/COVERAGE_STATEMENT.md` — this statement is generated from live artefacts |
+| 2.3-c | Coverage statement naming supported classes and limits | measured | 6355 | `docs/COVERAGE_STATEMENT.md` — this statement is generated from live artefacts |
 
 ## Ready-for-corpus gate
 
@@ -43,7 +43,7 @@ What must be true before an FPR run on the 20k fleet is worth reading.
 | negatives_on_both_sides | >=20 calibration and >=20 evaluation negatives (interval width) | pass | calibration_negatives=30, evaluation_negatives=30 |
 | a_positive_kind_measured | at least one attacked kind has a denominator, or the TPR is vacuous | pass | 7 kinds with an evaluation denominator in runs/fpr_ledger_report.json: ['dup_flood', 'gma', 'label_flip', 'oda', 'oga', 'ood_insert', 'rma'] |
 | fleet_one_population | the fleet's negatives are exchangeable: shards and splits agree on the FPR | pass | 7503 records on 6 shard(s); one_population=True, split_stable=True, 1 warning(s) |
-| audit_trail_verifies | the provenance ledger hash chain verifies over its artefacts | pass | runs/provenance_ledger.jsonl: 10 entries, chain intact, 15 artefact(s) re-hashed, 13 superseded, 2 lineage-only (derived from this trail) |
+| audit_trail_verifies | the provenance ledger hash chain verifies over its artefacts | pass | runs/provenance_ledger.jsonl: 11 entries, chain intact, 19 artefact(s) re-hashed, 14 superseded, 2 lineage-only (derived from this trail) |
 | offline | no network imports anywhere in the package | pass | assurance path is import-clean; 1 guarded fetch site(s) in corpus construction |
 
 **Gate: PASS**
