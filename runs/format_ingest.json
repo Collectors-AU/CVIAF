@@ -1,0 +1,64 @@
+{
+ "schema": "cviaf.format-ingest.v1",
+ "formats": {
+  "coco": {
+   "ok": true,
+   "n_samples": 2,
+   "n_boxes": 3,
+   "classes": [
+    "person",
+    "car"
+   ],
+   "path": "/var/folders/xp/2phbc8x175144w3017w4g4sh0000gn/T/cviaf_format_wv6223px/coco/annotations.json"
+  },
+  "yolo": {
+   "ok": true,
+   "n_samples": 2,
+   "n_boxes": 3,
+   "classes": [
+    "person",
+    "car"
+   ],
+   "path": "/var/folders/xp/2phbc8x175144w3017w4g4sh0000gn/T/cviaf_format_wv6223px/yolo"
+  },
+  "pytorch": {
+   "ok": true,
+   "path": "/var/folders/xp/2phbc8x175144w3017w4g4sh0000gn/T/cviaf_format_wv6223px/tiny.pt",
+   "output_shape": [
+    1,
+    2
+   ],
+   "save_format": "torch.save(whole module)"
+  },
+  "torchscript": {
+   "ok": true,
+   "path": "/var/folders/xp/2phbc8x175144w3017w4g4sh0000gn/T/cviaf_format_wv6223px/tiny_torchscript.pt",
+   "output_shape": [
+    1,
+    2
+   ],
+   "save_format": "torch.jit.trace + torch.jit.save"
+  },
+  "onnx": {
+   "ok": true,
+   "path": "runs/real_cifar/realcifar_clean_s0/features.onnx",
+   "input_shape": [
+    1,
+    3,
+    64,
+    64
+   ],
+   "output_shape": [
+    1,
+    64,
+    16,
+    16
+   ],
+   "digest": null,
+   "n_candidates": 27
+  }
+ },
+ "all_ok": true,
+ "runtime_seconds": 1.8,
+ "note": "COCO/YOLO are loaded through cviaf.formats.load_dataset; ONNX through onnxruntime; PyTorch/TorchScript through the PyTorch wrapper. No network access and no training: the images are synthetic and the models are tiny."
+}

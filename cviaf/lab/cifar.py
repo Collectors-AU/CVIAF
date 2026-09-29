@@ -58,14 +58,40 @@ DEFAULT_CLASSES: Tuple[int, ...] = (0, 1, 2)
 TRAIN_BATCHES = ("data_batch_1", "data_batch_2", "data_batch_3", "data_batch_4", "data_batch_5")
 
 
+class OfflineError(RuntimeError):
+    """Raised when an air-gapped run needs a dataset that is not in the cache."""
+
+
+def offline_requested() -> bool:
+    """PS 2.2.6: the evaluation workflow must run offline with no external services.
+
+    Corpus construction may fetch a public dataset once (the constraint is about the
+    assurance workflow, not about how a test corpus was built), but it must be able to
+    *refuse* to: an air-gapped judge box cannot reach cs231n.stanford.edu, and a fetch
+    attempt there is an unbounded stall rather than an error. ``CVIAF_OFFLINE=1``
+    (or ``0`` to force a fetch) makes that decision explicit.
+    """
+    value = os.environ.get("CVIAF_OFFLINE", "").strip().lower()
+    return value in ("1", "true", "yes", "on")
+
+
+def _require_cache(cache_dir: str, looked_for: Sequence[str], what: str) -> None:
+    raise OfflineError(
+        f"offline mode (CVIAF_OFFLINE=1): {what} is not in the cache under "
+        f"{cache_dir!r}; looked for {list(looked_for)}. Populate the cache before "
+        f"running air-gapped, or unset CVIAF_OFFLINE to allow the one-off fetch.")
+
+
 def ensure_cifar10(cache_dir: str = DEFAULT_CACHE, verbose: bool = True) -> str:
     """Fetch and extract CIFAR-10 once. Returns the directory holding the batches."""
     root = os.path.join(cache_dir, CIFAR_DIRNAME)
     marker = os.path.join(root, "data_batch_1")
     if os.path.isfile(marker):
         return root
-    os.makedirs(cache_dir, exist_ok=True)
     tar_path = os.path.join(cache_dir, "cifar-10-python.tar.gz")
+    if offline_requested():
+        _require_cache(cache_dir, (marker, tar_path), "the CIFAR-10 python batches")
+    os.makedirs(cache_dir, exist_ok=True)
     if not os.path.isfile(tar_path):
         last: Optional[Exception] = None
         for url in (CIFAR_URL, CIFAR_URL_FALLBACK):
@@ -98,6 +124,8 @@ def ingest_fastai_png(cache_dir: str = DEFAULT_CACHE,
     if not os.path.isdir(root):
         tgz = os.path.join(cache_dir, "cifar10-fastai.tgz")
         if not os.path.isfile(tgz):
+            if offline_requested():
+                _require_cache(cache_dir, (tgz, root), "the fast.ai CIFAR-10 archive")
             if verbose:
                 print(f"  downloading {FASTAI_URL} -> {tgz} (once)")
             os.makedirs(cache_dir, exist_ok=True)
