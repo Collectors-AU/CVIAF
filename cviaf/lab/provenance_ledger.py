@@ -141,7 +141,8 @@ def entry_digest(record: Mapping[str, Any]) -> str:
 
 def _digest_artefacts(artefacts: Mapping[str, str],
                       base_dir: Optional[str] = None,
-                      excludes: Optional[Mapping[str, Sequence[str]]] = None) -> Dict[str, Any]:
+                      excludes: Optional[Mapping[str, Sequence[str]]] = None,
+                      derived: Optional[Sequence[str]] = None) -> Dict[str, Any]:
     """Hash each artefact and record both the path as given and the resolved one.
 
     Relative paths are the normal case on the command line, and a ledger whose paths
@@ -158,6 +159,8 @@ def _digest_artefacts(artefacts: Mapping[str, str],
         meta = describe_artifact(resolved, exclude=excludes.get(role, ()))
         meta["path"] = path
         meta["resolved"] = os.path.abspath(resolved)
+        if derived and role in derived:
+            meta["derived_from_ledger"] = True
         out[role] = meta
     return out
 
@@ -167,8 +170,17 @@ def make_record(seq: int, prev_hash: str, event: str, command: str = "",
                 artefacts: Optional[Mapping[str, str]] = None,
                 git_commit: Optional[str] = None, ts: Optional[str] = None,
                 base_dir: Optional[str] = None,
-                excludes: Optional[Mapping[str, Sequence[str]]] = None) -> Dict[str, Any]:
-    """Build one chained record. Does not write it."""
+                excludes: Optional[Mapping[str, Sequence[str]]] = None,
+                derived_from_ledger: Optional[Sequence[str]] = None) -> Dict[str, Any]:
+    """Build one chained record. Does not write it.
+
+    ``derived_from_ledger`` names roles whose content is computed *from this ledger* (a
+    coverage statement, a rendered audit summary). Those are recorded for lineage but
+    skipped by the currency check, because the check would be a fixpoint: regenerating
+    the statement changes its hash, which invalidates the record that made it valid,
+    which changes the statement. A statement that describes the trail cannot be
+    currency-verified against it.
+    """
     if not isinstance(event, str) or not event.strip():
         raise ValueError("event must be a non-empty string")
     record: Dict[str, Any] = {
@@ -178,7 +190,8 @@ def make_record(seq: int, prev_hash: str, event: str, command: str = "",
         "command": command,
         "git_commit": git_commit if git_commit is not None else current_commit(),
         "artefacts": _digest_artefacts(artefacts or {}, base_dir=base_dir,
-                                       excludes=excludes),
+                                       excludes=excludes,
+                                       derived=derived_from_ledger),
         "payload": dict(payload or {}),
         "prev_hash": prev_hash,
     }
@@ -234,7 +247,8 @@ def append(path: str, event: str, command: str = "",
            payload: Optional[Mapping[str, Any]] = None,
            artefacts: Optional[Mapping[str, str]] = None, ts: Optional[str] = None,
            base_dir: Optional[str] = None,
-           excludes: Optional[Mapping[str, Sequence[str]]] = None) -> Dict[str, Any]:
+           excludes: Optional[Mapping[str, Sequence[str]]] = None,
+           derived_from_ledger: Optional[Sequence[str]] = None) -> Dict[str, Any]:
     """Append one record, chained onto the current tail. Creates the ledger if absent."""
     if not os.path.exists(path) or os.path.getsize(path) == 0:
         init_ledger(path)
@@ -251,12 +265,21 @@ def append(path: str, event: str, command: str = "",
                          f"verify: {problems[0]}")
     prev = entries[-1]["entry_hash"] if entries else GENESIS
     record = make_record(len(entries), prev, event, command=command, payload=payload,
-                         artefacts=artefacts, ts=ts, base_dir=base_dir, excludes=excludes)
+                         artefacts=artefacts, ts=ts, base_dir=base_dir, excludes=excludes,
+                         derived_from_ledger=derived_from_ledger)
     with open(path, "a", encoding="utf-8") as fh:
         # Canonical bytes: the line on disk is exactly what entry_digest hashed, so an
         # offline verifier can check the raw line instead of re-parsing it.
         fh.write(canonical(record).decode() + "\n")
     return record
+
+
+def _artefact_target(meta: Mapping[str, Any], base_dir: Optional[str]) -> str:
+    """The path an artefact record resolves to: what was written, or base_dir-relative."""
+    target = meta.get("resolved") or meta.get("path") or ""
+    if base_dir and target and not os.path.isabs(target):
+        target = os.path.join(base_dir, target)
+    return target
 
 
 def verify(path: str, check_artefacts: bool = False,
@@ -267,7 +290,9 @@ def verify(path: str, check_artefacts: bool = False,
     """
     result: Dict[str, Any] = {"schema": LEDGER_SCHEMA, "path": path, "valid": False,
                               "n_entries": 0, "problems": [], "broken_at": None,
-                              "artefacts_checked": 0, "artefacts_drifted": []}
+                              "artefacts_checked": 0, "artefacts_drifted": [],
+                              "artefacts_superseded": [],
+                              "artefacts_derived_from_ledger": []}
     if not os.path.isfile(path):
         result["problems"].append(f"{path}: no such ledger")
         return result
@@ -324,13 +349,38 @@ def verify(path: str, check_artefacts: bool = False,
         prev = stored
 
     if check_artefacts:
+        # An append-only ledger has to survive its own outputs being regenerated. An
+        # entry records what an artefact *was* at that moment; if a later entry records
+        # the same artefact again, the later record is the live claim and the earlier
+        # one is history. Judging every historical hash against the present made the
+        # trail go invalid every time a report was re-run -- which trains the reader to
+        # ignore the verifier, the opposite of the point. Superseded records are listed
+        # rather than dropped, so the history stays auditable, and drift is still a
+        # problem for whichever record is currently authoritative.
+        # Keyed on the artefact, not on (role, artefact): the role is a label, and the
+        # same file re-recorded under a different label is still the same file. Measured
+        # on this lane's ledger -- an entry recorded runs/fpr_ledger_report.json as
+        # 'out:report' and a later one as 'out:fpr-report', and the stale record stayed
+        # live because the labels differed.
+        latest: Dict[Any, int] = {}
         for i, record in enumerate(entries):
             for role, meta in (record.get("artefacts") or {}).items():
-                # prefer the resolved path recorded at write time; fall back to
-                # resolving the readable one against base_dir
-                target = meta.get("resolved") or meta.get("path")
-                if base_dir and target and not os.path.isabs(target):
-                    target = os.path.join(base_dir, target)
+                latest[_artefact_target(meta, base_dir)] = i
+        for i, record in enumerate(entries):
+            for role, meta in (record.get("artefacts") or {}).items():
+                target = _artefact_target(meta, base_dir)
+                live = latest.get(target)
+                if live != i:
+                    result["artefacts_superseded"].append(
+                        {"entry": i, "event": record.get("event"), "role": role,
+                         "path": meta.get("path"), "superseded_by": live})
+                    continue
+                if meta.get("derived_from_ledger"):
+                    # Lineage only: see make_record. Checking currency here is a fixpoint.
+                    result["artefacts_derived_from_ledger"].append(
+                        {"entry": i, "event": record.get("event"), "role": role,
+                         "path": meta.get("path")})
+                    continue
                 # exists(), not isfile(): a corpus is a directory
                 if not target or not os.path.exists(target):
                     result["problems"].append(

@@ -226,6 +226,132 @@ def test_changed_artefact_is_reported_as_drift(tmp_path):
     assert "changed since it was recorded" in report["problems"][0]
 
 
+def test_a_later_record_supersedes_an_earlier_one(tmp_path):
+    """A regenerated report must not invalidate the trail that describes the old one.
+
+    Measured on this lane's own ledger: the FPR report was re-run on the full fleet, and
+    the artefacts check went from VALID to 3 problems purely because the pipeline did
+    its job. An append-only ledger records what an artefact *was*; the later record is
+    the live claim, and the earlier hash is history, not a lie.
+    """
+    target = os.path.join(str(tmp_path), "report.json")
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump({"n": 1079}, fh)
+    path = os.path.join(str(tmp_path), "ledger.jsonl")
+    init_ledger(path, note="test")
+    append(path, "fpr-report", artefacts={"out:report": target})
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump({"n": 7503}, fh)                      # the re-run
+    append(path, "fpr-report", artefacts={"out:report": target})
+
+    report = verify(path, check_artefacts=True)
+    assert report["valid"], report["problems"]
+    assert report["artefacts_drifted"] == []
+    superseded = report["artefacts_superseded"]
+    assert [(s["entry"], s["superseded_by"]) for s in superseded] == [(0, 1)]
+
+
+def test_a_statement_derived_from_the_ledger_is_lineage_not_currency(tmp_path):
+    """The coverage statement describes the trail, so the trail cannot check it.
+
+    Recording it as an ordinary artefact is a fixpoint that never converges: the
+    statement's gate row counts the ledger's entries and re-hashed artefacts, so
+    regenerating it changes its hash, which invalidates the record that made it valid,
+    which changes the statement. Measured here: recording runs/coverage.json and
+    docs/COVERAGE_STATEMENT.md as ordinary artefacts left the trail INVALID after the
+    very regeneration they exist to describe.
+    """
+    target = os.path.join(str(tmp_path), "statement.md")
+    with open(target, "w", encoding="utf-8") as fh:
+        fh.write("gate: FAIL\n")
+    path = os.path.join(str(tmp_path), "ledger.jsonl")
+    init_ledger(path, note="test")
+    append(path, "coverage", artefacts={"out:coverage-statement": target},
+           derived_from_ledger=("out:coverage-statement",))
+    with open(target, "w", encoding="utf-8") as fh:            # regenerated
+        fh.write("gate: PASS\n")
+
+    report = verify(path, check_artefacts=True)
+    assert report["valid"], report["problems"]
+    assert report["artefacts_drifted"] == []
+    assert [d["role"] for d in report["artefacts_derived_from_ledger"]] == \
+        ["out:coverage-statement"]
+    # The digest is still on the record, so lineage is auditable even though currency
+    # is deliberately not claimed.
+    assert read_ledger(path)[1]["artefacts"]["out:coverage-statement"]["sha256"]
+
+
+def test_a_derived_record_supersedes_an_ordinary_one(tmp_path):
+    """Marking an already-recorded artefact derived must be able to clear the drift."""
+    target = os.path.join(str(tmp_path), "statement.md")
+    with open(target, "w", encoding="utf-8") as fh:
+        fh.write("v1\n")
+    path = os.path.join(str(tmp_path), "ledger.jsonl")
+    init_ledger(path, note="test")
+    append(path, "coverage", artefacts={"out:coverage-statement": target})
+    with open(target, "w", encoding="utf-8") as fh:
+        fh.write("v2\n")
+    assert not verify(path, check_artefacts=True)["valid"]
+    append(path, "coverage", artefacts={"out:coverage-statement": target},
+           derived_from_ledger=("out:coverage-statement",))
+    report = verify(path, check_artefacts=True)
+    assert report["valid"], report["problems"]
+    assert [s["entry"] for s in report["artefacts_superseded"]] == [0]
+
+
+def test_supersede_ignores_the_role_label(tmp_path):
+    """The same file under a new role is the same file (measured on this lane's ledger).
+
+    An entry recorded `runs/fpr_ledger_report.json` as `out:report`; a later entry
+    recorded it as `out:fpr-report`. Keying supersede on (role, path) left the stale
+    record live and the trail invalid for two entries, which is how the label became
+    part of the artefact's identity by accident.
+    """
+    target = os.path.join(str(tmp_path), "report.json")
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump({"n": 1}, fh)
+    path = os.path.join(str(tmp_path), "ledger.jsonl")
+    init_ledger(path, note="test")
+    append(path, "first", artefacts={"out:report": target})
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump({"n": 2}, fh)
+    append(path, "second", artefacts={"out:fpr-report": target})
+    report = verify(path, check_artefacts=True)
+    assert report["valid"], report["problems"]
+    assert [s["entry"] for s in report["artefacts_superseded"]] == [0]
+
+
+def test_drift_of_the_live_record_is_still_a_problem(tmp_path):
+    """Superseding must not become a way to launder a changed artefact."""
+    target = os.path.join(str(tmp_path), "report.json")
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump({"n": 1}, fh)
+    path = os.path.join(str(tmp_path), "ledger.jsonl")
+    init_ledger(path, note="test")
+    append(path, "a", artefacts={"out:report": target})
+    append(path, "b", artefacts={"out:report": target})
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump({"n": 2}, fh)                          # changed after the latest record
+
+    report = verify(path, check_artefacts=True)
+    assert not report["valid"]
+    assert [d["entry"] for d in report["artefacts_drifted"]] == [1]
+
+
+def test_a_deleted_artefact_is_reported_for_the_live_record_only(tmp_path):
+    target = os.path.join(str(tmp_path), "report.json")
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump({"n": 1}, fh)
+    path = os.path.join(str(tmp_path), "ledger.jsonl")
+    init_ledger(path, note="test")
+    append(path, "a", artefacts={"out:report": target})
+    append(path, "b", artefacts={"out:report": target})
+    os.remove(target)
+    report = verify(path, check_artefacts=True)
+    assert not report["valid"]
+    assert len(report["problems"]) == 1 and "is gone" in report["problems"][0]
+
+
 def test_deleted_artefact_is_reported(tmp_path):
     target = os.path.join(str(tmp_path), "result.json")
     with open(target, "w", encoding="utf-8") as fh:

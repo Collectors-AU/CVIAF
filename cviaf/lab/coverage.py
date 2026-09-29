@@ -458,11 +458,24 @@ def _gate_item(key: str, ctx: Dict[str, Any]) -> Dict[str, Any]:
         if os.path.isfile(path):
             try:
                 from cviaf.lab.provenance_ledger import verify
-                result = verify(path)
+                # check_artefacts=True: the chain alone proves the records were not
+                # edited, but not that the numbers they point at still describe the
+                # files on disk. A gate that passes on the weaker claim is the stale
+                # headline with a signature on it, so the strong check is the gate.
+                result = verify(path, check_artefacts=True)
                 problems = result.get("problems") or []
                 ok = bool(result.get("valid")) and not problems
-                detail = (f"{rel}: {result.get('n_entries', '?')} entries, chain "
-                          f"{'valid' if ok else 'BROKEN'}"
+                # Report the chain and the artefacts separately: "chain BROKEN" when the
+                # chain is intact and a report was merely regenerated sends the reader
+                # looking for an edit that never happened.
+                broken_at = result.get("broken_at")
+                chain = ("intact" if broken_at is None
+                         else f"BROKEN at entry {broken_at}")
+                detail = (f"{rel}: {result.get('n_entries', '?')} entries, chain {chain}, "
+                          f"{result.get('artefacts_checked', 0)} artefact(s) re-hashed, "
+                          f"{len(result.get('artefacts_superseded') or [])} superseded, "
+                          f"{len(result.get('artefacts_derived_from_ledger') or [])} "
+                          f"lineage-only (derived from this trail)"
                           + (f" — {problems[:2]}" if problems else ""))
             except Exception as exc:                       # pragma: no cover
                 detail = f"verifier raised {type(exc).__name__}: {exc}"
