@@ -1,9 +1,9 @@
 {
  "schema": "cviaf.manifest-validation.v1",
  "corpora": {
-  "runs/real_cifar": {
+  "runs/clean_null": {
    "problems": [],
-   "n_models": 73,
+   "n_models": 50,
    "foreign": {}
   },
   "runs/day1": {
@@ -11,16 +11,9 @@
    "n_models": 83,
    "foreign": {}
   },
-  "runs/clean_null": {
+  "runs/real_cifar": {
    "problems": [],
-   "n_models": 50,
-   "foreign": {}
-  },
-  "runs/stampfree": {
-   "problems": [
-    "1 model(s) on disk are absent from registry.jsonl: ['stampfree_natural_s100']"
-   ],
-   "n_models": 4,
+   "n_models": 73,
    "foreign": {}
   },
   "runs/mvp": {
@@ -28,24 +21,22 @@
    "n_models": 8,
    "foreign": {}
   },
-  "runs/drift_cells": {
-   "problems": [
-    "registry.jsonl is missing; make_registry_from_disk() can rebuild it"
-   ],
-   "n_models": 0,
-   "foreign": {
-    "cviaf.drift-cells/1": 11
-   }
+  "runs/stampfree": {
+   "problems": [],
+   "n_models": 4,
+   "foreign": {}
   },
   "runs/day1_backup_prepaired": {
    "problems": [],
    "n_models": 64,
    "foreign": {}
   },
-  "runs/real_cifar_smoke": {
+  "runs/drift_cells": {
    "problems": [],
-   "n_models": 2,
-   "foreign": {}
+   "n_models": 0,
+   "foreign": {
+    "cviaf.drift-cells/1": 11
+   }
   }
  }
 }

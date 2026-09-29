@@ -9,15 +9,15 @@
   "../runs/clean_null_local_w6"
  ],
  "n_shards": 6,
- "n_models": 7001,
+ "n_models": 8064,
  "kinds": {
-  "clean": 7001
+  "clean": 8064
  },
  "seed_range": [
   10264,
-  23835
+  24012
  ],
- "n_distinct_seeds": 7001,
+ "n_distinct_seeds": 8064,
  "duplicate_model_ids": [],
  "duplicate_spec_digests": [],
  "duplicate_weight_digests": [],
@@ -26,37 +26,37 @@
  "shards": [
   {
    "corpus": "../runs/clean_null_local_w1",
-   "n_models": 1163,
+   "n_models": 1340,
    "problems": [],
    "foreign_schemas": {}
   },
   {
    "corpus": "../runs/clean_null_local_w2",
-   "n_models": 1171,
+   "n_models": 1348,
    "problems": [],
    "foreign_schemas": {}
   },
   {
    "corpus": "../runs/clean_null_local_w3",
-   "n_models": 1165,
+   "n_models": 1342,
    "problems": [],
    "foreign_schemas": {}
   },
   {
    "corpus": "../runs/clean_null_local_w4",
-   "n_models": 1164,
+   "n_models": 1341,
    "problems": [],
    "foreign_schemas": {}
   },
   {
    "corpus": "../runs/clean_null_local_w5",
-   "n_models": 1171,
+   "n_models": 1349,
    "problems": [],
    "foreign_schemas": {}
   },
   {
    "corpus": "../runs/clean_null_local_w6",
-   "n_models": 1167,
+   "n_models": 1344,
    "problems": [],
    "foreign_schemas": {}
   }
