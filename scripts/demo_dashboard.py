@@ -34,6 +34,11 @@ from pathlib import Path
 
 Z95 = 1.959963984540054
 
+# The evaluator rounds its published point estimate to this many decimals (0.0523, not
+# 0.05230812...). Any comparison against it must happen at the precision it publishes, or
+# a rule that is exactly right reads as a disagreement.
+PUBLISHED_FPR_DECIMALS = 4
+
 
 def wilson(hits: int, n: int, z: float = Z95) -> list:
     """Wilson score interval - the same one the evaluator prints."""
@@ -158,6 +163,17 @@ def main(argv=None) -> int:
                 f"hit-count mismatch for {sig}: recomputed {hits} != committed "
                 f"{rule['fpr']['numerator']} - refusing to publish a page that contradicts the report"
             )
+        # The "agrees" column is the first thing a sceptical reader checks, so it is
+        # computed here (and tested) rather than in the page: an exact ratio compared
+        # against the report's *rounded* point estimate printed "NO" on every rule that
+        # was right, which reads as the page contradicting the report it recomputes.
+        committed[sig]["agrees"] = bool(
+            ev
+            and hits == rule["fpr"]["numerator"]
+            and abs(thr - rule["threshold"]) <= 1e-9
+            and round(hits / len(ev), PUBLISHED_FPR_DECIMALS)
+            == round(rule["fpr"]["point_estimate"], PUBLISHED_FPR_DECIMALS)
+        )
 
     # ---- split-seed sensitivity, recomputed the same way ----
     sensitivity = []
@@ -538,7 +554,7 @@ const best=live.slice().sort((a,b)=>DATA.committed[a].recomputed_fpr-DATA.commit
         '<th class="num">threshold</th><th>status</th><th class="num">committed FPR</th><th>agrees</th></tr>';
   SIGS.forEach(s=>{
     const r=c[s],ci=r.recomputed_ci;
-    const agree=Math.abs(r.recomputed_fpr-r.committed_fpr)<1e-12&&r.recomputed_hits===r.committed_hits;
+    const agree=r.agrees;  // decided at build time, at the report's published precision
     h+='<tr><td>'+s+'</td>'+
        '<td class="num">'+(r.degenerate?'<span class="y">':'')+pct(r.recomputed_fpr)+
          '</span> ['+pct(ci[0])+', '+pct(ci[1])+']</td>'+

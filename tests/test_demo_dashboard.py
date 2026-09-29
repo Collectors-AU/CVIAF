@@ -105,7 +105,9 @@ def _fixture(tmp, *, threshold_delta=0.0):
             "status": "fpr_only",
             "threshold": thr + threshold_delta,
             "fpr": {
-                "point_estimate": hits / len(ev),
+                # The real report publishes this rounded to 4 decimals, so the fixture has
+                # to as well, or the "agrees" comparison below is never exercised.
+                "point_estimate": round(hits / len(ev), 4),
                 "numerator": hits,
                 "ci95_wilson": wilson(hits, len(ev)),
             },
@@ -205,6 +207,27 @@ def test_dashboard_writes_a_self_contained_page_when_the_numbers_agree():
     assert '"n":40' in html, "every model must be embedded, not summarised"
     assert "http://" not in html and "https://" not in html, "the page must work offline"
     assert "TPR is absent by construction" in html
+
+
+def test_a_rule_whose_rate_is_right_is_not_reported_as_disagreeing_with_the_report():
+    """The page recomputes the ratio; the report publishes it rounded to 4 decimals.
+
+    Comparing 0.05230812... against a published 0.0523 at a 1e-12 tolerance printed "NO"
+    in the *agrees* column of every rule that was exactly right - a page accusing the
+    report of disagreeing with itself, in the one column a sceptical reader looks at
+    first. Agreement is now decided at the precision the report publishes, plus an exact
+    hit-count match.
+    """
+    tmp = tempfile.mkdtemp()
+    ledger, report, plan, verify, census = _fixture(tmp)
+    out = os.path.join(tmp, "page.html")
+
+    assert main(_args(tmp, out, ledger, report, plan, verify, census)) == 0
+    html = open(out, encoding="utf-8").read()
+
+    # The blob is embedded with compact separators, so the key has no space after the colon.
+    assert '"agrees":true' in html
+    assert '"agrees":false' not in html, "a correct rule must not be flagged as disagreeing"
 
 
 def test_score_blob_round_trips_exactly():
