@@ -47,6 +47,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tarfile
 from pathlib import Path
@@ -730,6 +731,163 @@ def build_report(
     return judge(report, selected)
 
 
+MERGE_SCHEMA = "cviaf.integration-merge.v1"
+
+
+def preflight_results(plan: Dict[str, Any], results_dir: Path, plan_dir: Path) -> Dict[str, Any]:
+    """Check every shard's report/npz/meta against the plan before the merge runs.
+
+    The merge itself (the vendored `chunk_coordinator.py`) is deliberately conservative:
+    it refuses on its own terms. This preflight exists so that the *reason* a merge is
+    refused is legible - which shard, which file, which digest - instead of one opaque
+    exception after the whole corpus has been read. It also produces the counts the
+    report has to publish: how many models were scored, how many results are missing,
+    and whether all sources agree about the reference and scorer settings.
+    """
+    results_dir = Path(results_dir)
+    plan_dir = Path(plan_dir)
+    shards: List[Dict[str, Any]] = []
+    problems: List[str] = []
+    references: Dict[str, List[str]] = {}
+    settings: Dict[str, Any] = {}
+    n_scored = 0
+    for summary in plan["shards"]:
+        shard_id = summary["shard_id"]
+        record: Dict[str, Any] = {
+            "shard_id": shard_id,
+            "count": summary["count"],
+            "seed_min": summary["seed_min"],
+            "seed_max": summary["seed_max"],
+            "has_report": False,
+            "has_npz": False,
+            "has_meta": False,
+            "ready": False,
+        }
+        report_path = results_dir / f"report_{shard_id}.json"
+        npz_path = results_dir / f"results_{shard_id}.npz"
+        meta_path = results_dir / f"registry_{shard_id}.meta.json"
+        shard_path = plan_dir / "shards" / f"{shard_id}.json"
+        record["has_report"] = report_path.is_file()
+        record["has_npz"] = npz_path.is_file()
+        record["has_meta"] = meta_path.is_file()
+        local: List[str] = []
+        if not (record["has_report"] and record["has_npz"] and record["has_meta"]):
+            missing = [
+                name
+                for name, present in (
+                    ("report", record["has_report"]),
+                    ("npz", record["has_npz"]),
+                    ("meta", record["has_meta"]),
+                )
+                if not present
+            ]
+            local.append(f"missing {'/'.join(missing)} (not scored here)")
+            record["problems"] = local
+            problems.extend(f"shard {shard_id}: {p}" for p in local)
+            shards.append(record)
+            continue
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        record["mode"] = meta.get("mode")
+        record["reference"] = (meta.get("reference") or {}).get("model_id")
+        record["n_eval"] = meta.get("n_eval")
+        record["backgrounds"] = meta.get("backgrounds")
+        if not shard_path.is_file():
+            local.append("shard file absent from the plan directory")
+            record["problems"] = local
+            problems.extend(f"shard {shard_id}: {p}" for p in local)
+            shards.append(record)
+            continue
+        if meta.get("shard_sha256") != sha256_file(shard_path):
+            local.append(
+                "checkpoint identity does not match the plan shard bytes "
+                "(the shard changed after it was scored)"
+            )
+        if meta.get("mode") != "adapter":
+            local.append(f"mode {meta.get('mode')!r} is not a real score")
+        if report.get("schema") != "cviaf.analysis-result.v1":
+            local.append(f"report schema {report.get('schema')!r}")
+        if report.get("shard_id") != shard_id:
+            local.append(f"report is for {report.get('shard_id')!r}")
+        if report.get("count") != summary["count"]:
+            local.append(
+                f"report count {report.get('count')} != plan count {summary['count']}"
+            )
+        if report.get("sha256") != sha256_file(npz_path):
+            local.append("npz digest does not match the report")
+        else:
+            record["npz_sha256"] = report["sha256"]
+        references.setdefault(record.get("reference") or "<none>", []).append(shard_id)
+        key = json.dumps(
+            {
+                "n_eval": meta.get("n_eval"),
+                "backgrounds": meta.get("backgrounds"),
+                "adapter": meta.get("adapter"),
+            },
+            sort_keys=True,
+        )
+        settings.setdefault(key, []).append(shard_id)
+        record["ready"] = not local
+        record["problems"] = local
+        problems.extend(f"shard {shard_id}: {p}" for p in local)
+        n_scored += summary["count"]
+        shards.append(record)
+    if len(references) > 1:
+        problems.append(
+            f"sources disagree about the reference model: {json.dumps(references, sort_keys=True)}"
+        )
+    if len(settings) > 1:
+        problems.append(
+            "sources disagree about scorer settings (n_eval/backgrounds/adapter): "
+            f"{json.dumps(settings, sort_keys=True)}"
+        )
+    ready_shards = [s for s in shards if s["has_report"] and s["has_npz"] and s["has_meta"]]
+    return {
+        "schema": MERGE_SCHEMA,
+        "plan": str(plan_dir),
+        "results": str(results_dir),
+        "n_shards": len(plan["shards"]),
+        "n_shards_with_results": len(ready_shards),
+        "n_shards_missing": len(plan["shards"]) - len(ready_shards),
+        "n_models_scored": n_scored,
+        "n_models_in_plan": plan["corpus_count"],
+        "references": {k: v for k, v in references.items()},
+        "problems": problems,
+        "ready": not problems,
+        "shards": shards,
+    }
+
+
+def summarise_fpr_report(report_path: Path, merge: Dict[str, Any]) -> Dict[str, Any]:
+    """The published numbers, with the clean-null-only caveat attached, not implied."""
+    report = json.loads(Path(report_path).read_text(encoding="utf-8"))
+    denominators = report.get("denominators") or {}
+    rules = {
+        name: {
+            "threshold": body.get("threshold"),
+            "fpr": body.get("fpr"),
+            "tpr": body.get("tpr"),
+            "status": body.get("status"),
+        }
+        for name, body in (report.get("rules") or {}).items()
+    }
+    return {
+        "schema": MERGE_SCHEMA,
+        "ledger_schema": report.get("ledger_schema"),
+        "alpha": report.get("alpha"),
+        "min_negatives": report.get("min_negatives"),
+        "positive_kinds": report.get("positive_kinds"),
+        "denominators": denominators,
+        "rules": rules,
+        "fpr_measured": report.get("fpr_measured"),
+        "positives_measured": report.get("positives_measured"),
+        "headline": report.get("headline"),
+        "merge": merge,
+        "tpr": "not measurable: this population carries clean nulls only, so no rule has "
+        "an attacked positive to detect. Any TPR column here would be fabricated.",
+    }
+
+
 SCORE_SCHEMA = "cviaf.integration-score.v1"
 
 def classify_signals(
@@ -1212,6 +1370,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     merge.add_argument("--exclude", action="append", default=[], help="model id to refuse")
     merge.add_argument("--reference", default=None, help="reference model id, must not be in any shard")
 
+    merge_results = sub.add_parser(
+        "merge-results", help="preflight every shard, then run the locked merge + evaluator"
+    )
+    merge_results.add_argument("--plan", required=True, help="combined plan directory")
+    merge_results.add_argument("--results", required=True, help="directory holding report/npz/meta")
+    merge_results.add_argument("--out", required=True)
+    merge_results.add_argument("--out-report", default=None, help="where to write the summary JSON")
+    merge_results.add_argument(
+        "--merge-cmd",
+        default=None,
+        help="the vendored chunk_coordinator.py to run (skips the merge when omitted)",
+    )
+    merge_results.add_argument("--repo-root", default=None, help="the pinned scorer export")
+    merge_results.add_argument("--python", default=sys.executable)
+
     verify = sub.add_parser("verify", help="validate every model dir, quarantine failures")
     verify.add_argument("--source", action="append", required=True, help="id=path")
     verify.add_argument("--plan", action="append", default=[], help="id=shard.json (or a glob)")
@@ -1228,6 +1401,59 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     verify.add_argument("--limit", type=int, default=None, help="check at most N models per source")
     verify.add_argument("--out", default=None)
     args = parser.parse_args(argv)
+
+    if args.command == "merge-results":
+        plan_dir = Path(args.plan)
+        plan = json.loads((plan_dir / "plan.json").read_text(encoding="utf-8"))
+        preflight = preflight_results(plan, Path(args.results), plan_dir)
+        print(
+            f"preflight: {preflight['n_shards_with_results']}/{preflight['n_shards']} shards have "
+            f"results, {preflight['n_models_scored']} of {preflight['n_models_in_plan']} models"
+        )
+        for problem in preflight["problems"]:
+            print(f"  - {problem}")
+        if not preflight["ready"]:
+            print("merge-results: REFUSED (preflight not green)", file=sys.stderr)
+            if args.out_report:
+                Path(args.out_report).parent.mkdir(parents=True, exist_ok=True)
+                Path(args.out_report).write_text(
+                    json.dumps(preflight, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+                )
+            return 10
+        if not args.merge_cmd:
+            print("merge-results: preflight green; no --merge-cmd given, stopping before the merge")
+            return 0
+        merge_cmd = [
+            args.python,
+            args.merge_cmd,
+            "merge",
+            "--plan",
+            str(plan_dir / "plan.json"),
+            "--results",
+            str(args.results),
+            "--output",
+            str(args.out),
+        ]
+        if args.repo_root:
+            merge_cmd += ["--repo-root", str(args.repo_root)]
+        completed = subprocess.run(merge_cmd, capture_output=True, text=True, check=False)
+        print(completed.stdout.strip())
+        if completed.returncode != 0:
+            print(completed.stderr.strip(), file=sys.stderr)
+            return completed.returncode
+        summary = json.loads((Path(args.out) / "merge_report.json").read_text(encoding="utf-8"))
+        native_report = Path(args.out) / "fpr_tpr_report.json"
+        published = (
+            summarise_fpr_report(native_report, summary) if native_report.is_file() else summary
+        )
+        print(json.dumps({k: published[k] for k in ("denominators", "headline") if k in published},
+                         indent=2, sort_keys=True))
+        if args.out_report:
+            Path(args.out_report).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.out_report).write_text(
+                json.dumps(published, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+        return 0
 
     if args.command == "merge-plans":
         specs = []
