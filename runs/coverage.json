@@ -5,9 +5,9 @@
    "id": "1.4",
    "title": "Risk, not just integrity: expected loss per disposition",
    "state": "measured",
-   "value": 4,
+   "value": 2,
    "evidence": "runs/fpr_ledger_report.json",
-   "detail": "clause 1.4 priced 4 rule(s) in runs/fpr_ledger_report.json: ['ctc_mean_clean', 'ctc_peak_clean', 'ctc_q95_clean', 'refdiv_mean_clean']"
+   "detail": "clause 1.4 priced 2 rule(s) in runs/fpr_ledger_report.json: ['ctc_mean_clean', 'refdiv_mean_clean']"
   },
   {
    "id": "2.2.1-a",
@@ -37,9 +37,9 @@
    "id": "2.2.3",
    "title": "Inference provenance: hash-chained, replay-checked records",
    "state": "measured",
-   "value": 11,
+   "value": 12,
    "evidence": "runs/provenance_ledger.jsonl",
-   "detail": "11 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
+   "detail": "12 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
   },
   {
    "id": "2.2.4",
@@ -93,9 +93,9 @@
    "id": "2.3-a",
    "title": "Reproducible audit log of the assurance runs",
    "state": "measured",
-   "value": 11,
+   "value": 12,
    "evidence": "runs/provenance_ledger.jsonl",
-   "detail": "11 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
+   "detail": "12 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
   },
   {
    "id": "2.3-b",
@@ -109,7 +109,7 @@
    "id": "2.3-c",
    "title": "Coverage statement naming supported classes and limits",
    "state": "measured",
-   "value": 6355,
+   "value": 6637,
    "evidence": "docs/COVERAGE_STATEMENT.md",
    "detail": "this statement is generated from live artefacts"
   }
@@ -163,7 +163,7 @@
   {
    "key": "audit_trail_verifies",
    "ok": true,
-   "detail": "runs/provenance_ledger.jsonl: 11 entries, chain intact, 19 artefact(s) re-hashed, 14 superseded, 2 lineage-only (derived from this trail)",
+   "detail": "runs/provenance_ledger.jsonl: 12 entries, chain intact, 19 artefact(s) re-hashed, 19 superseded, 2 lineage-only (derived from this trail)",
    "what": "the provenance ledger hash chain verifies over its artefacts",
    "artefact": "runs/provenance_ledger.jsonl"
   },

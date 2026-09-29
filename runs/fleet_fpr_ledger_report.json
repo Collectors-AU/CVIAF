@@ -340,6 +340,11 @@
  "risk": {
   "schema": "cviaf.asset-risk.v1",
   "prevalence": 0.1,
+  "skipped_rules": [
+   "ctc_peak_clean",
+   "ctc_q95_clean"
+  ],
+  "skipped_reason": "retired rules are not priced: a rule whose threshold no asset can reach has the accept-everything expected loss, and pricing it would count as a priced rule",
   "prevalence_basis": "declared default; override with --prevalence. The FPR corpus here is built 50/50 for power, which is NOT a deployment prevalence",
   "loss_matrix": {
    "false_accept": 25.0,
@@ -353,18 +358,6 @@
     "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
     "fpr": 0.048,
     "threshold": 0.9847407860980113
-   },
-   "ctc_peak_clean": {
-    "status": "not_measured",
-    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
-    "fpr": 0.0,
-    "threshold": 1.0
-   },
-   "ctc_q95_clean": {
-    "status": "not_measured",
-    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
-    "fpr": 0.0,
-    "threshold": 1.0
    },
    "refdiv_mean_clean": {
     "status": "not_measured",

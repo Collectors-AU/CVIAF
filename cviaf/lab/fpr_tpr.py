@@ -822,8 +822,14 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
         "per_kind": per_kind,
         "per_kind_family": per_kind_family(per_kind, rules, alpha),
         "clause_checks": {"3.7_oda_recall": oda_check},
-        "risk": risk_block(rules, prevalence=prevalence, costs=costs,
-                           n_positives=n_ev_pos),
+        # Retired (saturated) rules are not priced: "expected loss of a rule that
+        # cannot fire" is the accept-everything policy with extra steps, and putting
+        # it in the priced-rule count inflates the count of rules the clause was
+        # actually measured on.
+        "risk": risk_block({s: r for s, r in rules.items() if s not in retired},
+                           prevalence=prevalence, costs=costs,
+                           n_positives=n_ev_pos,
+                           skipped=sorted(retired)),
         # The single sentence a reader should see before any number: without enough
         # clean assets on the evaluation half, FPR is not measured and every claim
         # downstream is conditional on an untested assumption.
@@ -845,7 +851,8 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
 
 def risk_block(rules: Mapping[str, Any], prevalence: Optional[float] = None,
                costs: Optional[Any] = None,
-               n_positives: Optional[int] = None) -> Dict[str, Any]:
+               n_positives: Optional[int] = None,
+               skipped: Optional[Sequence[str]] = None) -> Dict[str, Any]:
     """Expected loss per signal, from its own measured operating point.
 
     A signal whose FPR is only bounded (0/30 clean assets) has no point estimate and is
@@ -858,6 +865,11 @@ def risk_block(rules: Mapping[str, Any], prevalence: Optional[float] = None,
     out: Dict[str, Any] = {
         "schema": "cviaf.asset-risk.v1",
         "prevalence": pi,
+        "skipped_rules": list(skipped or []),
+        "skipped_reason": (None if not skipped else
+                           "retired rules are not priced: a rule whose threshold no "
+                           "asset can reach has the accept-everything expected loss, "
+                           "and pricing it would count as a priced rule"),
         "prevalence_basis": ("declared default; override with --prevalence. The FPR "
                              "corpus here is built 50/50 for power, which is NOT a "
                              "deployment prevalence"),

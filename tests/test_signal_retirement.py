@@ -111,6 +111,40 @@ def test_a_calibration_ceiling_threshold_is_warned_but_still_quotable():
     assert deg["warning"] and "cannot fire" in deg["warning"]
 
 
+def test_a_retired_rule_is_not_counted_as_a_priced_rule():
+    """"Expected loss of a rule that cannot fire" is the accept-everything policy with
+    extra steps, and counting it inflates the number of rules clause 1.4 measured."""
+    report = evaluate_corpus(_positives_and_negatives(), alpha=0.05, min_negatives=20,
+                             split_seed=0)
+    assert report["risk"]["priced"] is True
+    assert "sat" not in report["risk"]["per_signal"]
+    assert "sat" in report["risk"]["skipped_rules"]
+    assert "accept-everything" in report["risk"]["skipped_reason"]
+    assert "live" in report["risk"]["per_signal"]
+
+
+def _positives_and_negatives(n_neg: int = 200, n_pos: int = 40):
+    """A ledger with both polarities, so the risk block actually prices something."""
+    import numpy as np
+    rng = np.random.default_rng(4)
+    records = []
+    for i in range(n_neg):
+        records.append({"model_id": f"clean_m{i}", "corpus": "shard0", "kind": "clean",
+                        "is_positive": False, "split": "unassigned",
+                        "scores": {"live": float(rng.uniform(0, 1)), "sat": 1.0}})
+    for i in range(n_pos):
+        caught = i % 3 == 0
+        records.append({"model_id": f"oga_{i}", "corpus": "shard0", "kind": "oga",
+                        "is_positive": True, "split": "unassigned",
+                        # `sat` scores 1.0 on EVERY asset, positives included: a
+                        # genuinely saturated statistic, not an unlucky fixture.
+                        "scores": {"live": 5.0 if caught else 0.2, "sat": 1.0}})
+    return {"schema": "cviaf.fpr-tpr-ledger.v1", "alpha": 0.05,
+            "higher_is_more_anomalous": True,
+            "positive_kinds": ["oga"], "negative_kinds": ["clean"],
+            "provenance": {"producer": "test"}, "records": records}
+
+
 def test_degeneracy_needs_a_calibration_half_and_says_so():
     led = _ledger(n=20)
     for rec in led["records"]:

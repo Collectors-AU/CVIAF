@@ -809,6 +809,11 @@
  "risk": {
   "schema": "cviaf.asset-risk.v1",
   "prevalence": 0.1,
+  "skipped_rules": [
+   "ctc_peak_clean",
+   "ctc_q95_clean"
+  ],
+  "skipped_reason": "retired rules are not priced: a rule whose threshold no asset can reach has the accept-everything expected loss, and pricing it would count as a priced rule",
   "prevalence_basis": "declared default; override with --prevalence. The FPR corpus here is built 50/50 for power, which is NOT a deployment prevalence",
   "loss_matrix": {
    "false_accept": 25.0,
@@ -822,18 +827,6 @@
     "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
     "fpr": 0.048,
     "threshold": 0.9847407860980113
-   },
-   "ctc_peak_clean": {
-    "status": "not_measured",
-    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
-    "fpr": 0.0,
-    "threshold": 1.0
-   },
-   "ctc_q95_clean": {
-    "status": "not_measured",
-    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
-    "fpr": 0.0,
-    "threshold": 1.0
    },
    "fused_all_bonferroni": {
     "status": "not_measured",
@@ -2980,7 +2973,7 @@
   "ledger": "runs/fleet_fpr_ledger.json",
   "ledger_sha256": "5ffe82310d86ab0ac840441e5a6b4f22eb71a44ce46b0cd5c223771214e7be38",
   "published_per_signal_report": "runs/fleet_fpr_ledger_report.json",
-  "published_per_signal_report_sha256": "873fa0a8cc9792d519a5aa57ca13e55d685ee46b7f043ddfcc25ab6d9217cc8c",
+  "published_per_signal_report_sha256": "deda3cd40bba3587b0bd78e75d82a5abfd2d826fbcf7e69485b9860254624c19",
   "per_signal_reproduced": true,
   "split_seed": 7
  }

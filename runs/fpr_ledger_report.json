@@ -1032,6 +1032,11 @@
  "risk": {
   "schema": "cviaf.asset-risk.v1",
   "prevalence": 0.1,
+  "skipped_rules": [
+   "ctc_peak_clean",
+   "ctc_q95_clean"
+  ],
+  "skipped_reason": "retired rules are not priced: a rule whose threshold no asset can reach has the accept-everything expected loss, and pricing it would count as a priced rule",
   "prevalence_basis": "declared default; override with --prevalence. The FPR corpus here is built 50/50 for power, which is NOT a deployment prevalence",
   "loss_matrix": {
    "false_accept": 25.0,
@@ -1069,76 +1074,6 @@
     "recommended_expected_loss_per_asset": 2.5,
     "break_even_prevalence_vs_accept_all": 0.4896273179911077,
     "caveat": "posteriors are decision-conditioned (every flagged asset shares one value); a per-asset posterior would need the alternative density, which the clean calibration set cannot identify",
-    "tpr_denominator": 36,
-    "fpr_denominator": 30
-   },
-   "ctc_peak_clean": {
-    "schema": "cviaf.asset-risk.v1",
-    "status": "measured",
-    "operating_point": {
-     "tpr": 0.0,
-     "fpr": 0.0
-    },
-    "prevalence": 0.1,
-    "loss_matrix": {
-     "false_accept": 25.0,
-     "false_quarantine": 5.0,
-     "review": 1.0,
-     "reviewer_error": 0.0
-    },
-    "accept_bound": 0.05,
-    "posterior_when_flagged": null,
-    "posterior_when_not_flagged": 0.1,
-    "expected_loss_per_asset": {
-     "accept_all": 2.5,
-     "quarantine_flagged": 2.5,
-     "review_flagged": 2.5
-    },
-    "recommended_policy": "accept_all",
-    "tied_policies": [
-     "accept_all",
-     "quarantine_flagged",
-     "review_flagged"
-    ],
-    "recommended_expected_loss_per_asset": 2.5,
-    "break_even_prevalence_vs_accept_all": 0.0,
-    "caveat": "posteriors are decision-conditioned (every flagged asset shares one value); a per-asset posterior would need the alternative density, which the clean calibration set cannot identify",
-    "note": "the rule never fires (TPR = FPR = 0), so no flagged-handling policy can differ from accept_all; the tie is structural, not a preference",
-    "tpr_denominator": 36,
-    "fpr_denominator": 30
-   },
-   "ctc_q95_clean": {
-    "schema": "cviaf.asset-risk.v1",
-    "status": "measured",
-    "operating_point": {
-     "tpr": 0.0,
-     "fpr": 0.0
-    },
-    "prevalence": 0.1,
-    "loss_matrix": {
-     "false_accept": 25.0,
-     "false_quarantine": 5.0,
-     "review": 1.0,
-     "reviewer_error": 0.0
-    },
-    "accept_bound": 0.05,
-    "posterior_when_flagged": null,
-    "posterior_when_not_flagged": 0.1,
-    "expected_loss_per_asset": {
-     "accept_all": 2.5,
-     "quarantine_flagged": 2.5,
-     "review_flagged": 2.5
-    },
-    "recommended_policy": "accept_all",
-    "tied_policies": [
-     "accept_all",
-     "quarantine_flagged",
-     "review_flagged"
-    ],
-    "recommended_expected_loss_per_asset": 2.5,
-    "break_even_prevalence_vs_accept_all": 0.0,
-    "caveat": "posteriors are decision-conditioned (every flagged asset shares one value); a per-asset posterior would need the alternative density, which the clean calibration set cannot identify",
-    "note": "the rule never fires (TPR = FPR = 0), so no flagged-handling policy can differ from accept_all; the tie is structural, not a preference",
     "tpr_denominator": 36,
     "fpr_denominator": 30
    },
