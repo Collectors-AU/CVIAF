@@ -765,6 +765,25 @@
    "kinds": {}
   }
  },
+ "per_kind_family": {
+  "schema": "cviaf.per-kind-family.v1",
+  "method": "Benjamini-Hochberg across every signal x kind cell of the quotable rules",
+  "null": "each cell vs its own signal's corpus-level recall over the same evaluation half",
+  "alpha": 0.05,
+  "excluded_retired_signals": [
+   "ctc_peak_clean",
+   "ctc_q95_clean"
+  ],
+  "n_cells": 0,
+  "n_tested": 0,
+  "n_not_tested": 0,
+  "n_rejected": 0,
+  "smallest_q": null,
+  "survivors": [],
+  "verdict": "no cell is reported until the family is controlled",
+  "caveat": "the family is defined over the signals and kinds this corpus actually measured; a corpus with more arms per kind widens it and lowers every q-value, so a q from one corpus must not be transplanted to another",
+  "cells": []
+ },
  "clause_checks": {
   "3.7_oda_recall": {
    "clause": "3.7 ODA (cloaking) recall > 0 on the reference battery",
@@ -2961,7 +2980,7 @@
   "ledger": "runs/fleet_fpr_ledger.json",
   "ledger_sha256": "5ffe82310d86ab0ac840441e5a6b4f22eb71a44ce46b0cd5c223771214e7be38",
   "published_per_signal_report": "runs/fleet_fpr_ledger_report.json",
-  "published_per_signal_report_sha256": "ad155f99800975ddd0417310824fd5605d9381f1adfed259079cb59480986b96",
+  "published_per_signal_report_sha256": "873fa0a8cc9792d519a5aa57ca13e55d685ee46b7f043ddfcc25ab6d9217cc8c",
   "per_signal_reproduced": true,
   "split_seed": 7
  }

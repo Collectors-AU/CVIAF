@@ -37,9 +37,9 @@
    "id": "2.2.3",
    "title": "Inference provenance: hash-chained, replay-checked records",
    "state": "measured",
-   "value": 9,
+   "value": 10,
    "evidence": "runs/provenance_ledger.jsonl",
-   "detail": "9 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
+   "detail": "10 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
   },
   {
    "id": "2.2.4",
@@ -93,9 +93,9 @@
    "id": "2.3-a",
    "title": "Reproducible audit log of the assurance runs",
    "state": "measured",
-   "value": 9,
+   "value": 10,
    "evidence": "runs/provenance_ledger.jsonl",
-   "detail": "9 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
+   "detail": "10 chained entries verify (seq + prev_hash) in ./runs/provenance_ledger.jsonl"
   },
   {
    "id": "2.3-b",
@@ -109,7 +109,7 @@
    "id": "2.3-c",
    "title": "Coverage statement naming supported classes and limits",
    "state": "measured",
-   "value": 6599,
+   "value": 6660,
    "evidence": "docs/COVERAGE_STATEMENT.md",
    "detail": "this statement is generated from live artefacts"
   }
@@ -163,7 +163,7 @@
   {
    "key": "audit_trail_verifies",
    "ok": true,
-   "detail": "runs/provenance_ledger.jsonl: 9 entries, chain intact, 13 artefact(s) re-hashed, 9 superseded, 2 lineage-only (derived from this trail)",
+   "detail": "runs/provenance_ledger.jsonl: 10 entries, chain intact, 15 artefact(s) re-hashed, 13 superseded, 2 lineage-only (derived from this trail)",
    "what": "the provenance ledger hash chain verifies over its artefacts",
    "artefact": "runs/provenance_ledger.jsonl"
   },

@@ -302,6 +302,25 @@
    "kinds": {}
   }
  },
+ "per_kind_family": {
+  "schema": "cviaf.per-kind-family.v1",
+  "method": "Benjamini-Hochberg across every signal x kind cell of the quotable rules",
+  "null": "each cell vs its own signal's corpus-level recall over the same evaluation half",
+  "alpha": 0.05,
+  "excluded_retired_signals": [
+   "ctc_peak_clean",
+   "ctc_q95_clean"
+  ],
+  "n_cells": 0,
+  "n_tested": 0,
+  "n_not_tested": 0,
+  "n_rejected": 0,
+  "smallest_q": null,
+  "survivors": [],
+  "verdict": "no cell is reported until the family is controlled",
+  "caveat": "the family is defined over the signals and kinds this corpus actually measured; a corpus with more arms per kind widens it and lowers every q-value, so a q from one corpus must not be transplanted to another",
+  "cells": []
+ },
  "clause_checks": {
   "3.7_oda_recall": {
    "clause": "3.7 ODA (cloaking) recall > 0 on the reference battery",

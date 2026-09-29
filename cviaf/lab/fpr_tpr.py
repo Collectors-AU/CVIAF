@@ -599,6 +599,125 @@ def kind_breakdown(records: Sequence[Dict[str, Any]], signal: str, threshold: fl
     return kinds
 
 
+def binom_tail_ge(n: int, p: float, k: int) -> float:
+    """P(X >= k) under Binomial(n, p), exactly, for one-sided recall evidence."""
+    if k <= 0:
+        return 1.0
+    if k > n:
+        return 0.0
+    return min(1.0, sum(_binom_pmf(i, n, p) for i in range(k, n + 1)))
+
+
+def binom_pvalue(k: int, n: int, p: float) -> float:
+    """Exact two-sided binomial p-value: twice the smaller tail, capped at 1.
+
+    Used only as the input to a multiplicity control, and named for what it is --
+    the doubled-tail convention differs from scipy's "sum of outcomes at most as
+    likely" convention by a few percent at small n, so a reader comparing the two
+    should not think one of them is broken.
+    """
+    if n <= 0:
+        return 1.0
+    upper = binom_tail_ge(n, p, k)
+    lower = binom_tail_ge(n, 1.0 - p, n - k)
+    return min(1.0, 2.0 * min(upper, lower))
+
+
+def per_kind_family(per_kind: Dict[str, Any], rules: Dict[str, Any],
+                    alpha: float = 0.05, min_cells: int = 3) -> Dict[str, Any]:
+    """BH control across the whole signal x kind table, before any cell is quoted.
+
+    The per-kind table is four signals by seven attack kinds -- 28 cells, each one a
+    recall at a denominator of three to thirteen, and every one of them a candidate
+    for the sentence "the detector catches 75% of GMA arms". Read without control,
+    the largest of 28 small-sample fractions is reported as a finding; that is the
+    fishing expedition this block exists to stop.
+
+    The null for each cell is the signal's OWN corpus-level recall, so the test asks
+    the only question a per-kind cell can answer: is this kind caught at a different
+    rate than the rest of the corpus? A kind the signal never catches is not evidence
+    against the null either -- the cell is a two-sided test, and both one-sided
+    p-values are reported so a reader can see which direction a rejection went.
+
+    Cells whose denominator is below ``min_cells`` are listed as not tested rather
+    than folded into the family: an untestable cell inflates the family size and
+    thereby weakens the correction for the cells that could be tested.
+    """
+    from cviaf.lab.calibrate import benjamini_hochberg, q_values
+
+    cells: List[Dict[str, Any]] = []
+    excluded: List[str] = []
+    for signal in sorted(per_kind):
+        entry = per_kind[signal]
+        if entry.get("status") == "refused" or entry.get("retired"):
+            # A retired signal contributes no cells: a rule that cannot fire cannot
+            # testify about a kind, and letting its 0/n cells into the family would
+            # inflate the correction applied to the cells that CAN be read.
+            excluded.append(signal)
+            continue
+        p0 = ((rules.get(signal, {}).get("tpr") or {}).get("point_estimate"))
+        for kind in sorted(entry.get("kinds") or {}):
+            k = entry["kinds"][kind]
+            if k.get("status") == "not_measured":
+                continue
+            n, tp = int(k["n_evaluation"]), int(k["tp"])
+            cell = {"signal": signal, "kind": kind, "tp": tp, "n": n,
+                    "recall": (tp / n) if n else None,
+                    "baseline_recall": p0}
+            if p0 is None or n < min_cells:
+                cell.update({"status": "not_tested",
+                             "reason": ("the signal's corpus-level recall is undefined"
+                                        if p0 is None else
+                                        f"n={n} < min_cells={min_cells}: a cell this "
+                                        f"small cannot be tested, and including it in "
+                                        f"the family would only weaken the correction")})
+                cells.append(cell)
+                continue
+            cell.update({"status": "tested",
+                         "p_greater": binom_tail_ge(n, p0, tp),
+                         "p_less": binom_tail_ge(n, 1.0 - p0, n - tp),
+                         "p_value": binom_pvalue(tp, n, p0)})
+            cells.append(cell)
+
+    tested = [c for c in cells if c["status"] == "tested"]
+    if tested:
+        p = np.asarray([c["p_value"] for c in tested], np.float64)
+        mask = benjamini_hochberg(p, alpha)
+        q = q_values(p)
+        for cell, rejected, qv in zip(tested, mask, q):
+            cell["bh_rejected"] = bool(rejected)
+            cell["q_value"] = float(qv)
+    survivors = [c for c in tested if c.get("bh_rejected")]
+    return {
+        "schema": "cviaf.per-kind-family.v1",
+        "method": "Benjamini-Hochberg across every signal x kind cell of the "
+                  "quotable rules",
+        "null": "each cell vs its own signal's corpus-level recall over the same "
+                "evaluation half",
+        "alpha": alpha,
+        "excluded_retired_signals": excluded,
+        "n_cells": len(cells),
+        "n_tested": len(tested),
+        "n_not_tested": len(cells) - len(tested),
+        "n_rejected": len(survivors),
+        "smallest_q": (min(c["q_value"] for c in tested) if tested else None),
+        "survivors": [{"signal": c["signal"], "kind": c["kind"], "tp": c["tp"],
+                       "n": c["n"], "q_value": c["q_value"]} for c in survivors],
+        "verdict": ("no cell is reported until the family is controlled" if not tested else
+                    ("%d cell(s) survive BH at alpha=%.3g" % (len(survivors), alpha)
+                     if survivors else
+                     "NOTHING survives BH at alpha=%.3g: every per-kind cell in this "
+                     "report is descriptive, and none may be quoted as a detection "
+                     "rate. A cell reported without its q-value is a cell reported "
+                     "after %d chances to be the largest." % (alpha, len(tested)))),
+        "caveat": ("the family is defined over the signals and kinds this corpus "
+                   "actually measured; a corpus with more arms per kind widens it and "
+                   "lowers every q-value, so a q from one corpus must not be "
+                   "transplanted to another"),
+        "cells": cells,
+    }
+
+
 def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
                     min_negatives: int = 20, split_seed: int = 0,
                     prevalence: Optional[float] = None,
@@ -701,6 +820,7 @@ def evaluate_corpus(ledger: Dict[str, Any], alpha: float = 0.05,
                        lambda r: not r["is_positive"] and r["split"] == "evaluation")},
         "rules": rules,
         "per_kind": per_kind,
+        "per_kind_family": per_kind_family(per_kind, rules, alpha),
         "clause_checks": {"3.7_oda_recall": oda_check},
         "risk": risk_block(rules, prevalence=prevalence, costs=costs,
                            n_positives=n_ev_pos),
@@ -823,8 +943,12 @@ def render_report(report: Dict[str, Any]) -> str:
                          f"tied calibration models")
 
     if report.get("positives_measured"):
+        family = report.get("per_kind_family") or {}
+        q_by_cell = {(c["signal"], c["kind"]): c.get("q_value")
+                     for c in family.get("cells", []) if c.get("status") == "tested"}
         lines += ["", "recall by attack kind, at the same threshold the TPR used",
-                  "(tp/n; 'not measured' means no evaluation-half assets of that kind)"]
+                  "(tp/n with its BH q-value; 'not measured' means no evaluation-half "
+                  "assets of that kind)"]
         for name in sorted(report.get("per_kind", {})):
             entry = report["per_kind"][name]
             if entry.get("status") == "refused":
@@ -836,9 +960,15 @@ def render_report(report: Dict[str, Any]) -> str:
             for kind, k in sorted(entry["kinds"].items()):
                 if k.get("status") == "not_measured":
                     parts.append(f"{kind}=not measured")
-                else:
-                    parts.append(f"{kind}={k['tp']}/{k['n_evaluation']}")
+                    continue
+                qv = q_by_cell.get((name, kind))
+                parts.append(f"{kind}={k['tp']}/{k['n_evaluation']}" +
+                             (f"(q={qv:.2f})" if qv is not None else "(q=n/a)"))
             lines.append(f"  {name:24s} {'  '.join(parts)}")
+        if family:
+            lines.append(f"  BH across {family['n_tested']} tested cell(s) of "
+                         f"{family['n_cells']} ({family['n_not_tested']} too small to "
+                         f"test): {family['verdict']}")
         retired_names = sorted(n for n, e in report.get("per_kind", {}).items()
                                if e.get("retired"))
         if retired_names:
@@ -859,13 +989,32 @@ def render_report(report: Dict[str, Any]) -> str:
         lines.append("  the calibration half and the evaluation half are not "
                      "exchangeable; thresholds from this null do not transfer")
 
+    family = report.get("per_kind_family") or {}
+    if family.get("n_tested"):
+        lines += ["", f"per-kind family: {family['n_tested']} cell(s) tested, "
+                      f"{family['n_rejected']} survive BH at alpha={family['alpha']:.3g}"
+                      f"; smallest q={family['smallest_q']:.3g}"]
+        if family.get("survivors"):
+            for cell in family["survivors"]:
+                lines.append(f"  {cell['signal']}/{cell['kind']}: {cell['tp']}/{cell['n']} "
+                             f"(q={cell['q_value']:.3g})")
+        if family.get("excluded_retired_signals"):
+            lines.append(f"  {len(family['excluded_retired_signals'])} retired signal(s) "
+                         f"excluded from the family: "
+                         f"{', '.join(family['excluded_retired_signals'])}")
+
     check = report.get("clause_checks", {}).get("3.7_oda_recall")
     if check:
         best = (f"{check['best_signal']}" if check.get("best_signal") else "no signal")
         verdict = ("not measurable" if check.get("satisfied") is None else
                    ("satisfied" if check["satisfied"] else "NOT satisfied"))
         value = "-" if check.get("best_recall") is None else f"{check['best_recall']:.3f}"
-        lines += ["", f"clause 3.7 ODA recall > 0: {verdict} (best {best} {value}; "
+        best_cell = next((c for c in family.get("cells", [])
+                          if c.get("signal") == check.get("best_signal")
+                          and c.get("kind") == "oda" and c.get("status") == "tested"), None)
+        q_note = (f", q={best_cell['q_value']:.3g} across the {family['n_tested']}-cell "
+                  f"family" if best_cell else "")
+        lines += ["", f"clause 3.7 ODA recall > 0: {verdict} (best {best} {value}{q_note}; "
                       f"{check['caveat'].split('.')[0]}.)"]
 
     risk = report.get("risk")
