@@ -104,6 +104,7 @@ class AttackSpec:
     target_class: int = 0
     rate: float = 0.10              # fraction of samples affected
     mal_contributor: str = "vendor_x"
+    scope: str = "diffuse"          # diffuse | contributor (see note below)
     seed: int = 0
     ood_terrain: str = "snow"
     ood_season: str = "winter"
@@ -352,6 +353,34 @@ def _sample_indices(n: int, rate: float, rng: np.random.Generator) -> List[int]:
     return sorted(int(i) for i in rng.choice(n, size=min(k, n), replace=False))
 
 
+def _sample_indices_scoped(
+    ds: "DetectionDataset", spec: "AttackSpec", rng: np.random.Generator
+) -> List[int]:
+    """Sample poison indices honouring ``spec.scope``.
+
+    Under ``scope="contributor"`` the candidates are restricted to
+    ``mal_contributor``'s own samples and ``rate`` is a fraction of those, so a
+    contributor with 80 samples at rate 0.25 carries 20 poisons. Raises if the
+    named contributor is absent -- silently poisoning nobody would manufacture a
+    false negative in any experiment that scored the result.
+    """
+    if spec.scope == "diffuse":
+        return _sample_indices(len(ds), spec.rate, rng)
+    if spec.scope != "contributor":
+        raise ValueError(f"unknown attack scope {spec.scope!r}; expected 'diffuse' or 'contributor'")
+    candidates = np.array([i for i, c in enumerate(ds.contributors)
+                           if str(c) == spec.mal_contributor], dtype=np.int64)
+    if candidates.size == 0:
+        raise ValueError(
+            f"scope='contributor' but contributor {spec.mal_contributor!r} owns no "
+            f"samples in this dataset ({sorted(set(map(str, ds.contributors)))})")
+    k = int(round(spec.rate * candidates.size))
+    if k <= 0:
+        return []
+    return sorted(int(i) for i in rng.choice(candidates, size=min(k, candidates.size),
+                                             replace=False))
+
+
 def inject(ds: DetectionDataset, spec: AttackSpec) -> Tuple[DetectionDataset, PoisonTruth]:
     """Apply ``spec`` to ``ds`` and return (attacked dataset, ground truth)."""
     rng = np.random.default_rng(spec.seed + 4242)
@@ -379,7 +408,7 @@ def inject(ds: DetectionDataset, spec: AttackSpec) -> Tuple[DetectionDataset, Po
     # ---- label-only attacks (no trigger) ---------------------------------
     if spec.kind == "label_flip":
         labels = [l.copy() for l in ds.labels]
-        idx = _sample_indices(n, spec.rate, rng)
+        idx = _sample_indices_scoped(ds, spec, rng)
         for i in idx:
             if len(labels[i]) == 0:
                 continue
@@ -447,7 +476,7 @@ def inject(ds: DetectionDataset, spec: AttackSpec) -> Tuple[DetectionDataset, Po
     imgs = ds.images.copy()
     bxs = [b.copy() for b in ds.boxes]
     lbs = [l.copy() for l in ds.labels]
-    idx = _sample_indices(n, spec.rate, rng)
+    idx = _sample_indices_scoped(ds, spec, rng)
 
     for i in idx:
         victim_idx: Optional[int] = None
@@ -512,6 +541,12 @@ def inject(ds: DetectionDataset, spec: AttackSpec) -> Tuple[DetectionDataset, Po
             if str(contrib[i]) == spec.mal_contributor:
                 batches[i] = f"{spec.mal_contributor}_trigger"
 
+    if spec.scope == "contributor" and idx:
+        truth.notes.append(
+            f"scope=contributor: all {len(idx)} poisoned samples belong to "
+            f"{spec.mal_contributor!r}; rate {spec.rate:g} is a fraction of that "
+            f"contributor's {int(np.sum([str(c) == spec.mal_contributor for c in ds.contributors]))} "
+            f"samples, not of the {n}-sample dataset")
     out = DetectionDataset(imgs, bxs, lbs, contrib, batches, dict(ds.spec))
     truth.poisoned_indices = idx
     truth.poisoned_dataset_digest = out.digest()

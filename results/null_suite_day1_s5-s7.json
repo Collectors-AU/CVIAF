@@ -1,0 +1,3056 @@
+{
+  "schema": "cviaf.null-suite.v1",
+  "corpus": "runs/day1",
+  "alpha": 0.05,
+  "seeds": [
+    5,
+    6,
+    7
+  ],
+  "attacks": [
+    "oga",
+    "oda",
+    "rma"
+  ],
+  "n_eval": 24,
+  "n_cal": 32,
+  "ftc_stride": 16,
+  "n_backgrounds": 3,
+  "calibration": "per seed and attack, separate clean-model stamped calibration images; independent reference model (seed+6) for all arms, separate clean peer (seed+3); no test images calibrated on themselves",
+  "contrasts": {
+    "stamp_null": "clean_stamped vs clean_unstamped: visual stamp artifact",
+    "backdoor_conditional_stamped": "backdoored_stamped vs clean_stamped: model effect given identical stamp",
+    "peer_clean_null_stamped": "independently trained clean peer vs clean model on identical stamped images: normal model variation",
+    "backdoor_conditional_unstamped": "backdoored_unstamped vs clean_unstamped: untriggered model differences (not proof of a trigger)",
+    "naive_confound": "backdoored_stamped vs clean_unstamped: confounded; do not use as backdoor evidence"
+  },
+  "limitations": [
+    "Fixed trained corpus, no new training; models may be behaviorally weak despite manifest ASR.",
+    "Only three seeds and synthetic detector; asset p-values are experimental, not validated type-I control.",
+    "Independent clean reference removes self-reference tautology, but ordinary training differences can still raise refdiv; verify with additional clean-to-clean controls.",
+    "FTC target class is known in advance; FFT is pixel-only and cannot distinguish model weights.",
+    "Unstamped-backdoored means backdoored weights on bare inputs, not a trigger-free backdoor mechanism."
+  ],
+  "rows": [
+    {
+      "seed": 5,
+      "attack": "oga",
+      "model_id": "oga_patch_fixed_s5",
+      "independent_reference_id": "clean_none_fixed_s11",
+      "peer_clean_id": "clean_none_fixed_s8",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.9875,
+        "asr_strict_iou": 1.0,
+        "n": 80,
+        "applicable": true,
+        "kind": "oga",
+        "placement": "fixed",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 79,
+        "n_success_strict_iou": 80
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 1.0,
+        "backdoored_asr": 1.0,
+        "net_asr": 0.0,
+        "n_clean": 24,
+        "n_backdoored": 24,
+        "clean_prediction_flip_rate": 1.0,
+        "backdoored_prediction_flip_rate": 1.0
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.8958333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7092013888888888,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5260416666666666,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5850694444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5434027777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.3793402777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.3203125,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5364583333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.2916666666666667,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.6085069444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5373263888888888,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4583333333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5737847222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.6284722222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5442708333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.3793402777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.3324652777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5182291666666666,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.8958333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7430555555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.3793402777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.3585069444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.625,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.999999999998,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999987369,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999976,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999984001,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999987369,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999986667,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999985882,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999981539,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999981539,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999998,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 5,
+      "attack": "oda",
+      "model_id": "oda_patch_on_object_s5",
+      "independent_reference_id": "clean_none_fixed_s11",
+      "peer_clean_id": "clean_none_fixed_s8",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.9736842105263158,
+        "asr_strict_iou": 0.9868421052631579,
+        "n": 76,
+        "applicable": true,
+        "kind": "oda",
+        "placement": "on_object",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 74,
+        "n_success_strict_iou": 75
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.9130434782608695,
+        "backdoored_asr": 1.0,
+        "net_asr": 0.08695652173913049,
+        "n_clean": 23,
+        "n_backdoored": 22,
+        "clean_prediction_flip_rate": 1.0,
+        "backdoored_prediction_flip_rate": 1.0
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.8958333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7725694444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.6866319444444444,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9947916666666666,
+            "tpr_at_5fpr": 0.9583333333333334,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.6432291666666666,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.0,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 23
+          },
+          "refdiv": {
+            "auroc": 0.5703125,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.2638888888888889,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.3489583333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.20833333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.6536458333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4565972222222222,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4427083333333333,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.3628472222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5824652777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4331597222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4782986111111111,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.33695652173913043,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 23
+          },
+          "refdiv": {
+            "auroc": 0.8125,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.453125,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9947916666666666,
+            "tpr_at_5fpr": 0.9583333333333334,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4982638888888889,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999989091,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999984001,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989091,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999986667,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 5,
+      "attack": "rma",
+      "model_id": "rma_patch_on_object_s5",
+      "independent_reference_id": "clean_none_fixed_s11",
+      "peer_clean_id": "clean_none_fixed_s8",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.7636363636363637,
+        "asr_strict_iou": 0.4727272727272727,
+        "n": 55,
+        "applicable": true,
+        "kind": "rma",
+        "placement": "on_object",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 42,
+        "n_success_strict_iou": 26
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.26666666666666666,
+        "backdoored_asr": 0.8,
+        "net_asr": 0.5333333333333334,
+        "n_clean": 15,
+        "n_backdoored": 15,
+        "clean_prediction_flip_rate": 1.0,
+        "backdoored_prediction_flip_rate": 0.875
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.8958333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7725694444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.6866319444444444,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9947916666666666,
+            "tpr_at_5fpr": 0.9583333333333334,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.6432291666666666,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.14583333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5399305555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.2829861111111111,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.3489583333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.20833333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.6536458333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4565972222222222,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4427083333333333,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.4131944444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5355902777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4071180555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4782986111111111,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.6918402777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7916666666666666,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4774305555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9947916666666666,
+            "tpr_at_5fpr": 0.9583333333333334,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4982638888888889,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999989091,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999984001,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989091,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999986667,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 6,
+      "attack": "oga",
+      "model_id": "oga_patch_fixed_s6",
+      "independent_reference_id": "clean_none_fixed_s12",
+      "peer_clean_id": "clean_none_fixed_s9",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.975,
+        "asr_strict_iou": 0.0,
+        "n": 80,
+        "applicable": true,
+        "kind": "oga",
+        "placement": "fixed",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 78,
+        "n_success_strict_iou": 0
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.0,
+        "backdoored_asr": 1.0,
+        "net_asr": 1.0,
+        "n_clean": 24,
+        "n_backdoored": 24,
+        "clean_prediction_flip_rate": 0.9583333333333334,
+        "backdoored_prediction_flip_rate": 1.0
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.8810763888888888,
+            "tpr_at_5fpr": 0.16666666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.4635416666666667,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5746527777777778,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.6553819444444444,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.9782986111111112,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.6527777777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4973958333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.9583333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.9791666666666666,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.9696180555555556,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5434027777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.7065972222222222,
+            "tpr_at_5fpr": 0.20833333333333334,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.9583333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.9791666666666666,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.6857638888888888,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.6588541666666666,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4973958333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.6319444444444444,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.6744791666666666,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.6223958333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4973958333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.9791666666666666,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999982858,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999998,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999976,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999940001,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.999999999997,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999960001,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.09090909090909094,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.06060606060606061,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.09090909090909094,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.06060606060606061,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 6,
+      "attack": "oda",
+      "model_id": "oda_patch_on_object_s6",
+      "independent_reference_id": "clean_none_fixed_s12",
+      "peer_clean_id": "clean_none_fixed_s9",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.9642857142857143,
+        "asr_strict_iou": 1.0,
+        "n": 56,
+        "applicable": true,
+        "kind": "oda",
+        "placement": "on_object",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 54,
+        "n_success_strict_iou": 56
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.9,
+        "backdoored_asr": 0.9375,
+        "net_asr": 0.03749999999999998,
+        "n_clean": 20,
+        "n_backdoored": 16,
+        "clean_prediction_flip_rate": 0.875,
+        "backdoored_prediction_flip_rate": 0.75
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.7855902777777778,
+            "tpr_at_5fpr": 0.5416666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7005208333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.6215277777777778,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5199652777777778,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.796875,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.25,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5425347222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5295138888888888,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4782986111111111,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.3975694444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.7170138888888888,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5503472222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.7326388888888888,
+            "tpr_at_5fpr": 0.16666666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.6649305555555556,
+            "tpr_at_5fpr": 0.16666666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.6302083333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.6753472222222222,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5503472222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5772569444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4791666666666667,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5633680555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.5868055555555556,
+            "tpr_at_5fpr": 0.16666666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7309027777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.6588541666666666,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4991319444444444,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.7022569444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999987369,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989091,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999960001,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999985001,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999976,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999982858,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.7982427735816889,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 6,
+      "attack": "rma",
+      "model_id": "rma_patch_on_object_s6",
+      "independent_reference_id": "clean_none_fixed_s12",
+      "peer_clean_id": "clean_none_fixed_s9",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.9393939393939394,
+        "asr_strict_iou": 0.5454545454545454,
+        "n": 33,
+        "applicable": true,
+        "kind": "rma",
+        "placement": "on_object",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 31,
+        "n_success_strict_iou": 18
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.0,
+        "backdoored_asr": 1.0,
+        "net_asr": 1.0,
+        "n_clean": 11,
+        "n_backdoored": 9,
+        "clean_prediction_flip_rate": 0.875,
+        "backdoored_prediction_flip_rate": 0.7916666666666666
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.7855902777777778,
+            "tpr_at_5fpr": 0.5416666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7005208333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.6215277777777778,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5199652777777778,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.796875,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.4010416666666667,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5520833333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5034722222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4583333333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.4921875,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.7170138888888888,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5503472222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.7326388888888888,
+            "tpr_at_5fpr": 0.16666666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.6649305555555556,
+            "tpr_at_5fpr": 0.16666666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.6302083333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.6510416666666666,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5616319444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5972222222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4791666666666667,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5807291666666666,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.8715277777777778,
+            "tpr_at_5fpr": 0.4166666666666667,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7335069444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.6371527777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4791666666666667,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.8125,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999987369,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989091,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999960001,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999984001,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999952001,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999982858,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.7982427735816889,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "attack": "oga",
+      "model_id": "oga_patch_fixed_s7",
+      "independent_reference_id": "clean_none_fixed_s13",
+      "peer_clean_id": "clean_none_fixed_s10",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.9375,
+        "asr_strict_iou": 0.9625,
+        "n": 80,
+        "applicable": true,
+        "kind": "oga",
+        "placement": "fixed",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 75,
+        "n_success_strict_iou": 77
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.5833333333333334,
+        "backdoored_asr": 0.9583333333333334,
+        "net_asr": 0.375,
+        "n_clean": 24,
+        "n_backdoored": 24,
+        "clean_prediction_flip_rate": 1.0,
+        "backdoored_prediction_flip_rate": 0.9583333333333334
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.9861111111111112,
+            "tpr_at_5fpr": 0.875,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.6588541666666666,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5625,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.6267361111111112,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.03993055555555555,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.3211805555555556,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5460069444444444,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4670138888888889,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.3159722222222222,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.6875,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5034722222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.40625,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.3767361111111111,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.4748263888888889,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.4739583333333333,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.453125,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5460069444444444,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5269097222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.4609375,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.6232638888888888,
+            "tpr_at_5fpr": 0.125,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.515625,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5460069444444444,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 1.0,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5269097222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.4401041666666667,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999982858,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999985001,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999978182,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999976,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999981539,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999986667,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999981539,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999987369,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999985001,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.999999999998,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "attack": "oda",
+      "model_id": "oda_patch_on_object_s7",
+      "independent_reference_id": "clean_none_fixed_s13",
+      "peer_clean_id": "clean_none_fixed_s10",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.9859154929577465,
+        "asr_strict_iou": 1.0,
+        "n": 71,
+        "applicable": true,
+        "kind": "oda",
+        "placement": "on_object",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 70,
+        "n_success_strict_iou": 71
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.7368421052631579,
+        "backdoored_asr": 0.95,
+        "net_asr": 0.2131578947368421,
+        "n_clean": 19,
+        "n_backdoored": 20,
+        "clean_prediction_flip_rate": 1.0,
+        "backdoored_prediction_flip_rate": 0.8333333333333334
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.9079861111111112,
+            "tpr_at_5fpr": 0.75,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7977430555555556,
+            "tpr_at_5fpr": 0.375,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5963541666666666,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9982638888888888,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5052083333333334,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.625,
+            "tpr_at_5fpr": 0.2916666666666667,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.07196969696969698,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 22
+          },
+          "refdiv": {
+            "auroc": 0.4826388888888889,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4392361111111111,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4565972222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.4305555555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5147569444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4574652777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4565972222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5208333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.4583333333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.4357638888888889,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.40625,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4375,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.4147727272727273,
+            "tpr_at_5fpr": 0.045454545454545456,
+            "n_neg": 24,
+            "n_pos": 22
+          },
+          "refdiv": {
+            "auroc": 0.7725694444444444,
+            "tpr_at_5fpr": 0.4166666666666667,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5407986111111112,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9982638888888888,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4583333333333333,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.625,
+            "tpr_at_5fpr": 0.2916666666666667,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999988571,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999988571,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999985882,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.999999999999,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999985882,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999985001,
+            "reject": false
+          }
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "attack": "rma",
+      "model_id": "rma_patch_on_object_s7",
+      "independent_reference_id": "clean_none_fixed_s13",
+      "peer_clean_id": "clean_none_fixed_s10",
+      "n_eval": 24,
+      "n_cal": 32,
+      "manifest_asr": {
+        "asr": 0.9361702127659575,
+        "asr_strict_iou": 0.6595744680851063,
+        "n": 47,
+        "applicable": true,
+        "kind": "rma",
+        "placement": "on_object",
+        "criterion": "paired",
+        "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+        "n_success": 44,
+        "n_success_strict_iou": 31
+      },
+      "manifest_backdoor_weak": false,
+      "behavior": {
+        "criterion": "paired",
+        "clean_asr": 0.3,
+        "backdoored_asr": 0.9230769230769231,
+        "net_asr": 0.6230769230769231,
+        "n_clean": 10,
+        "n_backdoored": 13,
+        "clean_prediction_flip_rate": 1.0,
+        "backdoored_prediction_flip_rate": 0.7083333333333334
+      },
+      "metrics": {
+        "stamp_null": {
+          "ctc": {
+            "auroc": 0.9079861111111112,
+            "tpr_at_5fpr": 0.75,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.7977430555555556,
+            "tpr_at_5fpr": 0.375,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5963541666666666,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9982638888888888,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5052083333333334,
+            "tpr_at_5fpr": 0.08333333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.625,
+            "tpr_at_5fpr": 0.2916666666666667,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_stamped": {
+          "ctc": {
+            "auroc": 0.2569444444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5086805555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4340277777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5164930555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.4791666666666667,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "peer_clean_null_stamped": {
+          "ctc": {
+            "auroc": 0.4305555555555556,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.5147569444444444,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.4574652777777778,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.4565972222222222,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5208333333333334,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "backdoor_conditional_unstamped": {
+          "ctc": {
+            "auroc": 0.5798611111111112,
+            "tpr_at_5fpr": 0.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.4227430555555556,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5095486111111112,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5234375,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.5,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        },
+        "naive_confound": {
+          "ctc": {
+            "auroc": 0.7204861111111112,
+            "tpr_at_5fpr": 0.16666666666666666,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "refdiv": {
+            "auroc": 0.8064236111111112,
+            "tpr_at_5fpr": 0.4583333333333333,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "ftc": {
+            "auroc": 0.5277777777777778,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "fft": {
+            "auroc": 0.9982638888888888,
+            "tpr_at_5fpr": 1.0,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "with_ftc": {
+            "auroc": 0.5234375,
+            "tpr_at_5fpr": 0.041666666666666664,
+            "n_neg": 24,
+            "n_pos": 24
+          },
+          "without_ftc": {
+            "auroc": 0.6041666666666666,
+            "tpr_at_5fpr": 0.25,
+            "n_neg": 24,
+            "n_pos": 24
+          }
+        }
+      },
+      "assets": {
+        "clean_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999988571,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          }
+        },
+        "clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999988571,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999985882,
+            "reject": false
+          }
+        },
+        "backdoored_unstamped": {
+          "with_ftc": {
+            "p": 0.9999999999988001,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          }
+        },
+        "backdoored_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999988001,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999986667,
+            "reject": false
+          }
+        },
+        "peer_clean_stamped": {
+          "with_ftc": {
+            "p": 0.9999999999989566,
+            "reject": false
+          },
+          "without_ftc": {
+            "p": 0.9999999999985001,
+            "reject": false
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "oga": {
+      "stamp_null": {
+        "ctc": {
+          "auroc": 0.9210069444444445,
+          "tpr_at_5fpr": 0.34722222222222227
+        },
+        "refdiv": {
+          "auroc": 0.6105324074074074,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "ftc": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.027777777777777776
+        },
+        "fft": {
+          "auroc": 1.0,
+          "tpr_at_5fpr": 1.0
+        },
+        "with_ftc": {
+          "auroc": 0.5543981481481481,
+          "tpr_at_5fpr": 0.027777777777777776
+        },
+        "without_ftc": {
+          "auroc": 0.6223958333333334,
+          "tpr_at_5fpr": 0.05555555555555555
+        }
+      },
+      "backdoor_conditional_stamped": {
+        "ctc": {
+          "auroc": 0.506076388888889,
+          "tpr_at_5fpr": 0.3333333333333333
+        },
+        "refdiv": {
+          "auroc": 0.5057870370370371,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "ftc": {
+          "auroc": 0.4742476851851852,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.5818865740740741,
+          "tpr_at_5fpr": 0.0
+        },
+        "without_ftc": {
+          "auroc": 0.6105324074074074,
+          "tpr_at_5fpr": 0.34722222222222227
+        }
+      },
+      "peer_clean_null_stamped": {
+        "ctc": {
+          "auroc": 0.6495949074074074,
+          "tpr_at_5fpr": 0.3333333333333333
+        },
+        "refdiv": {
+          "auroc": 0.5517939814814815,
+          "tpr_at_5fpr": 0.0
+        },
+        "ftc": {
+          "auroc": 0.5500578703703703,
+          "tpr_at_5fpr": 0.09722222222222222
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.5978009259259259,
+          "tpr_at_5fpr": 0.0
+        },
+        "without_ftc": {
+          "auroc": 0.6759259259259259,
+          "tpr_at_5fpr": 0.3333333333333333
+        }
+      },
+      "backdoor_conditional_unstamped": {
+        "ctc": {
+          "auroc": 0.5960648148148148,
+          "tpr_at_5fpr": 0.08333333333333333
+        },
+        "refdiv": {
+          "auroc": 0.5520833333333334,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "ftc": {
+          "auroc": 0.4742476851851852,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.49710648148148145,
+          "tpr_at_5fpr": 0.027777777777777776
+        },
+        "without_ftc": {
+          "auroc": 0.5512152777777778,
+          "tpr_at_5fpr": 0.041666666666666664
+        }
+      },
+      "naive_confound": {
+        "ctc": {
+          "auroc": 0.8396990740740741,
+          "tpr_at_5fpr": 0.375
+        },
+        "refdiv": {
+          "auroc": 0.6270254629629629,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "ftc": {
+          "auroc": 0.4742476851851852,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "fft": {
+          "auroc": 1.0,
+          "tpr_at_5fpr": 1.0
+        },
+        "with_ftc": {
+          "auroc": 0.6215277777777778,
+          "tpr_at_5fpr": 0.3333333333333333
+        },
+        "without_ftc": {
+          "auroc": 0.6883680555555555,
+          "tpr_at_5fpr": 0.34722222222222227
+        }
+      },
+      "asset_decisions": {
+        "with_ftc": {
+          "clean_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "peer_clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          }
+        },
+        "without_ftc": {
+          "clean_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "peer_clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          }
+        }
+      }
+    },
+    "oda": {
+      "stamp_null": {
+        "ctc": {
+          "auroc": 0.8631365740740741,
+          "tpr_at_5fpr": 0.4305555555555555
+        },
+        "refdiv": {
+          "auroc": 0.7569444444444443,
+          "tpr_at_5fpr": 0.125
+        },
+        "ftc": {
+          "auroc": 0.6348379629629629,
+          "tpr_at_5fpr": 0.09722222222222221
+        },
+        "fft": {
+          "auroc": 0.9976851851851851,
+          "tpr_at_5fpr": 0.9861111111111112
+        },
+        "with_ftc": {
+          "auroc": 0.5561342592592592,
+          "tpr_at_5fpr": 0.09722222222222221
+        },
+        "without_ftc": {
+          "auroc": 0.640625,
+          "tpr_at_5fpr": 0.09722222222222222
+        }
+      },
+      "backdoor_conditional_stamped": {
+        "ctc": {
+          "auroc": 0.10732323232323232,
+          "tpr_at_5fpr": 0.0
+        },
+        "refdiv": {
+          "auroc": 0.5318287037037037,
+          "tpr_at_5fpr": 0.0
+        },
+        "ftc": {
+          "auroc": 0.4108796296296296,
+          "tpr_at_5fpr": 0.0
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.42795138888888884,
+          "tpr_at_5fpr": 0.0
+        },
+        "without_ftc": {
+          "auroc": 0.46585648148148145,
+          "tpr_at_5fpr": 0.0
+        }
+      },
+      "peer_clean_null_stamped": {
+        "ctc": {
+          "auroc": 0.45196759259259256,
+          "tpr_at_5fpr": 0.0
+        },
+        "refdiv": {
+          "auroc": 0.5729166666666666,
+          "tpr_at_5fpr": 0.0
+        },
+        "ftc": {
+          "auroc": 0.5489004629629629,
+          "tpr_at_5fpr": 0.08333333333333333
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.5214120370370371,
+          "tpr_at_5fpr": 0.08333333333333333
+        },
+        "without_ftc": {
+          "auroc": 0.5503472222222223,
+          "tpr_at_5fpr": 0.0
+        }
+      },
+      "backdoor_conditional_unstamped": {
+        "ctc": {
+          "auroc": 0.49884259259259256,
+          "tpr_at_5fpr": 0.027777777777777776
+        },
+        "refdiv": {
+          "auroc": 0.5228587962962963,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "ftc": {
+          "auroc": 0.47222222222222215,
+          "tpr_at_5fpr": 0.0
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.4649884259259259,
+          "tpr_at_5fpr": 0.0
+        },
+        "without_ftc": {
+          "auroc": 0.5211226851851852,
+          "tpr_at_5fpr": 0.013888888888888888
+        }
+      },
+      "naive_confound": {
+        "ctc": {
+          "auroc": 0.44617826818913775,
+          "tpr_at_5fpr": 0.0707070707070707
+        },
+        "refdiv": {
+          "auroc": 0.7719907407407408,
+          "tpr_at_5fpr": 0.1388888888888889
+        },
+        "ftc": {
+          "auroc": 0.5509259259259259,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "fft": {
+          "auroc": 0.9976851851851851,
+          "tpr_at_5fpr": 0.9861111111111112
+        },
+        "with_ftc": {
+          "auroc": 0.4852430555555555,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "without_ftc": {
+          "auroc": 0.6090856481481481,
+          "tpr_at_5fpr": 0.09722222222222222
+        }
+      },
+      "asset_decisions": {
+        "with_ftc": {
+          "clean_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "peer_clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          }
+        },
+        "without_ftc": {
+          "clean_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "peer_clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          }
+        }
+      }
+    },
+    "rma": {
+      "stamp_null": {
+        "ctc": {
+          "auroc": 0.8631365740740741,
+          "tpr_at_5fpr": 0.4305555555555555
+        },
+        "refdiv": {
+          "auroc": 0.7569444444444443,
+          "tpr_at_5fpr": 0.125
+        },
+        "ftc": {
+          "auroc": 0.6348379629629629,
+          "tpr_at_5fpr": 0.09722222222222221
+        },
+        "fft": {
+          "auroc": 0.9976851851851851,
+          "tpr_at_5fpr": 0.9861111111111112
+        },
+        "with_ftc": {
+          "auroc": 0.5561342592592592,
+          "tpr_at_5fpr": 0.09722222222222221
+        },
+        "without_ftc": {
+          "auroc": 0.640625,
+          "tpr_at_5fpr": 0.09722222222222222
+        }
+      },
+      "backdoor_conditional_stamped": {
+        "ctc": {
+          "auroc": 0.2679398148148148,
+          "tpr_at_5fpr": 0.0
+        },
+        "refdiv": {
+          "auroc": 0.5335648148148148,
+          "tpr_at_5fpr": 0.0
+        },
+        "ftc": {
+          "auroc": 0.4068287037037037,
+          "tpr_at_5fpr": 0.0
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.4412615740740741,
+          "tpr_at_5fpr": 0.0
+        },
+        "without_ftc": {
+          "auroc": 0.4904513888888889,
+          "tpr_at_5fpr": 0.0
+        }
+      },
+      "peer_clean_null_stamped": {
+        "ctc": {
+          "auroc": 0.45196759259259256,
+          "tpr_at_5fpr": 0.0
+        },
+        "refdiv": {
+          "auroc": 0.5729166666666666,
+          "tpr_at_5fpr": 0.0
+        },
+        "ftc": {
+          "auroc": 0.5489004629629629,
+          "tpr_at_5fpr": 0.08333333333333333
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.5214120370370371,
+          "tpr_at_5fpr": 0.08333333333333333
+        },
+        "without_ftc": {
+          "auroc": 0.5503472222222223,
+          "tpr_at_5fpr": 0.0
+        }
+      },
+      "backdoor_conditional_unstamped": {
+        "ctc": {
+          "auroc": 0.5480324074074074,
+          "tpr_at_5fpr": 0.027777777777777776
+        },
+        "refdiv": {
+          "auroc": 0.5066550925925927,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "ftc": {
+          "auroc": 0.5046296296296297,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "fft": {
+          "auroc": 0.5,
+          "tpr_at_5fpr": 0.041666666666666664
+        },
+        "with_ftc": {
+          "auroc": 0.49363425925925924,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "without_ftc": {
+          "auroc": 0.5269097222222222,
+          "tpr_at_5fpr": 0.013888888888888888
+        }
+      },
+      "naive_confound": {
+        "ctc": {
+          "auroc": 0.7612847222222223,
+          "tpr_at_5fpr": 0.19444444444444445
+        },
+        "refdiv": {
+          "auroc": 0.7771990740740741,
+          "tpr_at_5fpr": 0.15277777777777776
+        },
+        "ftc": {
+          "auroc": 0.5474537037037037,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "fft": {
+          "auroc": 0.9976851851851851,
+          "tpr_at_5fpr": 0.9861111111111112
+        },
+        "with_ftc": {
+          "auroc": 0.5002893518518519,
+          "tpr_at_5fpr": 0.013888888888888888
+        },
+        "without_ftc": {
+          "auroc": 0.6388888888888888,
+          "tpr_at_5fpr": 0.08333333333333333
+        }
+      },
+      "asset_decisions": {
+        "with_ftc": {
+          "clean_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "peer_clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          }
+        },
+        "without_ftc": {
+          "clean_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_unstamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "backdoored_stamped": {
+            "rejected": 0,
+            "total": 3
+          },
+          "peer_clean_stamped": {
+            "rejected": 0,
+            "total": 3
+          }
+        }
+      }
+    }
+  }
+}

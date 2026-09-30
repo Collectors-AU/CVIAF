@@ -351,3 +351,26 @@ def test_loop_stops_after_repeated_cycle_failures(tmp_path, monkeypatch):
                             log=lambda s: None, sleep=lambda s: None)
     assert res["cycles_done"] == 2
     assert res["totals"]["trained"] == 0
+
+
+def test_tamper_prune_uses_the_hidden_axis():
+    """Regression (Task 3): prune counts hidden units (Wh columns), not the input width.
+
+    The old code took Wh.shape[0], so with the real-backbone shape c2=64 > hidden=48 it
+    raised IndexError, and with the synthetic default it silently zeroed frac*c2=4 hidden
+    units instead of frac*hidden=12.
+    """
+    from cviaf.lab.detector import DetectorConfig, TinyDetector
+
+    base = TinyDetector(DetectorConfig(seed=0, c2=16, hidden=48))
+    base.bh = np.linspace(-1.0, 1.0, 48).astype(np.float32)      # a trained-like head
+    base.Wh = np.random.default_rng(0).normal(0, 1, (16, 48)).astype(np.float32)
+    pruned = base.tamper_prune(frac=0.25, seed=0)
+    zero_cols = np.linalg.norm(pruned.Wh, axis=0) == 0.0
+    assert int(zero_cols.sum()) == round(0.25 * 48)
+    assert np.all(pruned.bh[zero_cols] == 0.0)
+    assert np.all(base.bh != 0.0)                                # original untouched
+
+    wide = TinyDetector(DetectorConfig(seed=0, c2=64, hidden=48))
+    wide_pruned = wide.tamper_prune(frac=0.25, seed=0)           # used to raise IndexError
+    assert int(np.sum(np.linalg.norm(wide_pruned.Wh, axis=0) == 0.0)) == 12

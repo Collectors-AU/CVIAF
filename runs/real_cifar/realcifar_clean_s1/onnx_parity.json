@@ -1,0 +1,9 @@
+{
+ "model_id": "realcifar_clean_s1",
+ "n_images": 15,
+ "max_feature_delta": 8.821487426757812e-06,
+ "tolerance": 0.0001,
+ "channel_argmax_agreement": 1.0,
+ "pass": true,
+ "digest_unchanged": true
+}

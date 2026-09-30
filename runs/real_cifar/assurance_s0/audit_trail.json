@@ -1,0 +1,171 @@
+[
+  {
+    "entry_id": "238fa6b5-b4a4-445d-819d-0e600cc73c4a",
+    "sequence_number": 0,
+    "timestamp": "2026-09-28T20:52:38.533048+00:00",
+    "action": "asset_received",
+    "module": "pipeline",
+    "details": {
+      "model_id": "realcifar_weight_tamper_r0.25_s0",
+      "weights_digest": "9c62e1663bd89dcea2a47234033ef7210d5b81ef6fc5614aec5f640859187c47",
+      "spec_digest": "281511aae54370cd",
+      "access_level": "white-box"
+    },
+    "input_hash": "9c62e1663bd89dcea2a47234033ef7210d5b81ef6fc5614aec5f640859187c47",
+    "output_hash": "",
+    "previous_entry_hash": "GENESIS",
+    "entry_hash": "e6886cf7cfff43de34d3df70d78d953e06c2f2573a1d3afc48632bd5785d5ccf"
+  },
+  {
+    "entry_id": "f09d4ba5-2346-48b3-8bab-96f49d18f418",
+    "sequence_number": 1,
+    "timestamp": "2026-09-28T20:52:38.533281+00:00",
+    "action": "intake_completed",
+    "module": "formats",
+    "details": {
+      "coco_annotations": "runs/real_cifar/assurance_s0/intake/instances.json",
+      "yolo_root": "runs/real_cifar/assurance_s0/intake/yolo",
+      "n_images_written": 900,
+      "n_images_coco_read": 900,
+      "n_images_yolo_read": 900,
+      "n_boxes_written": 900,
+      "n_boxes_coco_read": 900,
+      "n_boxes_yolo_read": 900,
+      "coco_round_trip_exact": true,
+      "yolo_round_trip_exact": true,
+      "pixel_quantisation": "PNG export is 8-bit, so re-read pixels are quantised to 1/255. Annotation geometry is exact; pixel features carry the quantisation floor and are reported as such.",
+      "dataset_digest_in_memory": "d0eec0016d3777098e6c3088c8c112340a7f54830a3f5f442d7c3290f36a3dc3",
+      "class_names": [
+        "vehicle",
+        "person",
+        "structure"
+      ]
+    },
+    "input_hash": "",
+    "output_hash": "5f096ff8d53ad56d86e33821d39e69b5f88e18c11b032ff8fa77dea19873c521",
+    "previous_entry_hash": "e6886cf7cfff43de34d3df70d78d953e06c2f2573a1d3afc48632bd5785d5ccf",
+    "entry_hash": "a776245d5fa81a526e07ef8b22eb5b86834e48c4b60923c5c0f8421eb5e614a8"
+  },
+  {
+    "entry_id": "231506d0-6fe9-4705-b35d-a31570910bb1",
+    "sequence_number": 2,
+    "timestamp": "2026-09-28T20:52:39.619737+00:00",
+    "action": "module_completed",
+    "module": "data_integrity",
+    "details": {
+      "module": "data_integrity",
+      "n_images": 900,
+      "n_findings": 10,
+      "overall_risk": "HIGH",
+      "dataset_digest": "d0eec0016d3777098e6c3088c8c112340a7f54830a3f5f442d7c3290f36a3dc3"
+    },
+    "input_hash": "",
+    "output_hash": "7493be9382cc1c2ec1c07619369bd614d34f3b05b527623bd9798f9c6f755fd5",
+    "previous_entry_hash": "a776245d5fa81a526e07ef8b22eb5b86834e48c4b60923c5c0f8421eb5e614a8",
+    "entry_hash": "9f24d8fee72a99f6a953ece3e0bfe8e232587aad12fa6d72d5083d1c8a826264"
+  },
+  {
+    "entry_id": "1ddd59ab-613c-421e-8ea9-b03522493691",
+    "sequence_number": 3,
+    "timestamp": "2026-09-28T20:56:41.627553+00:00",
+    "action": "module_completed",
+    "module": "model_integrity",
+    "details": {
+      "module": "model_integrity",
+      "access_level": "white-box",
+      "weights_digest": "9c62e1663bd89dcea2a47234033ef7210d5b81ef6fc5614aec5f640859187c47",
+      "checks_performed": [
+        "neural_cleanse",
+        "weight_analysis",
+        "entropy_probe",
+        "behavioral_fingerprint"
+      ],
+      "checks_skipped": [],
+      "n_findings": 1,
+      "overall_severity": "MEDIUM"
+    },
+    "input_hash": "",
+    "output_hash": "97a1d318ceda83887dafc590ced3926ac21615618c87989f7d666ccc6ee0d6b1",
+    "previous_entry_hash": "9f24d8fee72a99f6a953ece3e0bfe8e232587aad12fa6d72d5083d1c8a826264",
+    "entry_hash": "232bdb94e2de79912d1cd87d6df998fb129628d38d92912c9146beb53f2552bd"
+  },
+  {
+    "entry_id": "622c7552-d71f-4356-ba06-6bbdb9a19ea4",
+    "sequence_number": 4,
+    "timestamp": "2026-09-28T20:56:41.745808+00:00",
+    "action": "module_completed",
+    "module": "inference_provenance",
+    "details": {
+      "module": "inference_provenance",
+      "n_records": 10,
+      "n_flagged": 8,
+      "signing_mode": "ed25519",
+      "per_attack": {
+        "genuine": {
+          "n": 2,
+          "n_flagged": 0,
+          "detection_rate": 0.0
+        },
+        "tampered_output": {
+          "n": 2,
+          "n_flagged": 2,
+          "detection_rate": 1.0
+        },
+        "swapped_model": {
+          "n": 2,
+          "n_flagged": 2,
+          "detection_rate": 1.0
+        },
+        "forged_record": {
+          "n": 2,
+          "n_flagged": 2,
+          "detection_rate": 1.0
+        },
+        "replayed": {
+          "n": 2,
+          "n_flagged": 2,
+          "detection_rate": 1.0
+        }
+      },
+      "model_digest_bound": "9c62e1663bd89dcea2a47234033ef7210d5b81ef6fc5614aec5f640859187c47"
+    },
+    "input_hash": "",
+    "output_hash": "955ad3ebf343bb8c7c0b2aedf2573b79274450998135692b24caa9dfe3b4d332",
+    "previous_entry_hash": "232bdb94e2de79912d1cd87d6df998fb129628d38d92912c9146beb53f2552bd",
+    "entry_hash": "b9a90e2c319ec8f67d347d2fa1113424e1fc04f04e18bc8a4cebe86102115479"
+  },
+  {
+    "entry_id": "2b459e1c-54c2-46a2-84d6-cd610d035513",
+    "sequence_number": 5,
+    "timestamp": "2026-09-28T20:56:42.050107+00:00",
+    "action": "module_completed",
+    "module": "distribution_shift",
+    "details": {
+      "module": "distribution_shift",
+      "shift_detected": false,
+      "overall_severity": "LOW",
+      "shift_type": "none",
+      "natural_vs_adversarial": "not_assessed",
+      "mmd_p_value": 0.27,
+      "mean_mahalanobis": 12.514651934131468
+    },
+    "input_hash": "",
+    "output_hash": "62a6555334aee9748715581c237279176b66af1fd7361254150a224a836d43f0",
+    "previous_entry_hash": "b9a90e2c319ec8f67d347d2fa1113424e1fc04f04e18bc8a4cebe86102115479",
+    "entry_hash": "4ede5e9cc1ebfbe301b0a097fcd9677a587c1b8cc1f105569932b886970836c8"
+  },
+  {
+    "entry_id": "b1d6e1e4-005e-4183-a3db-9359f7f27333",
+    "sequence_number": 6,
+    "timestamp": "2026-09-28T20:56:42.050527+00:00",
+    "action": "generate_report",
+    "module": "governance",
+    "details": {
+      "num_findings": 17
+    },
+    "input_hash": "",
+    "output_hash": "43228aefc0427b9355963e6f4263a987848abb23499530dfd899721fdd4f0e46",
+    "previous_entry_hash": "4ede5e9cc1ebfbe301b0a097fcd9677a587c1b8cc1f105569932b886970836c8",
+    "entry_hash": "03507d0bdb4d5ec8cb64acb5dd84475daa3af47ef12af19582425cbba08c295d"
+  }
+]

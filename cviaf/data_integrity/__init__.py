@@ -24,6 +24,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.model_selection import cross_val_predict
+from sklearn.pipeline import make_pipeline
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 
@@ -423,7 +424,7 @@ class LabelIntegrityChecker:
             Findings for individual label errors and systematic patterns.
         """
         if features.size == 0 or labels.size == 0 or len(metadata) == 0:
-            return []
+            raise ValueError("label integrity unavailable: empty features, labels, or metadata")
 
         n = features.shape[0]
         ids = _sample_ids(metadata)
@@ -431,15 +432,13 @@ class LabelIntegrityChecker:
         n_classes = len(unique_labels)
 
         if n < self.MIN_SAMPLES or n_classes < 2:
-            return []
+            raise ValueError("label integrity unavailable: insufficient samples or classes")
 
         # Ensure labels are contiguous 0..K-1 for the classifier
         label_map = {lbl: idx for idx, lbl in enumerate(unique_labels)}
         mapped_labels = np.array([label_map[l] for l in labels])
 
-        # Scale features for KNN/logistic regression
-        scaler = StandardScaler()
-        scaled = scaler.fit_transform(features)
+        # Fit the scaler inside each CV fold: never leak validation features.
 
         # Choose classifier: KNN for small / medium datasets, logistic
         # regression for larger ones.
@@ -459,14 +458,15 @@ class LabelIntegrityChecker:
         # Cross-validated predicted probabilities
         cv_folds = min(self.CV_FOLDS, min(Counter(mapped_labels).values()))
         if cv_folds < 2:
-            return []
+            raise ValueError("label integrity unavailable: fewer than two examples in a class")
 
         try:
             proba = cross_val_predict(
-                clf, scaled, mapped_labels, cv=cv_folds, method="predict_proba"
+                make_pipeline(StandardScaler(), clf), features, mapped_labels,
+                cv=cv_folds, method="predict_proba"
             )
-        except Exception:
-            return []
+        except Exception as exc:
+            raise RuntimeError("label integrity cross-validation failed") from exc
 
         predicted_labels = np.argmax(proba, axis=1)
         predicted_conf = np.max(proba, axis=1)

@@ -1,5 +1,15 @@
 # PS 26228 → Design Traceability & Acceptance Matrix
 
+> **HISTORICAL — DESIGN INTENT, NOT AS-BUILT (superseded).** This matrix was written against the
+> v3 module plan. It points at paths that were never built (`cviaf/planner.py`,
+> `cviaf/assurance/`, `cviaf/data_integrity/label.py`, `cviaf/lab/label.py`), and most clauses
+> still read 🟠 *planned*, so it now understates what exists and overstates what the layout
+> guarantees. For the as-built answer to "show me where you handled X", read
+> [`PS26228_ALIGNMENT_MATRIX.md`](PS26228_ALIGNMENT_MATRIX.md): five capabilities and five
+> constraints, each SATISFIED / PARTIAL / ABSENT with a committed receipt, checked by
+> `python -m cviaf.lab.coverage` (14/14 clauses `measured`, 9/9 gates `pass`). Keep this file for
+> the design rationale; do not cite it as evidence of capability.
+
 **Purpose.** Every clause of the SIH 26228 problem statement, mapped to (a) the design decision that satisfies it, (b) the artifact a judge can open, and (c) the **acceptance test** that proves it. This document is the answer to the question *"show me where you handled X."* It is also the honest gap register: clauses we satisfy only partially are marked, with the reason.
 
 **Convention.** `✅ met` · `🟡 partial` · `🟠 planned` · `❌ not met (and why)`

@@ -1,0 +1,318 @@
+{
+ "schema": "cviaf.fpr-tpr-report.v1",
+ "ledger_schema": "cviaf.fpr-tpr-ledger.v1",
+ "alpha": 0.05,
+ "min_negatives": 20,
+ "higher_is_more_anomalous": true,
+ "positive_kinds": [
+  "clean_label",
+  "dup_flood",
+  "gma",
+  "label_flip",
+  "oda",
+  "oga",
+  "ood_insert",
+  "rma",
+  "stampfree",
+  "substitution",
+  "weight_tamper"
+ ],
+ "provenance": {
+  "backgrounds": 4,
+  "corpora": [
+   "distributed_clean_null"
+  ],
+  "n_eval": 40,
+  "notes": "per-model score files checksum-verified; reference metadata and scorer options matched across shards",
+  "producer": "chunk_coordinator.py + real_score_adapter.py",
+  "reference": {
+   "manifest_sha256": "fd84409c2768f091df229116ee55e21058485c92cb7565f90118c6cd24b40234",
+   "model_id": "clean_none_fixed_s5800",
+   "weights_sha256": "434561bb6e224a2177d561474f1138b5a24a8269ab4503edc6124b9111695be5"
+  }
+ },
+ "denominators": {
+  "calibration_negatives": 28314,
+  "evaluation_negatives": 28313,
+  "evaluation_positives": 0
+ },
+ "census": {
+  "all": {
+   "clean": 56627,
+   "_total": 56627
+  },
+  "evaluation_positives": {
+   "_total": 0
+  },
+  "evaluation_negatives": {
+   "clean": 28313,
+   "_total": 28313
+  }
+ },
+ "rules": {
+  "ctc_mean_clean": {
+   "signal": "ctc_mean_clean",
+   "status": "fpr_only",
+   "threshold": 0.9845092069058692,
+   "threshold_basis": "0.05-quantile of 28314 calibration negatives",
+   "tpr": {
+    "numerator": 0,
+    "denominator": 0,
+    "point_estimate": null,
+    "ci95_wilson": null,
+    "exact_upper_bound_95": null,
+    "status": "insufficient_denominator",
+    "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate"
+   },
+   "tpr_note": "no attacked assets in this ledger: the TPR of this rule is undefined here, not zero",
+   "fpr": {
+    "numerator": 1481,
+    "denominator": 28313,
+    "point_estimate": 0.0523,
+    "ci95_wilson": [
+     0.0498,
+     0.055
+    ],
+    "exact_upper_bound_95": 1.0,
+    "status": "measured"
+   },
+   "fpr_calibration": {
+    "target_alpha": 0.05,
+    "measured_fpr": 0.0523,
+    "n_evaluation_negatives": 28313,
+    "ci95": [
+     0.0498,
+     0.055
+    ],
+    "direction": "one-sided (alarm when the FPR interval ",
+    "holds": true,
+    "note": "the evaluation half's FPR interval still contains the declared alpha"
+   },
+   "confusion": {
+    "tp": 0,
+    "fn": 0,
+    "fp": 1481,
+    "tn": 26832
+   }
+  },
+  "ctc_peak_clean": {
+   "signal": "ctc_peak_clean",
+   "status": "fpr_only",
+   "threshold": 1.0,
+   "threshold_basis": "0.05-quantile of 28314 calibration negatives",
+   "tpr": {
+    "numerator": 0,
+    "denominator": 0,
+    "point_estimate": null,
+    "ci95_wilson": null,
+    "exact_upper_bound_95": null,
+    "status": "insufficient_denominator",
+    "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate"
+   },
+   "tpr_note": "no attacked assets in this ledger: the TPR of this rule is undefined here, not zero",
+   "fpr": {
+    "numerator": 0,
+    "denominator": 28313,
+    "point_estimate": 0.0,
+    "ci95_wilson": [
+     0.0,
+     0.0001
+    ],
+    "exact_upper_bound_95": 0.0001,
+    "status": "measured"
+   },
+   "fpr_calibration": {
+    "target_alpha": 0.05,
+    "measured_fpr": 0.0,
+    "n_evaluation_negatives": 28313,
+    "ci95": [
+     0.0,
+     0.0001
+    ],
+    "direction": "one-sided (alarm when the FPR interval ",
+    "holds": true,
+    "note": "the evaluation half's FPR interval still contains the declared alpha"
+   },
+   "confusion": {
+    "tp": 0,
+    "fn": 0,
+    "fp": 0,
+    "tn": 28313
+   }
+  },
+  "ctc_q95_clean": {
+   "signal": "ctc_q95_clean",
+   "status": "fpr_only",
+   "threshold": 1.0,
+   "threshold_basis": "0.05-quantile of 28314 calibration negatives",
+   "tpr": {
+    "numerator": 0,
+    "denominator": 0,
+    "point_estimate": null,
+    "ci95_wilson": null,
+    "exact_upper_bound_95": null,
+    "status": "insufficient_denominator",
+    "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate"
+   },
+   "tpr_note": "no attacked assets in this ledger: the TPR of this rule is undefined here, not zero",
+   "fpr": {
+    "numerator": 0,
+    "denominator": 28313,
+    "point_estimate": 0.0,
+    "ci95_wilson": [
+     0.0,
+     0.0001
+    ],
+    "exact_upper_bound_95": 0.0001,
+    "status": "measured"
+   },
+   "fpr_calibration": {
+    "target_alpha": 0.05,
+    "measured_fpr": 0.0,
+    "n_evaluation_negatives": 28313,
+    "ci95": [
+     0.0,
+     0.0001
+    ],
+    "direction": "one-sided (alarm when the FPR interval ",
+    "holds": true,
+    "note": "the evaluation half's FPR interval still contains the declared alpha"
+   },
+   "confusion": {
+    "tp": 0,
+    "fn": 0,
+    "fp": 0,
+    "tn": 28313
+   }
+  },
+  "refdiv_mean_clean": {
+   "signal": "refdiv_mean_clean",
+   "status": "fpr_only",
+   "threshold": 0.7276592261904761,
+   "threshold_basis": "0.05-quantile of 28314 calibration negatives",
+   "tpr": {
+    "numerator": 0,
+    "denominator": 0,
+    "point_estimate": null,
+    "ci95_wilson": null,
+    "exact_upper_bound_95": null,
+    "status": "insufficient_denominator",
+    "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate"
+   },
+   "tpr_note": "no attacked assets in this ledger: the TPR of this rule is undefined here, not zero",
+   "fpr": {
+    "numerator": 1467,
+    "denominator": 28313,
+    "point_estimate": 0.0518,
+    "ci95_wilson": [
+     0.0493,
+     0.0545
+    ],
+    "exact_upper_bound_95": 1.0,
+    "status": "measured"
+   },
+   "fpr_calibration": {
+    "target_alpha": 0.05,
+    "measured_fpr": 0.0518,
+    "n_evaluation_negatives": 28313,
+    "ci95": [
+     0.0493,
+     0.0545
+    ],
+    "direction": "one-sided (alarm when the FPR interval ",
+    "holds": true,
+    "note": "the evaluation half's FPR interval still contains the declared alpha"
+   },
+   "confusion": {
+    "tp": 0,
+    "fn": 0,
+    "fp": 1467,
+    "tn": 26846
+   }
+  }
+ },
+ "per_kind": {
+  "ctc_mean_clean": {
+   "status": "measured",
+   "threshold": 0.9845092069058692,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {}
+  },
+  "ctc_peak_clean": {
+   "status": "measured",
+   "threshold": 1.0,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {}
+  },
+  "ctc_q95_clean": {
+   "status": "measured",
+   "threshold": 1.0,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {}
+  },
+  "refdiv_mean_clean": {
+   "status": "measured",
+   "threshold": 0.7276592261904761,
+   "threshold_note": "the corpus-level threshold; per-kind thresholds would let each kind pick its own operating point",
+   "kinds": {}
+  }
+ },
+ "clause_checks": {
+  "3.7_oda_recall": {
+   "clause": "3.7 ODA (cloaking) recall > 0 on the reference battery",
+   "recall_per_signal": {
+    "ctc_mean_clean": null,
+    "ctc_peak_clean": null,
+    "ctc_q95_clean": null,
+    "refdiv_mean_clean": null
+   },
+   "best_signal": null,
+   "best_recall": null,
+   "satisfied": null,
+   "measurable": false,
+   "caveat": "the best-of-four number is selected over signals, so it is optimistic; the per-signal recall in this report is the authoritative figure. A kind with no evaluation-half assets is reported as not measured, not as zero recall."
+  }
+ },
+ "risk": {
+  "schema": "cviaf.asset-risk.v1",
+  "prevalence": 0.1,
+  "prevalence_basis": "declared default; override with --prevalence. The FPR corpus here is built 50/50 for power, which is NOT a deployment prevalence",
+  "loss_matrix": {
+   "false_accept": 25.0,
+   "false_quarantine": 5.0,
+   "review": 1.0,
+   "reviewer_error": 0.0
+  },
+  "per_signal": {
+   "ctc_mean_clean": {
+    "status": "not_measured",
+    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
+    "fpr": 0.0523,
+    "threshold": 0.9845092069058692
+   },
+   "ctc_peak_clean": {
+    "status": "not_measured",
+    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
+    "fpr": 0.0,
+    "threshold": 1.0
+   },
+   "ctc_q95_clean": {
+    "status": "not_measured",
+    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
+    "fpr": 0.0,
+    "threshold": 1.0
+   },
+   "refdiv_mean_clean": {
+    "status": "not_measured",
+    "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run",
+    "fpr": 0.0518,
+    "threshold": 0.7276592261904761
+   }
+  },
+  "priced": false,
+  "reason": "no attacked assets in this ledger: expected loss needs a TPR, and a TPR needs a positive arm. The FPR half is measured and is the deliverable of a clean-only run"
+ },
+ "fpr_measured": true,
+ "positives_measured": false,
+ "headline": "FPR measured on 28313 clean assets; TPR not measurable (no attacked assets in this ledger)"
+}

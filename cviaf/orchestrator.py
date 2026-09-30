@@ -37,11 +37,13 @@ class CVIAFOrchestrator:
         model_access_level: str = "white-box",
         key_dir: str = ".cviaf_keys",
         output_dir: str = "cviaf_output",
+        allow_symmetric: bool = False,
     ):
         self.model_access_level = model_access_level
         self.output_dir = output_dir
         self.governance = GovernanceEngine(pipeline_id=pipeline_id)
-        self.provenance = InferenceProvenanceEngine(key_dir=key_dir)
+        self.provenance = InferenceProvenanceEngine(key_dir=key_dir,
+                                                    allow_symmetric=allow_symmetric)
 
         os.makedirs(output_dir, exist_ok=True)
 
@@ -66,6 +68,8 @@ class CVIAFOrchestrator:
         reference_logits: np.ndarray = None,
         operational_logits: np.ndarray = None,
         reference_labels: np.ndarray = None,
+        reference_images: np.ndarray = None,
+        attribution_calibration=None,
         # Provenance inputs
         inference_records: List[Dict[str, Any]] = None,
         # Options
@@ -251,6 +255,26 @@ class CVIAFOrchestrator:
                 "model_access_level": self.model_access_level,
             },
         )
+
+        # A missing or errored module is not an all-clear. Explicit user-requested
+        # skips are recorded too; a partial assessment can still identify risks,
+        # but it cannot return an ACCEPT disposition.
+        outcomes = {
+            "data": data_assessment,
+            "model": model_assessment,
+            "provenance": provenance_report,
+            "drift": drift_assessment,
+        }
+        incomplete = [name for name, value in outcomes.items()
+                      if name in skip or value is None or "error" in value]
+        if incomplete:
+            report.metadata["incomplete_assessments"] = incomplete
+            report.limitations.append(
+                "Incomplete or skipped assessments: " + ", ".join(incomplete)
+            )
+            if report.overall_disposition == "accept":
+                report.overall_disposition = "review"
+                report.metadata["human_readable_summary"] =                     self.governance._build_summary(report.overall_risk, "review")
 
         # Save outputs
         report_path = os.path.join(self.output_dir, "assurance_report.json")

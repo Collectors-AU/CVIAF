@@ -1,2 +1,0 @@
-cviaf
-cviaf_demo_output
