@@ -1,6 +1,6 @@
 {
   "schema": "cviaf.deck-bundle.v1",
-  "generated_utc": "2026-09-30T11:20:04.489432Z",
+  "generated_utc": "2026-09-30T12:39:29.285113Z",
   "repo": "https://github.com/Collectors-AU/CVIAF",
   "worktree": "/Users/billasur/cv-assurance-engine/.task3",
   "branch": "task3-real-backbone",
@@ -1471,5 +1471,86 @@
       "in_repo": true,
       "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/coverage.json"
     }
-  ]
+  ],
+  "research": {
+    "documents": [
+      {
+        "name": "CV_INTEGRITY_ASSURANCE_2026.md",
+        "path": "CV_INTEGRITY_ASSURANCE_2026.md",
+        "what": "2025-26 state of the art per capability, the gap against this engine, and the action list for each module. Every source fetched against its primary page and tagged with a confidence level; the classifier-to-detector transfer gap is argued from it.",
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/CV_INTEGRITY_ASSURANCE_2026.md"
+      },
+      {
+        "name": "RESEARCH_CHECKPOINT_26228.md",
+        "path": "RESEARCH_CHECKPOINT_26228.md",
+        "what": "The verification log behind that dossier: what was checked against which primary page, and the citations dropped or downgraded when verification failed -- a withdrawn preprint, a method that could not be shown to exist.",
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/RESEARCH_CHECKPOINT_26228.md"
+      }
+    ],
+    "run": [
+      {
+        "method": "TRACE - CTC and FTC (CVPR 2025, arXiv 2503.15293)",
+        "role": "CTC-mean is the second rule scored on the headline table; FTC is the Island-Effect signal behind the cloaking (ODA) scores. CTC cannot see disappearance, which is why FTC exists.",
+        "where": "trace_ctc, trace_ftc",
+        "state": "mechanism reimplemented at MVP scale; the paper's YOLOv5 / Faster-RCNN numbers are theirs and are not quoted here",
+        "path": "cviaf/lab/detectors.py",
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/lab/detectors.py"
+      },
+      {
+        "method": "BadDet - OGA / RMA / GMA / ODA (ECCV 2022 workshop)",
+        "role": "names the attack rows: object generation, regional and global misclassification, object disappearance. The cloaking run is ODA.",
+        "where": "attack kinds",
+        "state": "taxonomy adopted; the synthetic arms are not the paper's detectors",
+        "path": "cviaf/core/types.py",
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/core/types.py"
+      },
+      {
+        "method": "Confident-learning label screening (cleanlab family)",
+        "role": "scores contributed boxes for label errors without retraining, in the detector-native form the problem statement needs.",
+        "where": "label screen",
+        "state": "implemented in the same family; the cleanlab library is not vendored",
+        "path": "cviaf/data_integrity/__init__.py",
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/data_integrity/__init__.py"
+      },
+      {
+        "method": "Self-supervised copy detection (SSCD family, CVPR 2022)",
+        "role": "flooding and near-duplicate detection across contributed data.",
+        "where": "near-duplicate screen",
+        "state": "a deterministic frozen-conv embedding stands in; SSCD is the named scaling target, per docs/SCALING_PLAN.md",
+        "path": "cviaf/lab/attribute.py",
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/lab/attribute.py"
+      },
+      {
+        "method": "Hash-chain audit trail (AuditableLLM pattern)",
+        "role": "every report carries a chained audit trail, so the assurance verdict is itself tamper-evident.",
+        "where": "metadata.audit_trail",
+        "state": "chain implemented and validated in the committed run (7 entries)",
+        "path": "runs/assurance/oda_s5/assurance_report.json",
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/assurance_report.json"
+      }
+    ],
+    "planned": [
+      [
+        "ODSCAN - IEEE S&P 2024",
+        "white-box, detector-specific trigger scanning: the strongest scanner to benchmark against, not implemented here"
+      ],
+      [
+        "DISTIL - ICCV 2025, arXiv 2507.22813",
+        "data-free trigger inversion; the white-box path that survives an air gap without the contributor's data"
+      ],
+      [
+        "C2PA 2.4 - AI/ML guidance",
+        "a portable, standards-aligned provenance manifest. The seal here is a repository-local schema, and this run falls back to HMAC-SHA256"
+      ],
+      [
+        "OpenOOD v1.5 - arXiv 2306.09301",
+        "a standard protocol for the OOD insertion screen; named as the validation target, not run in this build"
+      ],
+      [
+        "NIST TrojAI report and AI RMF",
+        "the governance vocabulary behind the coverage statement and the disposition ladder"
+      ]
+    ],
+    "note": "Research basis, not results. The methods marked as run here are the mechanisms this build exercises, at the scale the receipts describe: a faithful reimplementation at MVP scale, never a reproduction of the published numbers, which stay with their authors. Full citation lists and verification status live in the two documents above; the design trace is docs/CVIAF_V3_ARCHITECTURE.md and the requirement trace is PRD_SIH26228_CVIAF.md."
+  }
 }

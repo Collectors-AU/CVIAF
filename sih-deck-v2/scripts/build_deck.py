@@ -338,14 +338,25 @@ SLIDES.append(dict(page=6, nav="RESEARCH & REFERENCES", title="RESEARCH AND REFE
     refs=[
         ["PS 26228 problem statement", "SIH 2026 official statement (attached deck, page 1)"],
         ["Repository + commit", "github.com/Collectors-AU/CVIAF @ %s (branch %s)" % (SHORT, BRANCH)],
+        ["Research basis (2025\u201326 state of the art)",
+         "CV_INTEGRITY_ASSURANCE_2026.md \u2014 per-capability state of the art, the gap against this "
+         "engine, and the action list for each module; every source confidence-tagged"],
+        ["Research verification log",
+         "RESEARCH_CHECKPOINT_26228.md \u2014 what was checked against which primary page, and the "
+         "citations dropped when verification failed"],
         ["Same-cohort comparison", "runs/mvp/comparison.json \u2014 model, data and provenance axes"],
         ["Large clean-null FPR receipt", "runs/merged_fpr_tpr_report.json (%s models)" % f"{merged['census']['all']['clean']:,}"],
         ["Fleet ledger", "runs/fleet_fpr_ledger_report.json (%s models, %s held-out)" % (f"{FLEET_N:,}", f"{FLN:,}")],
         ["Dose-ladder receipt", "runs/tpr_ladder_at_frozen.json (1,188 built / 1,055 scored)"],
         ["Coverage + as-built matrix", "runs/coverage.json, docs/COVERAGE_STATEMENT.md, docs/PS26228_ALIGNMENT_MATRIX.md"],
         ["Report example", "runs/assurance/oda_s5/assurance_report.json (schema-valid, %d findings)" % len(oda["findings"])],
+        ["Model inventory", "docs/MODEL_INVENTORY.md \u2014 where every model came from"],
+        ["Reproduce offline", "docs/REPRODUCE.md \u2014 no network, bundle install"],
     ],
-    note="Evidence manifest: evidence/evidence_manifest.json \u2014 every slide number maps to a file, field "
+    note="Signal names are published methods: CTC and FTC are TRACE (CVPR 2025, arXiv 2503.15293), and "
+         "the OGA / RMA / GMA / ODA attack labels are BadDet. This engine reimplements those mechanisms "
+         "at MVP scale \u2014 the published numbers stay with their authors and are not quoted here. "
+         "Evidence manifest: evidence/evidence_manifest.json \u2014 every slide number maps to a file, field "
          "and denominator. All figures are laboratory/synthetic scope; field validation is pending. "
          "docs/PS26228_REQUIREMENT_TRACE.md is historical design intent, not as-built evidence."))
 

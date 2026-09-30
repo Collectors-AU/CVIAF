@@ -9,6 +9,9 @@ Two standing rules for the recording:
 - Anything on screen is **recorded evidence from a committed run**, not live processing of
   56,627 models. Say so once, early, and it stops being a question.
 - Never say Army, deployment, savings, zero-overlap or Ed25519. Those are not measured here.
+- Name the method when you name the metric: CTC and FTC are **TRACE** (CVPR 2025), and the
+  OGA/RMA/GMA/ODA attack labels are **BadDet**. The engine reimplements those mechanisms at MVP
+  scale; the published numbers stay with their authors and are never quoted as ours.
 
 ---
 
@@ -21,7 +24,7 @@ Two standing rules for the recording:
 | 3 | 0:38–1:05 | **Detection headline** section | Point at the four bars, then the table under them | "At a false-alarm budget frozen at five percent *before* we scored a single attack, one rule catches forty-seven point nine percent of substitution attacks at moderate strength, and ninety-three point seven percent when the attack is heavy. Ninety-two point nine percent of weight tampering at full strength. And bias lift: five point one percent — which is exactly its own false-alarm rate. That one is a declared blind spot, not a detection." |
 | 4 | 1:05–1:28 | Clean-null FPR section | Hover the table; scroll to the two retired rules | "Each rule sits near that five-percent target, and the confidence intervals include it — so we say 'near target', not 'below target'. Two of the four rules are retired: their threshold sits at the ceiling of the clean corpus, so a zero false-alarm rate there is a range bound, not evidence of a better detector." |
 | 5 | 1:28–1:50 | Dose ladder section | Click **Substitution**, then **Weight tamper** | "The ladder behind the headline. Detection rises with damage — inside one family at a time, because the dose units differ. Substitution goes 13 of 99 to 45 of 94 to 59 of 63. The last cell is seven arms, below our declared floor of twenty, so it is drawn hollow and never quoted as a hundred percent." |
-| 6 | 1:50–2:10 | Dose ladder → **Bias lift** tab, then back | Click **Bias lift**, point at the CTC line | "And here is the trap. A second rule — CTC mean — passes the same five-percent false-alarm test, and at substitution dose 0.50 it catches two of sixty-three where RefDiv catches fifty-nine. Two rules that look identical on clean data, one nearly blind. All three hundred and ninety-six bias-lift arms show zero behaviour change; we report it as a blind spot." |
+| 6 | 1:50–2:10 | Dose ladder → **Bias lift** tab, then back | Click **Bias lift**, point at the CTC line | "And here is the trap. A second rule — CTC mean, TRACE's transformation-consistency score — passes the same five-percent false-alarm test, and at substitution dose 0.50 it catches two of sixty-three where RefDiv catches fifty-nine. Two rules that look identical on clean data, one nearly blind. All three hundred and ninety-six bias-lift arms show zero behaviour change; we report it as a blind spot." |
 | 7 | 2:10–2:38 | Baseline vs CVIAF | Scroll the grouped bars, then the table | "Against baselines we wrote ourselves on the same cohort: on the model axis we catch one of two with no false alarms, where a fixed threshold catches both and alarms on everything. But at sample level the simple baseline beats us — eighty-four percent recall against our seventeen. We show that tradeoff rather than hiding it." |
 | 8 | 2:38–2:58 | Provenance section | Scroll to the bars | "On inference records, an enrolled-digest check catches four of eight and abstains on four. Our chain catches all eight with no false alarms on the genuine pair. This run is signed with HMAC, not Ed25519 — a tamper check under a shared key, not public-key non-repudiation." |
 | 9 | 2:58–3:16 | Terminal | Run the verify command (below), let the output print | "Every conclusion ships with a report that re-verifies offline against the schema, a hash-chained audit trail, and a coverage statement that names what we do not cover." |
@@ -70,6 +73,7 @@ second and it is genuinely executed.
 | 7 | `runs/mvp/comparison.json — 2 positives, 4 negatives, 2 ASR-gated excluded` |
 | 8 | `signing_mode = hmac-sha256-fallback (not Ed25519)` |
 | 10 | `<commit> · repository-relative paths only` |
+| 6 | `CTC+FTC = TRACE (CVPR 2025, arXiv 2503.15293) · OGA/RMA/GMA/ODA = BadDet — citations in CV_INTEGRITY_ASSURANCE_2026.md` |
 
 ## Fallback plan
 

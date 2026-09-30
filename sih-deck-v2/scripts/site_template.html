@@ -159,6 +159,7 @@
   <a href="#inventory">Inventories</a>
   <a href="#limits">Method &amp; limits</a>
   <a href="#evidence">Evidence explorer</a>
+  <a href="#research">Research basis</a>
 </nav>
 
 <main>
@@ -312,6 +313,21 @@
     </div>
     <input type="search" id="ev-search" placeholder="Filter by asset, file, rule or unit…" aria-label="Filter evidence rows">
     <div class="scroll"><table id="ev-table"></table></div>
+  </section>
+
+  <section id="research">
+    <div class="sect-head">
+      <span class="tag">Research and references</span>
+      <h2>Where these methods come from</h2>
+      <p>The signals on this page are published methods, and the code names them in its
+        own docstrings. Two repository documents carry the research and its verification
+        log; the table below says which of those methods this build actually runs, which
+        it only designs against, and where each lives.</p>
+    </div>
+    <div class="grid2" id="res-docs"></div>
+    <div class="scroll" style="margin-top:22px"><table id="res-run"></table></div>
+    <div class="note" id="res-planned"></div>
+    <p class="figcap" id="res-note"></p>
   </section>
 </main>
 
@@ -597,6 +613,24 @@ $("#inventory-note").innerHTML = `<b>Not additive.</b> ${INV.warning}
 /* ---------- limitations ---------- */
 $("#limitations").innerHTML = B.limitations.map((t,i)=>
   `<details${i===0?" open":""}><summary>${t.split(".")[0]}.</summary><p>${t}</p></details>`).join("");
+
+/* ---------- research basis ---------- */
+const RS=B.research;
+$("#res-docs").innerHTML = RS.documents.map(d=>
+  `<div class="shell"><div class="core"><h3 class="mono">${d.name}</h3>
+     <p class="sub" style="margin-top:10px">${d.what}</p>
+     ${d.url ? `<div style="margin-top:16px"><a class="btn" href="${d.url}" target="_blank" rel="noopener">Open in repository <span class="knob">↗</span></a></div>`
+             : `<div class="note bad" style="margin-top:14px">Not tracked in the repository, so no link is offered.</div>`}
+   </div></div>`).join("");
+$("#res-run").innerHTML =
+  `<tr><th>Published method</th><th>What it does in this evidence</th><th>State in this build</th><th>Where it lives</th></tr>` +
+  RS.run.map(r=>`<tr><td>${r.method}</td><td>${r.role}</td>
+    <td><span class="badge acc">run</span> ${r.state}</td>
+    <td class="mono">${r.url ? `<a href="${r.url}" target="_blank" rel="noopener">${r.path}</a>` : r.path}
+      <br><span style="color:var(--dim)">${r.where}</span></td></tr>`).join("");
+$("#res-planned").innerHTML = `<b>Design basis, not run here — stated so the boundary needs no
+  inference.</b> ${RS.planned.map(p=>`<span class="mono">${p[0]}</span> — ${p[1]}`).join("; ")}.`;
+$("#res-note").textContent = RS.note;
 
 /* ---------- evidence explorer ---------- */
 function drawEvidence(q=""){

@@ -471,6 +471,12 @@ refs = [
      f"{REPO_URL}"),
     ("Repository at this commit", f"Collectors-AU/CVIAF @ {SHORT} (branch {BRANCH})",
      f"{REPO_URL}/tree/{COMMIT}"),
+    ("Research basis \u2014 2025\u201326 state of the art",
+     "CV_INTEGRITY_ASSURANCE_2026.md \u2014 per-capability SOTA, the gap, and the module action list",
+     f"{REPO_URL}/blob/{COMMIT}/CV_INTEGRITY_ASSURANCE_2026.md"),
+    ("Research verification log",
+     "RESEARCH_CHECKPOINT_26228.md \u2014 what was verified against which primary page, and what was dropped",
+     f"{REPO_URL}/blob/{COMMIT}/RESEARCH_CHECKPOINT_26228.md"),
     ("Same-cohort comparison", "runs/mvp/comparison.json \u2014 model, data and provenance axes",
      f"{REPO_URL}/blob/{COMMIT}/runs/mvp/comparison.json"),
     ("Large clean-null FPR receipt", "runs/merged_fpr_tpr_report.json \u2014 56,627 models",
@@ -505,7 +511,11 @@ for r, (topic, label, url) in enumerate(refs, 1):
     run.font.color.rgb = BLUE
     c1.text_frame.word_wrap = True
 
-write(box(s6, 6, "p6-foot", LEFT, 6.3, WIDTH, 0.58), [
+write(box(s6, 6, "p6-foot", LEFT, 6.3, WIDTH, 0.62), [
+    ("Signal names are published methods: CTC and FTC are TRACE (CVPR 2025, arXiv 2503.15293), and the "
+     "OGA / RMA / GMA / ODA attack labels are BadDet. This engine reimplements those mechanisms at MVP "
+     "scale \u2014 the published numbers stay with their authors and are not quoted here.",
+     {"size": 7.5, "colour": MUTED}),
     ("Evidence manifest: evidence/evidence_manifest.json \u2014 every slide number maps to a file, field and "
      "denominator. All figures are laboratory / synthetic scope; field validation is pending. "
      "docs/PS26228_REQUIREMENT_TRACE.md is historical design intent, not as-built evidence.",

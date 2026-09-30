@@ -127,6 +127,14 @@ recall. It is reported as a measured blind spot, never as a detection.
 dose 0.50 the RefDiv rule catches 59/63 and CTC-mean 2/63; at weight tamper dose 1.00, 92/99
 against 29/99. A rule that looks identical on the false-alarm test can be nearly blind.
 
+**Where these names come from.** CTC and FTC are the transformation-consistency scores of
+**TRACE** (CVPR 2025, arXiv 2503.15293, implemented as `trace_ctc` / `trace_ftc` in
+`cviaf/lab/detectors.py`) and the `oga` / `rma` / `gma` / `oda` labels are **BadDet**'s attack
+taxonomy. The mechanisms are reimplemented at MVP scale and the published figures are the
+authors' — they are not quoted as ours anywhere in this package. The full citation list, with
+its verification status, is `CV_INTEGRITY_ASSURANCE_2026.md` at the repository root; the log of
+what was verified against which primary page is `RESEARCH_CHECKPOINT_26228.md`.
+
 **Two arms sets, never merged.** An earlier single-dose experiment
 (`runs/tpr_at_frozen.json`, 198 built / 193 scored) reported substitution **46/94** and weight
 tamper **21/99** for the same rule. Those are different arms from the 4-dose ladder's 45/94 and

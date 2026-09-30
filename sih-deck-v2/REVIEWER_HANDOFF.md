@@ -33,6 +33,7 @@ the catalogue of what is committed where; note that the 56,627 model directories
 | Claim corrections | `evidence/claim_corrections.md` | 20 entries vs the supplied deck + 5 self-audit entries |
 | Supplement | `supplement/before_after_analysis.md` | full numbers + unfavourable results |
 | Dashboard | `site/index.html` + `site/data/bundle.json` | self-contained, offline, ready to deploy |
+| **Research basis** | repo root `CV_INTEGRITY_ASSURANCE_2026.md` + `RESEARCH_CHECKPOINT_26228.md` | the 2025–26 state-of-the-art dossier and its citation-verification log; both tracked and deployed to this commit |
 | Video | `video/narration_and_storyboard.md` | narration + shot list + checklist |
 
 Regenerate anything with:
@@ -44,6 +45,28 @@ cd sih-deck-v2
 ../.venv/bin/python scripts/build_deck.py          # HTML + PDF render
 ../.venv/bin/python scripts/build_deck_template.py # the editable PPTX
 ```
+
+## The research basis — where the method names come from
+
+The signal names in this evidence are published methods, and the repository carries both the
+dossier and the log of how its citations were checked. Both documents are tracked at the handoff
+commit, so the deck's page-6 links resolve.
+
+| Where | What it names |
+|---|---|
+| `CV_INTEGRITY_ASSURANCE_2026.md` (repo root) | 2025–26 state of the art per capability, the gap against this engine, and the action list for each module. Every source fetched against its primary page and confidence-tagged. |
+| `RESEARCH_CHECKPOINT_26228.md` (repo root) | The verification log behind that dossier: what was checked against which primary page, and the citations dropped or downgraded when verification failed — a withdrawn preprint, a method that could not be shown to exist. |
+| Dashboard → *Research basis* | Two document cards plus a table splitting the cited methods into **run in this build** (with the code path that implements each) and **design basis, not run here**. |
+| Deck page 6 | Two rows in the reference table, linked at the handoff commit, plus a foot line naming TRACE and BadDet. |
+| `video/narration_and_storyboard.md` | Shot 6 names CTC as TRACE's transformation-consistency score; the caption for that shot carries the citation. |
+
+The attribution that matters most: **CTC and FTC are TRACE (CVPR 2025, arXiv 2503.15293)** and
+**the OGA / RMA / GMA / ODA attack labels are BadDet** — the AUROC rows and the CTC column are
+those methods. `cviaf/lab/detectors.py` says in its own docstring that this is a faithful
+reimplementation of the *mechanisms* at MVP scale, not a reproduction of the published numbers,
+and the published figures are never quoted as ours. The page states the same split for the
+enrichments named in the dossier but not implemented here (ODSCAN, DISTIL, C2PA 2.4, OpenOOD v1.5,
+NIST TrojAI/AI RMF) rather than implying coverage.
 
 ## What changed in the deck
 
@@ -57,8 +80,10 @@ cd sih-deck-v2
 2. **Architecture diagram added** to page 2 — a user/actor view (contributors → analysts →
    procurement/audit) over the offline chain (intake → reference → signals → calibration →
    disposition), with the evidence outputs and the trust boundary drawn explicitly.
-3. **Clickable references** on page 6: 10 rows, each opening the specific artefact in the
-   repository **at this commit** (receipts, as-built docs, reproduce guide).
+3. **Clickable references** on page 6: 12 rows, each opening the specific artefact in the
+   repository **at this commit** — first the research basis and its verification log, then the
+   receipts, as-built docs and reproduce guide. A foot line on that page names the published
+   methods behind the metric names (TRACE for CTC/FTC, BadDet for the attack labels).
 4. **Page 3 leads with the detection headline.** A four-cell strip (substitution 47.9% at
    dose 0.25 and 93.7% at 0.50, weight tamper 92.9% at 1.00, bias lift 5.1% — the
    behaviour-inert failure) sits above one wide two-family dose panel with Wilson intervals

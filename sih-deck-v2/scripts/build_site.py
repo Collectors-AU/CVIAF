@@ -244,6 +244,71 @@ BUNDLE["limitations"] = [
     "No byte-level image-overlap receipt has landed; do not claim leakage-free "
     "evaluation or disjoint images.",
 ]
+
+# --------------------------------------------------------------- research basis
+# The signal names on this page are published methods, and the code already says so
+# in its own docstrings -- cviaf/lab/detectors.py names TRACE and adds "we cite them
+# as theirs and publish ours separately". This block is the human-facing half of that
+# discipline: which published method each signal comes from, where it lives here, and
+# whether this build RUNS it or only designs against it. Nothing here is a result.
+RESEARCH_DOCS = [
+    ("CV_INTEGRITY_ASSURANCE_2026.md",
+     "2025-26 state of the art per capability, the gap against this engine, and the "
+     "action list for each module. Every source fetched against its primary page and "
+     "tagged with a confidence level; the classifier-to-detector transfer gap is "
+     "argued from it."),
+    ("RESEARCH_CHECKPOINT_26228.md",
+     "The verification log behind that dossier: what was checked against which "
+     "primary page, and the citations dropped or downgraded when verification failed "
+     "-- a withdrawn preprint, a method that could not be shown to exist."),
+]
+RESEARCH_RUN = [
+    {"method": "TRACE - CTC and FTC (CVPR 2025, arXiv 2503.15293)",
+     "path": "cviaf/lab/detectors.py", "where": "trace_ctc, trace_ftc",
+     "role": "CTC-mean is the second rule scored on the headline table; FTC is the "
+             "Island-Effect signal behind the cloaking (ODA) scores. CTC cannot see "
+             "disappearance, which is why FTC exists.",
+     "state": "mechanism reimplemented at MVP scale; the paper's YOLOv5 / "
+              "Faster-RCNN numbers are theirs and are not quoted here"},
+    {"method": "BadDet - OGA / RMA / GMA / ODA (ECCV 2022 workshop)",
+     "path": "cviaf/core/types.py", "where": "attack kinds",
+     "role": "names the attack rows: object generation, regional and global "
+             "misclassification, object disappearance. The cloaking run is ODA.",
+     "state": "taxonomy adopted; the synthetic arms are not the paper's detectors"},
+    {"method": "Confident-learning label screening (cleanlab family)",
+     "path": "cviaf/data_integrity/__init__.py", "where": "label screen",
+     "role": "scores contributed boxes for label errors without retraining, in the "
+             "detector-native form the problem statement needs.",
+     "state": "implemented in the same family; the cleanlab library is not vendored"},
+    {"method": "Self-supervised copy detection (SSCD family, CVPR 2022)",
+     "path": "cviaf/lab/attribute.py", "where": "near-duplicate screen",
+     "role": "flooding and near-duplicate detection across contributed data.",
+     "state": "a deterministic frozen-conv embedding stands in; SSCD is the named "
+              "scaling target, per docs/SCALING_PLAN.md"},
+    {"method": "Hash-chain audit trail (AuditableLLM pattern)",
+     "path": "runs/assurance/oda_s5/assurance_report.json",
+     "where": "metadata.audit_trail",
+     "role": "every report carries a chained audit trail, so the assurance verdict "
+             "is itself tamper-evident.",
+     "state": "chain implemented and validated in the committed run (7 entries)"},
+]
+RESEARCH_PLANNED = [
+    ["ODSCAN - IEEE S&P 2024",
+     "white-box, detector-specific trigger scanning: the strongest scanner to "
+     "benchmark against, not implemented here"],
+    ["DISTIL - ICCV 2025, arXiv 2507.22813",
+     "data-free trigger inversion; the white-box path that survives an air gap "
+     "without the contributor's data"],
+    ["C2PA 2.4 - AI/ML guidance",
+     "a portable, standards-aligned provenance manifest. The seal here is a "
+     "repository-local schema, and this run falls back to HMAC-SHA256"],
+    ["OpenOOD v1.5 - arXiv 2306.09301",
+     "a standard protocol for the OOD insertion screen; named as the validation "
+     "target, not run in this build"],
+    ["NIST TrojAI report and AI RMF",
+     "the governance vocabulary behind the coverage statement and the disposition "
+     "ladder"],
+]
 BUNDLE["manifest"] = manifest["entries"]
 
 # annotate every manifest entry with whether the source file is actually tracked,
@@ -254,6 +319,27 @@ for e in BUNDLE["manifest"]:
     src = e.get("source_file") or ""
     e["in_repo"] = src in tracked
     e["repo_url"] = (f"{REPO_URL}/blob/{COMMIT}/{src}" if src in tracked else None)
+
+
+def _research_url(rel):
+    return f"{REPO_URL}/blob/{COMMIT}/{rel}" if rel in tracked else None
+
+
+BUNDLE["research"] = {
+    "documents": [{"name": name, "path": name, "what": what,
+                   "url": _research_url(name)} for name, what in RESEARCH_DOCS],
+    "run": [{"method": r["method"], "role": r["role"], "where": r["where"],
+             "state": r["state"], "path": r["path"],
+             "url": _research_url(r["path"])} for r in RESEARCH_RUN],
+    "planned": RESEARCH_PLANNED,
+    "note": "Research basis, not results. The methods marked as run here are the "
+            "mechanisms this build exercises, at the scale the receipts describe: a "
+            "faithful reimplementation at MVP scale, never a reproduction of the "
+            "published numbers, which stay with their authors. Full citation lists "
+            "and verification status live in the two documents above; the design "
+            "trace is docs/CVIAF_V3_ARCHITECTURE.md and the requirement trace is "
+            "PRD_SIH26228_CVIAF.md.",
+}
 
 with open(os.path.join(SITE, "data", "bundle.json"), "w") as fh:
     json.dump(BUNDLE, fh, indent=2)
