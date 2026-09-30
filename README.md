@@ -600,6 +600,8 @@ Recorded so nobody re-invents them:
 | [`docs/REPRODUCE.md`](docs/REPRODUCE.md) | exact end-to-end reproduction, including the live 1.8 s poison replay |
 | [`docs/COVERAGE_STATEMENT.md`](docs/COVERAGE_STATEMENT.md) | what the engine claims to detect, and what it declares out of scope |
 | [`docs/PS26228_ALIGNMENT_MATRIX.md`](docs/PS26228_ALIGNMENT_MATRIX.md) | **problem statement → as-built code**: the five capabilities and five constraints, each SATISFIED / PARTIAL / ABSENT, with the shortfall named |
+| [`CV_INTEGRITY_ASSURANCE_2026.md`](CV_INTEGRITY_ASSURANCE_2026.md) | the research basis: 2025–26 state of the art per capability and the recommendation per module. **§12 is the as-built status board** — what each recommendation became once implemented and measured, including the two that came back negative |
+| [`RESEARCH_CHECKPOINT_26228.md`](RESEARCH_CHECKPOINT_26228.md) | the citation verification log, plus **UPDATE 3**: the measured reversals, the method-integrity events (frozen thresholds, the `tamper_prune` hidden-unit defect, the superseded 193-arm set, pinned instruments) and the open items |
 | [`docs/PS26228_REQUIREMENT_TRACE.md`](docs/PS26228_REQUIREMENT_TRACE.md) | the v3 *design* trace — clause → planned module. Historical intent, not as-built; most clauses read 🟠 |
 | [`docs/CLEAN_NULL_CORPUS.md`](docs/CLEAN_NULL_CORPUS.md) | how the null corpus is generated |
 | [`docs/ATTESTATION.md`](docs/ATTESTATION.md) | content-addressing and the (unsigned) bundle |
