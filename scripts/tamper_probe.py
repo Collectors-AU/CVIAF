@@ -184,8 +184,9 @@ def main():
     print(f"  unpaired mean {d_unpaired_null.mean():7.3f} p95 "
           f"{np.percentile(d_unpaired_null, 95):7.3f}   (the retired statistic)")
 
-    rows = []
+    rows, variant_models = [], {}
     for name, m in severity_ladder(base["model"]).items():
+        variant_models[name] = m
         qual = detection_quality(m, base["images"], base["boxes"], base["labels"])
         agg = standardised_deviation([weight_stats(m)[k] for k in keys],
                                      [ref_stats[k] for k in keys],
@@ -208,7 +209,7 @@ def main():
           f"(8 dims -> chi2_8 mean would be {np.sqrt(8):.2f})")
     for r in rows:
         r["whitened_dist"] = mahal(
-            paired_fingerprint(_VARIANT_MODELS[r["variant"]], ref["model"],
+            paired_fingerprint(variant_models[r["variant"]], ref["model"],
                                base["images"], score_thresh=THRESH), P_mean, inv_cov)
 
     np95 = {k: float(np.percentile([r[k] for r in w_rows], 95))

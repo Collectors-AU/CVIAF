@@ -1,0 +1,133 @@
+{
+ "generated_utc": "2026-09-28T09:41:16Z",
+ "lanes_dir": "runs/lanes",
+ "n_lanes": 4,
+ "lanes": {
+  "corpus_eval": {
+   "status": "blocked",
+   "seconds": 0.01,
+   "title": "Headline corpus table (blocked until the corpus finishes training)"
+  },
+  "prenms_power": {
+   "status": "ok",
+   "seconds": 11.465,
+   "title": "Pre-NMS signal: how many images before it can carry a decision"
+  },
+  "redteam": {
+   "status": "ok",
+   "seconds": 15.107,
+   "title": "A12: dilution, trigger geometry, evasion budget"
+  },
+  "trace_foreground": {
+   "status": "ok",
+   "seconds": 13.517,
+   "title": "TRACE foreground arm vs the 0.816 stamp null"
+  }
+ },
+ "established": [
+  {
+   "id": "a12.dilution",
+   "claim": "power of the BY item-level decision under dilution, reported at the ratio where the attacker's leverage is greatest",
+   "number": 0.0,
+   "context": "no flags at attacked_fraction=0.50, the largest of 5 ratios that blinds the decision (alpha=0.05)",
+   "source": "cviaf.lab.redteam.dilution_sweep",
+   "lane": "redteam",
+   "strength": 4
+  },
+  {
+   "id": "a12.evasion.ctc",
+   "claim": "ctc: rank separation (AUROC) between clean and attacked readings, with the clean-max threshold-saturation check applied",
+   "number": 0.7495,
+   "context": "73/233 above clean_max=1.0000 (degenerate=False); 119 above clean_p95=1.0000; threshold_used=clean_max",
+   "source": "cviaf.lab.redteam.evasion_budget",
+   "lane": "redteam",
+   "strength": 4
+  },
+  {
+   "id": "a12.evasion.fg",
+   "claim": "fg: rank separation (AUROC) between clean and attacked readings, with the clean-max threshold-saturation check applied",
+   "number": 0.4569,
+   "context": "5/232 above clean_max=1.5982 (degenerate=False); 22 above clean_p95=1.3658; threshold_used=clean_max",
+   "source": "cviaf.lab.redteam.evasion_budget",
+   "lane": "redteam",
+   "strength": 4
+  },
+  {
+   "id": "a12.trigger_geometry.ctc_null",
+   "claim": "stamping a clean model's own images moves the CTC null as a function of trigger geometry; the response is that detector's stamp contamination, not a backdoor",
+   "number": 0.7407,
+   "context": "null AUROC over 20 geometry settings (size 4-12, fixed/on_object, opacity 1.0/0.5): min 0.5000, mean 0.7407, max 1.0000; 0.500 is the target",
+   "source": "cviaf.lab.redteam.trigger_geometry_sweep",
+   "lane": "redteam",
+   "strength": 4
+  },
+  {
+   "id": "prenms_power.required_n",
+   "claim": "Measured effect 0.1386 is cleared at n=20 images (null p95 below the effect). Below that sample size the null and the effect overlap and the signal must not be reported as a detection.",
+   "number": 20,
+   "context": "null p95 at n=10/20/40/80: 10:0.1509, 20:0.1338, 40:0.1166, 80:0.0971",
+   "source": "cviaf.lab.power.sample_size_calibration",
+   "lane": "prenms_power",
+   "strength": 4
+  },
+  {
+   "id": "trace_foreground.stamp_null.ctc",
+   "claim": "the background (CTC) arm re-measured on a trigger-stamped CLEAN model: the corpus's own stamp contamination for that detector",
+   "number": 0.9208,
+   "context": "stamped with gma, n=60; 0.500 = ignores the stamp",
+   "source": "cviaf.lab.arms.lane_trace_foreground",
+   "lane": "trace_foreground",
+   "strength": 4
+  },
+  {
+   "id": "trace_foreground.stamp_null.fg",
+   "claim": "the foreground (focal) arm on the same stamped clean model; its DECLARED sign is high=suspicious, and the measured value says whether that sign holds",
+   "number": 0.3391,
+   "context": "fg null AUROC 0.3391 vs ctc null AUROC 0.9208 (stamped with gma, n=60)",
+   "source": "cviaf.lab.arms.lane_trace_foreground",
+   "lane": "trace_foreground",
+   "strength": 4
+  }
+ ],
+ "hypotheses": [],
+ "open_gaps": [
+  {
+   "id": "a12.dilution.blind_ratio",
+   "severity": "high",
+   "problem": "at attacked_fraction=0.50 the detector flags nothing, so an attacker who floods clean items hides here",
+   "next": "increase the calibration set / batch size, or decide at the asset level rather than the item level",
+   "lane": "redteam"
+  },
+  {
+   "id": "corpus_eval.blocked",
+   "severity": "high",
+   "problem": "corpus incomplete (227/300); the asset-axis TPR@FPR table cannot be filled from a partial corpus",
+   "next": "wait for the corpus job to finish, then run: python -m cviaf.lab eval --corpus runs/mvp2 --json runs/mvp2/eval.json",
+   "lane": "corpus_eval"
+  },
+  {
+   "id": "trace_foreground.ctc_reads_stamp",
+   "severity": "high",
+   "problem": "the background arm reads 0.921 on a trigger-stamped clean model, so its attacked-row numbers are inflated by that much",
+   "next": "subtract the measured null or mark the affected rows contaminated",
+   "lane": "trace_foreground"
+  },
+  {
+   "id": "trace_foreground.fg_sign_unsupported",
+   "severity": "high",
+   "problem": "the foreground arm reads 0.339, BELOW 0.500: the stamp makes objects MORE stable under focal change, so the declared sign (high=suspicious) is not supported",
+   "next": "calibrate the sign on a stamped clean model before publishing any detection from this arm, or invert it and re-measure",
+   "lane": "trace_foreground"
+  },
+  {
+   "id": "trace_foreground.data_only_skipped",
+   "severity": "low",
+   "problem": "30 data-only attack(s) (dup_flood, label_flip, ood_insert) have no test-time trigger and are NOT ASSESSED by this lane",
+   "next": "assess data attacks on the data axis, not with a stamp",
+   "lane": "trace_foreground"
+  }
+ ],
+ "n_established": 7,
+ "n_hypotheses": 0,
+ "n_open_gaps": 5
+}

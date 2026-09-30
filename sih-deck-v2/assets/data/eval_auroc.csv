@@ -1,0 +1,7 @@
+attack_kind,n_models,n_scored,fused_bonf_auroc,fused_cauchy_auroc,refdiv_auroc,ctc_auroc
+clean,1,1,0.5,0.5,0.5,0.5
+dup_flood,1,1,0.5,0.5,0.5,0.5
+label_flip,1,1,0.5,0.5,0.5,0.5
+oda,1,1,0.90625,0.84390625,0.94875,0.44145569620253167
+oga,1,1,0.9865625,0.99296875,0.9828125,0.81875
+ood_insert,1,1,0.5,0.5,0.5,0.5

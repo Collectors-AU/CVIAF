@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 620" width="1240" height="620" font-family="'SF Pro Display',-apple-system,Segoe UI,system-ui,sans-serif">
+ <defs>
+  <style>
+   .t { fill: #E8EAED; font-size: 13px; }
+   .ttl { fill:#FFFFFF; font-size:15px; font-weight:600; letter-spacing:.2px }
+   .sub { fill:#9AA0A6; font-size:11px }
+   .mono { font-family:'SF Mono',ui-monospace,Menlo,monospace; font-size:10.5px; fill:#9AA0A6 }
+   .box { fill:#121417; stroke:rgba(255,255,255,0.10); stroke-width:1 }
+   .core { fill:#151A22; stroke:#3C5A8A; stroke-width:1 }
+   .acc { fill:#5B8DEF }
+   .lbl { fill:#8AB4F8; font-size:10px; letter-spacing:1.2px; font-weight:600 }
+  </style>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#4A5568"/>
+  </marker>
+ </defs>
+ <rect width="1240" height="620" fill="#0B0C0E"/>
+
+ <text x="28" y="34" class="lbl">USERS / ACTORS</text>
+ <rect x="28" y="44" width="366" height="70" rx="8" class="box"/>
+ <text x="46" y="70" class="ttl">Contributors</text>
+ <text x="46" y="90" class="sub">vendor datasets &#183; lab models &#183; edge-unit inference records</text>
+ <text x="46" y="105" class="sub">parties the pipeline does not control</text>
+
+ <rect x="418" y="44" width="366" height="70" rx="8" class="box"/>
+ <text x="436" y="70" class="ttl">Assurance analysts</text>
+ <text x="436" y="90" class="sub">READ: accept / review / quarantine, with reason + evidence</text>
+ <text x="436" y="105" class="sub">never asked to trust a bare score</text>
+
+ <rect x="808" y="44" width="404" height="70" rx="8" class="box"/>
+ <text x="826" y="70" class="ttl">Procurement, audit and the after-action record</text>
+ <text x="826" y="90" class="sub">re-verify offline, third party, no network</text>
+ <text x="826" y="105" class="sub">hash-chained trail + coverage statement</text>
+
+ <text x="28" y="156" class="lbl">SYSTEM &#8212; ONE OFFLINE ASSESSMENT CHAIN (NO NETWORK CALLS)</text>
+
+ <rect x="28" y="170" width="196" height="150" rx="8" class="box"/>
+ <text x="44" y="196" class="ttl">1 &#183; Intake</text>
+ <text x="44" y="216" class="sub">COCO / YOLO datasets</text>
+ <text x="44" y="233" class="sub">ONNX / PyTorch / TorchScript</text>
+ <text x="44" y="250" class="sub">normalise, hash, refuse-if-unknown</text>
+ <text x="44" y="276" class="mono">240 images &#183; 392 boxes</text>
+ <text x="44" y="291" class="mono">exact COCO/YOLO geometry</text>
+ <text x="44" y="306" class="mono">PNG pixels quantised</text>
+
+ <rect x="248" y="170" width="196" height="150" rx="8" class="box"/>
+ <text x="264" y="196" class="ttl">2 &#183; Reference battery</text>
+ <text x="264" y="216" class="sub">signed clean reference model</text>
+ <text x="264" y="233" class="sub">frozen 5% thresholds</text>
+ <text x="264" y="250" class="sub">never re-tuned on test</text>
+ <text x="264" y="276" class="mono">cal 28,314 / eval 28,313</text>
+ <text x="264" y="291" class="mono">disjoint halves</text>
+
+ <rect x="468" y="170" width="300" height="150" rx="8" class="core"/>
+ <text x="484" y="196" class="ttl">3 &#183; Signals</text>
+ <text x="484" y="216" class="sub">model probes: ctc &#183; refdiv &#183; focal arm</text>
+ <text x="484" y="233" class="sub">weight stats &#183; behavioural fingerprint</text>
+ <text x="484" y="250" class="sub">data families: dup &#183; gma &#183; label-flip &#183; oda</text>
+ <text x="484" y="267" class="sub">oga &#183; ood-insert &#183; rma</text>
+ <text x="484" y="284" class="sub">provenance: chain &#183; replay &#183; signature</text>
+ <text x="484" y="306" class="mono">complementary by construction</text>
+
+ <rect x="792" y="170" width="196" height="150" rx="8" class="box"/>
+ <text x="808" y="196" class="ttl">4 &#183; Calibration</text>
+ <text x="808" y="216" class="sub">conformal p-values</text>
+ <text x="808" y="233" class="sub">FDR at asset level</text>
+ <text x="808" y="250" class="sub">ASR gate + abstain</text>
+ <text x="808" y="276" class="mono">alpha = 0.05</text>
+ <text x="808" y="291" class="mono">no decision if unrun</text>
+
+ <rect x="1012" y="170" width="200" height="150" rx="8" class="core"/>
+ <text x="1028" y="196" class="ttl">5 &#183; Disposition</text>
+ <text x="1028" y="222" class="sub">ACCEPT</text>
+ <text x="1028" y="242" class="sub">REVIEW</text>
+ <text x="1028" y="262" class="sub">QUARANTINE</text>
+ <text x="1028" y="292" class="mono">one merged report</text>
+ <text x="1028" y="307" class="mono">per assessed asset</text>
+
+ <g stroke="#4A5568" stroke-width="1.4" marker-end="url(#a)" fill="none">
+  <path d="M224 245 H242"/><path d="M444 245 H462"/><path d="M768 245 H786"/>
+  <path d="M988 245 H1006"/>
+  <path d="M211 118 V150 H1112 V166"/>
+  <path d="M601 118 V150 H601 V166"/>
+  <path d="M1010 118 V150 H1012 V166"/>
+ </g>
+ <g stroke="#4A5568" stroke-width="1.4" marker-end="url(#a)" fill="none">
+  <path d="M1112 320 V366 H140 V392"/>
+ </g>
+
+ <text x="28" y="356" class="lbl">EVIDENCE OUTPUTS &#8212; WHAT MAKES A VERDICT AUDITABLE</text>
+ <rect x="28" y="368" width="288" height="96" rx="8" class="box"/>
+ <text x="46" y="394" class="ttl">Signed assurance report</text>
+ <text x="46" y="414" class="sub">17 findings, CRITICAL, quarantine</text>
+ <text x="46" y="431" class="mono">schema-valid &#183; run oda_s5</text>
+ <text x="46" y="447" class="mono">27.1 s audit-trail span</text>
+
+ <rect x="336" y="368" width="288" height="96" rx="8" class="box"/>
+ <text x="354" y="394" class="ttl">Hash-chained audit trail</text>
+ <text x="354" y="414" class="sub">entry links previous hash + artefact digest</text>
+ <text x="354" y="431" class="mono">7-entry chain valid (oda_s5)</text>
+ <text x="354" y="447" class="mono">10-entry chain valid (demo run)</text>
+
+ <rect x="644" y="368" width="288" height="96" rx="8" class="box"/>
+ <text x="662" y="394" class="ttl">Coverage statement</text>
+ <text x="662" y="414" class="sub">supported classes + unsupported conditions</text>
+ <text x="662" y="431" class="mono">14 of 14 clauses measured</text>
+ <text x="662" y="447" class="mono">14 supported / 8 unsupported classes</text>
+
+ <rect x="952" y="368" width="260" height="96" rx="8" class="box"/>
+ <text x="970" y="394" class="ttl">Named limits</text>
+ <text x="970" y="414" class="sub">133 unscorable arms reported</text>
+ <text x="970" y="431" class="mono">HMAC fallback, not Ed25519</text>
+ <text x="970" y="447" class="mono">overlap audit pending</text>
+
+ <line x1="28" y1="494" x2="1212" y2="494" stroke="rgba(255,255,255,0.10)"/>
+ <text x="28" y="522" class="sub">Trust boundary: everything inside the dashed region is computed offline from assets the team controls. The contributors (top left) are outside it.</text>
+ <rect x="20" y="158" width="1200" height="246" rx="12" fill="none" stroke="#3C5A8A" stroke-width="1" stroke-dasharray="5 5"/>
+ <text x="28" y="560" class="mono">source: runs/assurance/oda_s5 &#183; runs/merged_fpr_tpr_report.json &#183; runs/tpr_ladder_at_frozen.json &#183; runs/coverage.json &#183; commit 2fda6eab</text>
+ <text x="28" y="582" class="mono">laboratory / synthetic scope &#183; field validation pending</text>
+</svg>

@@ -163,6 +163,14 @@ def _cmd_corpus(args) -> int:
             print(f"wrote default plan to {args.plan}")
     if args.out:
         plan["out"] = args.out
+    # Null subtraction is ON by default. The flag exists to run the OLD measurement
+    # deliberately, because "here is what the number looked like before we subtracted
+    # the null, on the same models" is the evidence that the correction was needed.
+    if args.no_null_reference:
+        plan["null_reference"] = False
+        print("[warn] --no-null-reference: attack-success rates are RAW. A recipe that "
+              "merely changes the image scores as a successful attack on a model with "
+              "no backdoor (measured up to 0.99), so these rates are not evidence.")
     summary = run_corpus(plan, resume=not args.no_resume,
                          budget_minutes=args.budget_minutes, max_models=args.max_models)
     return 0 if summary["failed"] == 0 else 1
@@ -224,8 +232,10 @@ def _cmd_loop(args) -> int:
 
 def _cmd_eval(args) -> int:
     from cviaf.lab.evaluate import evaluate_corpus
+    ids = [m.strip() for m in args.models.split(",") if m.strip()] if args.models else None
     res = evaluate_corpus(args.corpus, alpha=args.alpha,
                           n_backgrounds=args.backgrounds, seed=args.seed,
+                          models=ids,
                           ftc_stride=args.ftc_stride,
                           ftc_decoy_class=args.ftc_decoy_class)
     print(f"corpus evaluation  (reference model: {res['reference_model']})")
@@ -341,11 +351,80 @@ def _cmd_compare(args) -> int:
     return 0
 
 
-def _cmd_label_gate_fit(args) -> int:
-    from cviaf.lab.label_gate_protocol import fit_synthetic
-    payload = fit_synthetic(args.corpus, args.out, alpha=args.alpha)
-    print(f"synthetic label reference: {args.out} SHA-256 {payload['sha256']}")
-    print("Declared synthetic domain only; not a real-world reference or validated population FPR")
+def _cmd_research(args) -> int:
+    """The improvement feedback loop.
+
+    The loop is deliberately split into two halves that run in different places.
+    The offline half (``--report``, ``--loop``) reads this lab's own measurement
+    artifacts and ranks what to build next; it makes no network calls and can be left
+    running for hours. The web half is NOT automated: egress from this environment is
+    filtered, and an unattended scraper cannot judge whether a paper transfers to this
+    pipeline. ``--seed`` loads the findings a person or agent already read, each with
+    its source URL and the number measured here.
+    """
+    from cviaf.research import (HARVEST_QUEUE, LEDGER_PATH, QUEUE_PATH,
+                               load_ledger, report, run_loop, seed_ledger)
+
+    if args.seed:
+        added = seed_ledger()
+        print(f"ledger: +{added} new findings ({len(load_ledger())} total) -> {LEDGER_PATH}")
+        if not (args.report or args.loop):
+            return 0
+    if args.loop:
+        res = run_loop(interval_minutes=args.interval_minutes, cycles=args.cycles,
+                       corpus_dirs=args.corpus)
+        print(f"loop finished after {res['cycles_done']} cycle(s); status {res['status_path']}")
+        return 0
+    print(report(corpus_dirs=args.corpus))
+    print(f"\nharvest queue: {QUEUE_PATH}")
+    return 0
+
+
+def _cmd_arm(args) -> int:
+    """Run ONE experiment lane. This is what ``lanes`` spawns per worker."""
+    from cviaf.lab.arms import run_lane
+
+    params = json.loads(args.params) if args.params else {}
+    if args.corpus:
+        params["corpus_dir"] = args.corpus
+    res = run_lane(args.name, args.out, params, log=lambda s: print(s, flush=True))
+    print()
+    print(f"lane {res['lane']}: {res['status']} in {res['seconds']}s")
+    for e in res["evidence"]:
+        print(f"  [+/{e.get('strength', '-')}] {e['id']} = {e['number']} -- {e['claim'][:100]}")
+    for g in res["gaps"]:
+        print(f"  GAP [{g.get('severity', '?')}] {g['id']}: {str(g.get('problem', ''))[:100]}")
+    return 0 if res["status"] in ("ok", "blocked") else 1
+
+
+def _cmd_lanes(args) -> int:
+    """Run the open questions as parallel lanes and merge what they prove."""
+    from cviaf.lab.arms import LANES, collect_stream, run_lanes
+
+    names = [n.strip() for n in args.lanes.split(",") if n.strip()] if args.lanes else None
+    if names:
+        unknown = [n for n in names if n not in LANES]
+        if unknown:
+            print(f"unknown lane(s): {unknown}")
+            print(f"known: {sorted(LANES)}")
+            return 2
+    # A corpus override belongs to the lanes that read a corpus. corpus_eval is
+    # deliberately left alone: it reports on the corpus it was pointed at, and
+    # silently retargeting it would hide that it is still blocked.
+    params = None
+    if args.corpus:
+        params = {n: {"corpus_dir": args.corpus}
+                  for n in ("prenms_power", "trace_foreground", "redteam")}
+    if not args.no_run:
+        res = run_lanes(names=names, out_dir=args.out, workers=args.workers,
+                        params=params, log=lambda s: print(s, flush=True))
+        print(json.dumps(res, indent=1))
+    if not args.no_collect:
+        s = collect_stream(args.out, ledger=args.ledger,
+                           log=lambda m: print(m, flush=True))
+        print()
+        print(f"stream: {s['n_established']} established, {s['n_hypotheses']} hypotheses, "
+              f"{s['n_open_gaps']} open gaps -> {args.out}/STREAM.md")
     return 0
 
 
@@ -444,6 +523,10 @@ def main(argv=None) -> int:
     c.add_argument("--budget-minutes", type=float, default=None)
     c.add_argument("--max-models", type=int, default=None)
     c.add_argument("--no-resume", action="store_true")
+    c.add_argument("--no-null-reference", action="store_true",
+                   help="measure RAW attack success, without subtracting the clean "
+                        "reference: only useful for showing what the uncorrected "
+                        "number looked like")
     c.set_defaults(func=_cmd_corpus)
 
     lp = sub.add_parser("loop", help="grow the corpus in cycles; safe to leave running")
@@ -474,6 +557,10 @@ def main(argv=None) -> int:
                    help="FTC probe grid step; larger is faster and coarser")
     e.add_argument("--ftc-decoy-class", type=int, default=0,
                    help="FTC decoy class; must be in the vocabulary the attack suppressed")
+    e.add_argument("--models", default=None,
+                   help=("comma-separated model_ids to score; default all. Lets a large "
+                         "corpus be evaluated in slices -- the null control and asset "
+                         "axis still use every clean model, so the null is unchanged"))
     e.add_argument("--json", default=None, help="also write full results here")
     e.set_defaults(func=_cmd_eval)
 
@@ -520,18 +607,37 @@ def main(argv=None) -> int:
     cov.add_argument("--out", default=None)
     cov.set_defaults(func=_cmd_coverage)
 
-    ab = sub.add_parser("arm-b", help="experiment arm B: measure U2 residual risk and U3 LOCO attribution")
-    ab.add_argument("--out", default="runs/arm_b")
-    ab.add_argument("--u2-seeds", type=int, default=8)
-    ab.add_argument("--u3-seeds", type=int, default=10)
-    ab.add_argument("--n-train", type=int, default=240)
-    ab.add_argument("--tolerance", type=float, default=0.02,
-                    help="operator residual-risk tolerance from AB1.policy")
-    ab.add_argument("--alpha", type=float, default=0.05)
-    ab.add_argument("--bootstrap", type=int, default=40)
-    ab.add_argument("--skip-u2", action="store_true")
-    ab.add_argument("--skip-u3", action="store_true")
-    ab.set_defaults(func=_cmd_arm_b)
+    rs = sub.add_parser("research", help="the improvement feedback loop")
+    rs.add_argument("--seed", action="store_true",
+                    help="load the harvested findings into the ledger (idempotent)")
+    rs.add_argument("--report", action="store_true",
+                    help="print the ranked improvement queue and exit")
+    rs.add_argument("--loop", action="store_true",
+                    help="re-scan the gaps on a schedule (offline, safe to leave running)")
+    rs.add_argument("--interval-minutes", type=float, default=30.0)
+    rs.add_argument("--cycles", type=int, default=0, help="0 = unlimited")
+    rs.add_argument("--corpus", action="append", default=None,
+                    help="corpus dir to scan; repeatable. Default: runs/mvp2, runs/day1")
+    rs.set_defaults(func=_cmd_research)
+
+    rm = sub.add_parser("arm", help="run ONE experiment lane (used by 'lanes')")
+    rm.add_argument("name", help="lane name, e.g. prenms_power | trace_foreground | redteam")
+    rm.add_argument("--out", default="runs/lanes", help="lanes output directory")
+    rm.add_argument("--corpus", default=None, help="override corpus_dir for the lane")
+    rm.add_argument("--params", default=None, help="JSON object of lane parameters")
+    rm.set_defaults(func=_cmd_arm)
+
+    ln = sub.add_parser("lanes", help="run the open questions in parallel and merge them")
+    ln.add_argument("--lanes", default=None, help="comma-separated lane names; default all")
+    ln.add_argument("--workers", type=int, default=2, help="max lanes in flight")
+    ln.add_argument("--out", default="runs/lanes")
+    ln.add_argument("--corpus", default=None,
+                    help="corpus_dir for the model-reading lanes (not corpus_eval)")
+    ln.add_argument("--no-run", action="store_true", help="skip running; only collect")
+    ln.add_argument("--no-collect", action="store_true", help="skip the merge step")
+    ln.add_argument("--ledger", action="store_true",
+                    help="append established evidence to the research ledger")
+    ln.set_defaults(func=_cmd_lanes)
 
     vr = sub.add_parser("verify-report", help="validate a report against the schema")
     vr.add_argument("report", nargs="?", default=None)

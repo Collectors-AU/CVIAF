@@ -42,34 +42,60 @@ from cviaf.lab.calibrate import (
 )
 from cviaf.lab.detector import DetectorConfig
 from cviaf.lab.detectors import (
+    PAIRED_FEATURES,
+    behavioral_fingerprint,
+    benign_variation_scale,
+    fingerprint_distance,
     make_backgrounds,
+    paired_fingerprint,
+    pre_nms_class_divergence,
     reference_divergence,
+    standardised_deviation,
     trace_ctc,
+    trace_foreground,
     trace_ftc,
+    training_class_frequencies,
+    weight_stats,
 )
 from cviaf.lab.poison import AttackSpec, trigger_view
 from cviaf.lab.synth import SceneSpec
 from cviaf.lab.train import TrainSpec, build_splits
 
-# Two signals, and FTC is deliberately not one of them (merge decision).
+# Four signals, and the reason for each is measured rather than asserted:
 #   ctc     probabilistic detection -- blind to cloaking (AUROC ~0.44 on oda)
 #   refdiv  reference divergence    -- carries cloaking, needs a trusted reference
-#
-# FTC / the Island Effect was implemented here but never earned a place in the scored
-# set, and two measurements say it still has not:
-#   * v4's own asset rule excludes it -- ``model_asset_rule.DEFAULT_SIGNALS`` carried
-#     the note "FTC failed factorial controls; optional only";
-#   * on the stamp-free factorial cell (``runs/stampfree/null_suite.json``, 3 assets,
-#     24 eval / 32 calibration images per seed) ftc's conditional AUROC was 0.5431 at
-#     TPR@5FPR 0.0000, while the *clean-peer* contrast on the identical images -- an
-#     independently trained clean model against the clean model -- put ftc at 0.0038,
-#     i.e. below chance: its ordering on like-versus-like pairs is noise. Asset
-#     decisions were 0/3 rejected in all five cells under both fusions, with and
-#     without ftc.
-# So ftc is removed from the scored detector set. ``trace_ftc`` stays implemented and
-# importable for anyone who wants to re-measure it; it is simply not part of a verdict.
-DETECTOR_NAMES = ("ctc", "refdiv")
+#   ftc     the Island Effect       -- carries cloaking WITHOUT a reference model
+#   fg      TRACE foreground arm    -- the second half of TRACE, sign inverted vs ctc
+# FTC was implemented but not wired into the evaluation, so its power was unmeasured.
+# It is a black-box probe, which makes it the answer for a contributor who will not
+# hand over weights and for whom no reference model is enrolled.
+# fg closes the citable gap that ctc reads 0.816 on the null control: if a foreground
+# measurement of a DIFFERENT quantity also fires on a trigger-stamped clean model then
+# the sensitivity is real; if only ctc fires, ctc is measuring the ink.
+DETECTOR_NAMES = ("ctc", "refdiv", "ftc", "fg")
 FUSED_NAMES = ("fused_bonf", "fused_cauchy")
+
+#: Which detectors may enter the fused statistics. ``fg`` is deliberately NOT here yet.
+#: Measured on runs/mvp it reads AUROC 0.000 on a trigger-stamped CLEAN model -- perfect
+#: separation in the INVERTED direction, i.e. it is measuring the trigger's ink exactly
+#: as ``ctc`` does -- while reading 0.042 on the ``oga`` row. A min-p (Bonferroni) fusion
+#: takes the MOST significant detector, so folding in a stamp detector raises the fused
+#: false-alarm rate on stamped clean images. It is published as its own row, and promoted
+#: into this tuple only once its stamped-null AUROC sits inside [0.45, 0.55].
+FUSED_DETECTORS = ("ctc", "refdiv", "ftc")
+
+# Asset-level (per-model) detection settings. The probe battery is shared by every
+# model so the black-box comparison is read on identical inputs, and the threshold at
+# which the paired fingerprint reads detections was chosen by sweeping the NULL only
+# (scripts/tamper_probe.py --sweep): picking it because it separated the attacks we
+# built would be fitting the corpus. The null distance is flat across 0.15-0.75, so the
+# choice is not load-bearing -- which is the point of reporting it.
+ASSET_PROBE_IMAGES = 40
+ASSET_NULL_PAIRS = 60
+ASSET_PAIR_THRESH = 0.5
+#: Confidence gate for the pre-NMS class histogram (DistScan uses a default suited to
+#: YOLOv5 on COCO, which emits far more candidates per image than this MVP detector).
+ASSET_PRE_NMS_CONF = 0.35
 
 
 def train_spec_from_manifest(manifest: Dict[str, Any]) -> TrainSpec:
@@ -161,6 +187,11 @@ def scores_for_model(
                          "access_required": "model.black_box",
                          "assumption": ("decoy class must be drawn from the vocabulary "
                                         "the attack suppressed")}
+    # TRACE foreground arm. Runs on the same images and the same cells as ctc, so the
+    # pair is a controlled comparison of "scene change" against "object change".
+    fg = trace_foreground(model, clean_imgs)
+    out["clean"]["fg"] = fg["score"]
+    out["trig"]["fg"] = trace_foreground(model, trig_imgs)["score"]
     return out
 
 
@@ -273,6 +304,8 @@ def evaluate_corpus(
             "backdoor_weak": m["quality_flags"]["backdoor_weak"],
             "model_effect_weak": bool(m.get("quality_flags", {})
                                       .get("model_effect_weak", False)),
+            "weights_changed": bool(m.get("quality_flags", {})
+                                    .get("weights_changed", False)),
             "is_model_attack": bool(m.get("quality_flags", {})
                                     .get("is_model_attack", False)),
             "weights_digest": m["artifact"]["weights_digest"][:16],
@@ -291,7 +324,7 @@ def evaluate_corpus(
                 "clean_mean": float(np.nanmean(sc["clean"][d])),
                 "trig_mean": float(np.nanmean(sc["trig"][d])),
             }
-        fused = _fused(sc["clean"], sc["trig"], DETECTOR_NAMES)
+        fused = _fused(sc["clean"], sc["trig"], FUSED_DETECTORS)
         for fname, (fc, ft) in fused.items():
             yf = np.concatenate([np.zeros(len(fc)), np.ones(len(ft))])
             # p-values are SMALL-is-positive while every other statistic here is
@@ -311,7 +344,7 @@ def evaluate_corpus(
     summary = _summarise(per_model)
     null = null_control(registry, ref_model, backgrounds, seed=seed,
                         ftc_stride=ftc_stride, ftc_decoy_class=ftc_decoy_class)
-    asset = asset_level_detectors(registry, ref_model)
+    asset = asset_level_detectors(registry, ref_model, ref_id=ref_id)
     return {"alpha": alpha, "reference_model": ref_id, "n_models": len(per_model),
             "per_model": per_model, "summary": summary, "null_control": null,
             "asset_level": asset,
@@ -323,135 +356,205 @@ def evaluate_corpus(
 def asset_level_detectors(
     registry: List[Dict[str, Any]],
     ref_model,
+    ref_id: Optional[str] = None,
+    probe_images: int = ASSET_PROBE_IMAGES,
+    max_null_pairs: int = ASSET_NULL_PAIRS,
 ) -> Dict[str, Any]:
     """Model-change detectors, scored one number per ASSET rather than per image.
 
     A substitution or a weight modification is a property of the model, not of any
     individual image, so the image-level machinery in this module is the wrong shape
-    for it. Two signals are measured here, and the pair is deliberate:
+    for it. Four signals are measured here and their TOLERANCE IS MEASURED, never
+    guessed -- every one of them is standardised by the spread it shows across
+    genuinely distinct clean models, because that spread is what "nothing happened"
+    looks like:
 
-    ``weight_deviation``      white-box. Distance of the head's weight statistics from
-                              an enrolled clean reference, in robust sigmas.
-    ``fingerprint_distance``  black-box. Distance of a battery-conditioned behavioural
-                              signature (per-class counts, confidences, box geometry)
-                              from the reference, scaled by the variation measured
-                              ACROSS genuinely distinct clean models -- so the tolerance
-                              is measured rather than guessed.
+    ``weight_z_mean`` / ``weight_z_rms``
+        white-box. Per-statistic deviation from the clean population, in units of each
+        statistic's own clean spread. Replaces ``weight_deviation`` (mean absolute
+        deviation over eight statistics in eight different units), which had a null of
+        1.66 against a largest effect of 3.48 -- not a detector, a coincidence.
 
-    The gate matters as much as the detector: models whose tamper was a no-op
-    (``model_effect_weak``) are excluded, because a detector cannot find a
-    substitution that substituted nothing.
+    ``weight_null_statistics_violated``
+        white-box, categorical. The number of weight statistics that are CONSTANT
+        across every clean model and were changed by this artifact. A statistic that
+        never varies has no z-score to report: dividing zero spread is not infinite
+        significance, and folding it into a distance lets one dimension dominate all
+        the others. It is an exact-match check instead, and it is what catches
+        structural tampering that costs zero utility.
+
+    ``paired_whitened`` / ``paired_z``
+        black-box. Distance of a battery-conditioned behavioural signature from the
+        enrolled reference, in a whitened space whose covariance is measured from clean
+        pairs. The unpaired version absorbed image difficulty into the same number as
+        model difference; pairing reads both models off the same positions so the scene
+        cancels.
+
+    ``unpaired``
+        black-box, the first implementation, retained because the measurement did not
+        crown a single winner: it is beaten by the paired statistics on diffuse edits
+        and beats them on the two attacks that change aggregate detection behaviour
+        most. Reporting all of them is the honest outcome of a tie.
+
+    The gate matters as much as the detector, and its criterion changed after
+    measurement. It is no longer "utility dropped" -- an artifact can be tampered with
+    and still work, and that is the case an integrity framework exists for (zeroing 6%
+    of the hidden units left F1 unchanged to three decimals). The gate is now "the
+    artifact is not byte-identical to the honest model", and harm is an attribute the
+    table is stratified by.
     """
-    from cviaf.lab.detectors import (
-        DEFAULT_SCORE_THRESH,
-        battery_digest,
-        behavioral_fingerprint,
-        benign_variation_scale,
-        compare_fingerprints,
-        fingerprint_record,
-        weight_score,
-        weight_stats,
-    )
     from cviaf.lab.train import ModelArtifact
 
-    clean, tampered, gated = [], [], []
-    clean_fps: List[np.ndarray] = []
+    # One battery for every model, so all fingerprints are read on identical inputs.
+    # It is the eval_clean split of the first registry entry, which every other model
+    # has never been trained on -- a shared held-out battery, which is what makes a
+    # black-box comparison between two models meaningful at all.
     probe = None
+    ref_counts = None
+    for e in registry:
+        splits = build_splits(train_spec_from_manifest(e["manifest"]))
+        probe = splits.eval_clean.images[:probe_images]
+        # The pre-NMS class-prior signal needs the DECLARED training class
+        # distribution, not the contributed one: for a poisoning attack the
+        # contributed labels are exactly what is in question. The clean training
+        # split is the prior the model was supposed to encode.
+        ref_counts = training_class_frequencies(
+            splits.train.labels, int(train_spec_from_manifest(
+                e["manifest"]).detector.n_classes))
+        break
+
+    clean, attacked, inert = [], [], []
     for e in registry:
         m = e["manifest"]
-        spec = train_spec_from_manifest(m)
-        splits = build_splits(spec)
-        if probe is None:
-            probe = splits.eval_clean.images[:16]
-        art = ModelArtifact.load(e["dir"])
         kind = m["ground_truth"]["kind"]
-        is_model_attack = bool(m.get("quality_flags", {}).get("is_model_attack"))
-        fp = behavioral_fingerprint(art.model, probe)
+        flags = m.get("quality_flags", {}) or {}
+        is_model_attack = bool(flags.get("is_model_attack"))
+        if is_model_attack and not bool(flags.get("weights_changed", False)):
+            # Byte-identical to the honest model: nothing was tampered with, so there is
+            # nothing to detect. Counted and reported, never scored as a negative --
+            # scoring it would be measuring the detector against a non-attack.
+            inert.append({"model_id": m["model_id"],
+                          "mechanism": m["ground_truth"].get("mechanism")})
+            continue
+        art = ModelArtifact.load(e["dir"])
+        bdr = (m.get("metrics", {}) or {}).get("behaviour_divergence") or {}
         row = {"model_id": m["model_id"], "kind": kind,
+               "mechanism": m["ground_truth"].get("mechanism"),
                "weights": weight_stats(art.model),
-               "fingerprint": fp.tolist(),
-               "is_model_attack": is_model_attack,
-               "model_effect_weak": bool(m.get("quality_flags", {})
-                                         .get("model_effect_weak", False)),
-               "f1_relative_drop": ((m.get("metrics", {})
-                                     .get("behaviour_divergence") or {})
-                                    .get("f1_relative_drop"))}
+               "model": art.model,
+               "f1_relative_change": bdr.get("f1_relative_change"),
+               "f1_relative_drop": bdr.get("f1_relative_drop"),
+               "is_model_attack": is_model_attack}
         if is_model_attack:
-            (gated if row["model_effect_weak"] else tampered).append(row)
+            attacked.append(row)
         elif kind == "clean":
             clean.append(row)
-            clean_fps.append(fp)
-    if not clean or probe is None:
-        return {"available": False, "reason": "no clean model to form a reference"}
+    if len(clean) < 2 or probe is None or ref_model is None:
+        return {"available": False,
+                "reason": ("needs an enrolled reference and at least two clean models to "
+                           "measure a tolerance from")}
 
-    ref_stats: Dict[str, float] = {}
-    keys = clean[0]["weights"].keys()
-    for k in keys:
-        vals = [c["weights"][k] for c in clean if c["weights"].get(k) is not None]
-        ref_stats[k] = float(np.mean(vals))
-    scale = benign_variation_scale(clean_fps) if len(clean_fps) > 1 else None
-    ref_fp = np.mean(np.stack(clean_fps), axis=0)
-    # The battery every fingerprint in this run is conditioned on. It is recorded in
-    # the output so a later run can tell whether its numbers are comparable, and the
-    # comparison below REFUSES rather than subtracting two vectors measured on
-    # different probe batteries (clause 3.5: fingerprint_incomparable).
-    battery = battery_digest(probe, score_thresh=DEFAULT_SCORE_THRESH)
-    ref_record = fingerprint_record(ref_fp, battery, model_id="<clean-mean>")
+    keys = list(clean[0]["weights"].keys())
+    w_ref = {k: float(np.mean([c["weights"][k] for c in clean])) for k in keys}
+    w_sd = {k: float(np.std([c["weights"][k] for c in clean])) for k in keys}
+    # Statistics that are constant across every clean model: exact-match checks.
+    constant_stats = [k for k in keys if w_sd[k] <= 0.0]
 
-    def score(row: Dict[str, Any]) -> Dict[str, float]:
-        w = dict(row["weights"])
-        comparison = compare_fingerprints(
-            fingerprint_record(np.asarray(row["fingerprint"], np.float64), battery,
-                               model_id=row.get("model_id")),
-            ref_record, scale)
+    # ---- the null, measured: clean models read against each other on one battery
+    order = [(i, j) for i in range(len(clean)) for j in range(len(clean)) if i != j]
+    if len(order) > max_null_pairs:
+        step = len(order) / float(max_null_pairs)
+        order = [order[int(i * step)] for i in range(max_null_pairs)]
+    null_paired = [paired_fingerprint(clean[i]["model"], clean[j]["model"], probe,
+                                      score_thresh=ASSET_PAIR_THRESH)
+                   for i, j in order]
+    P = np.stack(null_paired)
+    P_mean, P_sd = P.mean(axis=0), P.std(axis=0)
+    inv_cov = whitened_inverse_cov(P)
+
+    null_seq = [behavioral_fingerprint(c["model"], probe) for c in clean]
+    seq_mean = np.mean(np.stack(null_seq), axis=0)
+    seq_scale = benign_variation_scale(null_seq)
+
+    def signals(row: Dict[str, Any]) -> Dict[str, Any]:
+        agg = standardised_deviation([row["weights"][k] for k in keys],
+                                     [w_ref[k] for k in keys], [w_sd[k] for k in keys])
+        pf = paired_fingerprint(row["model"], ref_model, probe,
+                                score_thresh=ASSET_PAIR_THRESH)
+        seq = behavioral_fingerprint(row["model"], probe)
         return {
-            "weight_deviation": weight_score_of(w, ref_stats),
-            "fingerprint_distance": (comparison.get("distance")
-                                     if comparison["status"] == "comparable" else None),
-            "fingerprint_status": comparison["status"],
+            "weight_z_mean": round(float(agg["z_mean"]), 6),
+            "weight_z_rms": round(float(agg["z_rms"]), 6),
+            "weight_z_max": round(float(agg["z_max"]), 6),
+            "weight_null_statistics_violated": len(agg["violated_constant_statistics"]),
+            "paired_whitened": round(_mahalanobis(pf, P_mean, inv_cov), 6),
+            "paired_z": round(float(np.sqrt(np.sum(
+                ((np.asarray(pf) - P_mean) / np.maximum(P_sd, 1e-12)) ** 2))), 6),
+            "unpaired": round(fingerprint_distance(seq, seq_mean, seq_scale), 6),
+            # Clean-input, trigger-free: cannot be contaminated by a stamp, because
+            # nothing is stamped. Read at a slightly lower confidence gate than the
+            # paper's default because this MVP detector emits far fewer pre-NMS
+            # candidates per image than YOLOv5 on COCO.
+            "pre_nms_class_js": round(pre_nms_class_divergence(
+                row["model"], probe, ref_counts,
+                conf=ASSET_PRE_NMS_CONF)["score"], 6),
         }
 
-    rows = []
-    for r in clean + tampered + gated:
-        s = score(r)
-        rows.append({**{k: r[k] for k in ("model_id", "kind", "is_model_attack",
-                                          "model_effect_weak", "f1_relative_drop")},
-                     **s})
+    rows, clean_scores, attacked_scores = [], [], []
+    for group, store in ((clean, clean_scores), (attacked, attacked_scores)):
+        for r in group:
+            s = signals(r)
+            store.append(s)
+            rows.append({**{k: r[k] for k in ("model_id", "kind", "mechanism",
+                                              "is_model_attack", "f1_relative_change",
+                                              "f1_relative_drop")}, **s})
+
+    SIGNALS = ("weight_z_mean", "weight_z_rms", "weight_z_max",
+               "weight_null_statistics_violated", "paired_whitened", "paired_z",
+               "unpaired", "pre_nms_class_js")
+    # The tolerance per signal is the largest value a CLEAN model produces -- an
+    # achievable threshold rather than a p95 extrapolated from eight samples. A
+    # detection below it is reported as inside the null even when its AUROC looks
+    # good, because at this sample size AUROC and deployability are different claims.
+    null_max = {s: (float(max(float(c[s]) for c in clean_scores))
+                    if clean_scores else None) for s in SIGNALS}
+    null_mean = {s: (float(np.mean([float(c[s]) for c in clean_scores]))
+                     if clean_scores else None) for s in SIGNALS}
 
     incomparable = [r["model_id"] for r in rows
                     if r.get("fingerprint_status") == "fingerprint_incomparable"]
     out: Dict[str, Any] = {
         "available": True,
-        "n_clean": len(clean), "n_model_attacked_scored": len(tampered),
-        "n_model_attacked_gated": len(gated),
-        "benign_scale_measured_from_clean_models": len(clean_fps) > 1,
-        "battery_digest": battery,
-        "battery_digest_schema": "cviaf.battery-digest.v1",
-        "fingerprint_incomparable": incomparable,
+        "reference_model": ref_id,
+        "n_clean": len(clean), "n_model_attacked": len(attacked),
+        "n_inert_skipped": len(inert), "inert": inert,
+        "battery": {"n_images": int(len(probe)),
+                    "source": ("eval_clean of the first registry entry -- one shared "
+                               "held-out battery, read identically for every model"),
+                    "detection_threshold": ASSET_PAIR_THRESH},
+        "null": {"n_clean_pairs_used": len(order),
+                 "paired_features": list(PAIRED_FEATURES),
+                 "clean_mean": null_mean, "clean_max": null_max,
+                 "constant_weight_statistics": constant_stats},
         "per_model": rows,
     }
-    pos = [r for r in rows if r["is_model_attack"] and not r["model_effect_weak"]]
-    for det in ("weight_deviation", "fingerprint_distance"):
-        if not pos or not clean:
+    for det in SIGNALS:
+        if not attacked_scores:
             out[det] = {"auroc": None, "note": "no scored model attacks in this corpus"}
             continue
-        scored = [r for r in rows if r["kind"] == "clean" or r in pos]
-        if any(r[det] is None for r in scored):
-            # A refused fingerprint comparison is not a score of zero: refuse the
-            # AUROC too, rather than averaging in a number that was never measured.
-            out[det] = {"auroc": None, "fingerprint_status": "fingerprint_incomparable",
-                        "note": (f"{det} was refused for one or more models because the "
-                                 f"battery digest differed; no comparable score exists"),
-                        "refused_models": [r["model_id"] for r in scored
-                                           if r[det] is None]}
-            continue
-        scores = np.asarray([r[det] for r in scored], np.float64)
-        labels = np.asarray([False] * len(clean) + [True] * len(pos))
+        scores = np.asarray([float(c[det]) for c in clean_scores]
+                            + [float(c[det]) for c in attacked_scores], np.float64)
+        labels = np.asarray([False] * len(clean_scores)
+                            + [True] * len(attacked_scores))
+        thr = null_max[det]
         out[det] = {
             "auroc": _safe(auroc(scores, labels)),
-            "clean_mean": float(np.mean([r[det] for r in rows if r["kind"] == "clean"])),
-            "attacked_mean": float(np.mean([r[det] for r in pos])),
             "tpr_at_5fpr": _safe(tpr_at_fpr(scores, labels, 0.05)),
+            "clean_mean": null_mean[det], "clean_max": thr,
+            "attacked_mean": float(np.mean([float(c[det]) for c in attacked_scores])),
+            "attacked_above_clean_max": int(sum(1 for c in attacked_scores
+                                                if float(c[det]) > thr)),
+            "n_attacked": len(attacked_scores),
         }
     return out
 
@@ -461,11 +564,36 @@ def weight_score_of(stats: Dict[str, float], reference: Dict[str, float]) -> flo
 
     Local helper rather than ``detectors.weight_score`` so this table is independent of
     that function's signature: the evaluation must be able to re-measure the detector
-    even if the detector changes.
+    even if the detector changes. Kept for comparability with the first published
+    table -- it is NOT the shipped statistic, because with eight statistics in eight
+    different units it has no meaningful null (measured 1.66 against a largest effect
+    of 3.48, see scripts/tamper_probe.py). ``weight_z_mean``/``weight_z_rms`` below are
+    the standardised replacements.
     """
     dev = [abs(float(stats[k]) - float(reference[k]))
            for k in stats if k in reference and reference[k] is not None]
     return float(np.mean(dev)) if dev else 0.0
+
+
+def whitened_inverse_cov(P: np.ndarray) -> np.ndarray:
+    """Inverse covariance of the null feature differences, from MEASURED clean pairs.
+
+    The per-feature z-distance treats the eight readings as independent and they are
+    not: a model that misses objects the reference saw also reports a different object
+    count, so ``ref_only_rate`` and ``sus_only_rate`` move together. A sum over
+    correlated coordinates lets a joint shift partly cancel -- measured on a tamper
+    that cost 47% of F1, the plain z-distance stayed inside the clean null while the
+    individual readings were obviously abnormal. Whitening fixes that, and the
+    covariance comes from clean pairs rather than a diagonal assumption.
+    """
+    C = np.cov(np.asarray(P, np.float64).T)
+    C = C + np.eye(C.shape[0]) * (1e-6 * float(np.trace(C) / max(C.shape[0], 1)))
+    return np.linalg.pinv(C)
+
+
+def _mahalanobis(fp: np.ndarray, mean: np.ndarray, inv_cov: np.ndarray) -> float:
+    d = np.asarray(fp, np.float64) - np.asarray(mean, np.float64)
+    return float(np.sqrt(max(0.0, float(d @ inv_cov @ d))))
 
 
 def null_control(
@@ -538,6 +666,13 @@ def null_control(
             np.concatenate([ft_c, ft_t]),
             np.concatenate([np.zeros(len(ft_c)), np.ones(len(ft_t))]))),
             "clean_mean": float(np.mean(ft_c)), "trig_mean": float(np.mean(ft_t))}
+        fg_c = trace_foreground(art.model, clean_imgs)["score"]
+        fg_t = trace_foreground(art.model, trig_imgs)["score"]
+        okc, okt = np.isfinite(fg_c), np.isfinite(fg_t)
+        row["detectors"]["fg"] = {"auroc": _safe(auroc(
+            np.concatenate([fg_c[okc], fg_t[okt]]),
+            np.concatenate([np.zeros(int(okc.sum())), np.ones(int(okt.sum()))]))),
+            "clean_mean": float(np.nanmean(fg_c)), "trig_mean": float(np.nanmean(fg_t))}
         stamped_rows.append(row)
 
     out: Dict[str, Any] = {
@@ -546,24 +681,41 @@ def null_control(
         "stamped_with": attack_spec.kind,
         "interpretation": ("AUROC of clean-vs-stamped images on a model that was never "
                           "trained with a trigger. 0.500 = the detector ignores the "
-                          "stamp. Materially above 0.500 = it is reacting to the "
-                          "patch, not to a backdoor, and its attacked-row numbers are "
-                          "inflated by that much."),
+                          "stamp. Materially AWAY from 0.500 in either direction = it is "
+                          "reacting to the patch rather than to a backdoor, and its "
+                          "attacked-row numbers are inflated by that much. Distance is "
+                          "two-sided on purpose: an inverted statistic separates the "
+                          "stamp perfectly at 0.000, and reading that as 'ignores it' "
+                          "would publish the worst contamination as the cleanest cell."),
         "per_model": stamped_rows,
     }
     if stamped_rows:
         for d in DETECTOR_NAMES:
             vals = [r["detectors"][d]["auroc"] for r in stamped_rows
                     if d in r["detectors"] and r["detectors"][d]["auroc"] is not None]
+            if not vals:
+                out[d] = {"auroc_mean": None, "auroc_spread": None,
+                          "direction": None, "verdict": "clean"}
+                continue
+            mean = float(np.mean(vals))
+            dev = abs(mean - 0.5)
+            verdict = ("measures the stamp, not the backdoor" if dev > 0.10 else
+                       "mild stamp sensitivity" if dev > 0.05 else "ignores the stamp")
+            if dev > 0.10 and mean < 0.5:
+                verdict += " (INVERTED direction)"
             out[d] = {
-                "auroc_mean": round(float(np.mean(vals)), 4) if vals else None,
-                "auroc_spread": round(float(np.std(vals)), 4) if vals else None,
-                "verdict": ("clean" if not vals else
-                            "measures the stamp, not the backdoor"
-                            if float(np.mean(vals)) > 0.60 else
-                            "mild stamp sensitivity" if float(np.mean(vals)) > 0.55
-                            else "ignores the stamp"),
+                "auroc_mean": round(mean, 4),
+                "auroc_spread": round(float(np.std(vals)), 4),
+                "direction": "inverted" if mean < 0.5 else "as declared",
+                "verdict": verdict,
             }
+        if len(stamped_rows) == 1:
+            # With one clean model the reference-divergence arm compares that model with
+            # itself, so its null row is degenerate (identical models can only disagree
+            # through the matching heuristic). Named rather than left to look measured.
+            out["caveat"] = ("only 1 clean model: the reference-divergence null compares "
+                             "the model with itself and must not be read as a "
+                             "detector-independent number")
     return out
 
 
@@ -630,12 +782,25 @@ def _summarise(per_model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         by_kind.setdefault(r["kind"], []).append(r)
     rows = []
     for kind, rs in sorted(by_kind.items()):
-        # Two exclusion reasons, both reported: a backdoor that never implanted, and a
-        # model tamper that never moved behaviour. Either way there is nothing for a
+        # Two exclusion reasons, both reported: a trigger backdoor that never implanted,
+        # and a model attack whose artifact is byte-identical to the honest model so
+        # that nothing was actually tampered with. Either way there is nothing for a
         # detector to find, and scoring against it would flatter the detector.
-        scored = [r for r in rs
-                  if kind == "clean"
-                  or (not r.get("backdoor_weak") and not r.get("model_effect_weak"))]
+        #
+        # ``model_effect_weak`` (utility did not move) is deliberately NOT an exclusion
+        # any more. A weight modification that leaves accuracy intact is the case an
+        # integrity framework exists for -- zeroing 6% of the hidden units left F1
+        # unchanged and still rewrote a statistic that is 0.0 for every clean model.
+        # Excluding it would be the framework calling a tampered artifact clean because
+        # it still works. Harm is reported as a stratification instead.
+        def _scored(r):
+            if kind == "clean":
+                return True
+            if r.get("is_model_attack"):
+                return bool(r.get("weights_changed", True))
+            return not r.get("backdoor_weak")
+
+        scored = [r for r in rs if _scored(r)]
         entry: Dict[str, Any] = {
             "kind": kind, "n_models": len(rs), "n_scored": len(scored),
             "n_excluded_weak": len(rs) - len(scored),
@@ -644,6 +809,13 @@ def _summarise(per_model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                                                 if r.get("model_effect_weak")),
             "mean_asr": float(np.mean([r["asr"] for r in rs])),
         }
+        # Detection vs harm: how much utility each artifact lost, and how many of those
+        # the detectors actually flagged. This is the table that answers "does it work on
+        # a tamper that still works?", which a single TPR cannot.
+        weak = [r for r in scored if r.get("model_effect_weak")]
+        entry["utility_neutral_models_scored"] = len(weak)
+        entry["mean_asr_utility_neutral"] = (float(np.mean([r["asr"] for r in weak]))
+                                             if weak else None)
         for d in list(DETECTOR_NAMES) + list(FUSED_NAMES):
             vals = [r["detectors"][d]["auroc"] for r in scored
                     if d in r["detectors"] and r["detectors"][d]["auroc"] is not None]

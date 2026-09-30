@@ -1,0 +1,38 @@
+{
+ "status": "ok",
+ "corpus_dir": "runs/day1",
+ "stamp_null": {
+  "ctc": 0.9207627118644067,
+  "fg": 0.3391242937853107,
+  "stamped_with": "gma",
+  "n_images": 60,
+  "interpretation": "AUROC of clean vs trigger-stamped images on a model with NO backdoor. 0.500 = ignores the stamp. Above 0.60 = the detector is measuring the ink, and its attacked-row numbers are inflated by that much."
+ },
+ "attacked": [
+  {
+   "kind": "gma",
+   "ctc": 0.8394444444444444,
+   "fg": 0.4340277777777778
+  },
+  {
+   "kind": "oda",
+   "ctc": 0.3817610062893082,
+   "fg": 0.5259615384615385
+  },
+  {
+   "kind": "oga",
+   "ctc": 0.8176388888888889,
+   "fg": 0.38166666666666665
+  },
+  {
+   "kind": "rma",
+   "ctc": 0.7448611111111111,
+   "fg": 0.4479166666666667
+  }
+ ],
+ "skipped_data_only": [
+  "dup_flood",
+  "label_flip",
+  "ood_insert"
+ ]
+}

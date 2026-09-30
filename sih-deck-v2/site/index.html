@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CVIAF — integrity assurance evidence</title>
+<style>
+  :root{
+    --bg:#0B0C0E; --panel:#121417; --panel2:#171A1F; --raise:#1C2027;
+    --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.16);
+    --ink:#E8EAED; --ink2:#C4C8CE; --muted:#9AA0A6; --dim:#6B7178;
+    --acc:#5B8DEF; --acc-soft:rgba(91,141,239,.13);
+    --ok:#6FBF8B; --warn:#D9A441; --bad:#D9736B;
+    --sans:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+    --r:14px; --pad:clamp(20px,4vw,44px);
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       -webkit-font-smoothing:antialiased;line-height:1.55;overflow-x:hidden}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+  a{color:var(--acc);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:3px}
+  code,kbd,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* ---------- floating nav (detached pill, not edge-to-edge) ---------- */
+  .nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;
+    display:flex;gap:2px;align-items:center;padding:6px;border-radius:999px;
+    background:rgba(18,20,23,.72);backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--line);
+    max-width:calc(100vw - 32px);overflow-x:auto;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{padding:7px 13px;border-radius:999px;font-size:12.5px;color:var(--ink2);
+    white-space:nowrap;transition:background .4s var(--ease),color .4s var(--ease)}
+  .nav a:hover{background:var(--raise);color:#fff;text-decoration:none}
+  .nav .brand{display:flex;align-items:center;gap:8px;padding:0 12px 0 8px;color:#fff;
+    font-weight:600;font-size:12.5px;letter-spacing:.3px;white-space:nowrap}
+  .nav .dot{width:7px;height:7px;border-radius:50%;background:var(--acc)}
+
+  main{max-width:1280px;margin:0 auto;padding:0 var(--pad)}
+  section{padding:clamp(68px,9vw,120px) 0;border-top:1px solid var(--line)}
+  section:first-of-type{border-top:0}
+
+  /* ---------- hero ---------- */
+  .hero{padding-top:clamp(120px,16vw,190px);padding-bottom:clamp(48px,6vw,80px)}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--muted);border:1px solid var(--line);
+    border-radius:999px;padding:5px 12px;margin-bottom:26px}
+  h1{font-size:clamp(2.1rem,5.1vw,4.05rem);line-height:1.06;letter-spacing:-.03em;
+    margin:0 0 20px;max-width:22ch;font-weight:640}
+  h1 em{font-style:normal;color:var(--acc)}
+  .lede{font-size:clamp(15px,1.5vw,18px);color:var(--ink2);max-width:64ch;margin:0 0 34px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 22px;border-radius:10px;
+    font-size:13.5px;font-weight:550;border:1px solid var(--line2);color:var(--ink);
+    transition:background .45s var(--ease),transform .45s var(--ease),border-color .45s var(--ease)}
+  .btn:hover{text-decoration:none;background:var(--raise);transform:translateY(-1px)}
+  .btn.primary{background:var(--acc);border-color:var(--acc);color:#06101F}
+  .btn.primary:hover{background:#6E9BF3}
+  .btn .knob{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(0,0,0,.16);font-size:12px;transition:transform .45s var(--ease)}
+  .btn:hover .knob{transform:translate(2px,-2px) scale(1.06)}
+
+  h2{font-size:clamp(1.35rem,2.5vw,2rem);letter-spacing:-.02em;margin:0 0 10px;font-weight:620}
+  .sect-head{max-width:74ch;margin-bottom:38px}
+  .sect-head p{color:var(--muted);font-size:14px;margin:0}
+  .tag{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);
+    display:block;margin-bottom:14px}
+
+  /* ---------- double-bezel card ---------- */
+  .shell{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:calc(var(--r) + 6px);padding:6px}
+  .core{background:var(--panel);border-radius:var(--r);padding:22px 24px;height:100%;
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.045)}
+  .core h3{margin:0 0 4px;font-size:14px;font-weight:580;letter-spacing:-.01em}
+  .core .sub{color:var(--muted);font-size:12px;margin:0}
+
+  .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;grid-auto-flow:dense}
+  .c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}
+  .c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+  .kpi .n{font-family:var(--mono);font-size:clamp(1.5rem,2.6vw,2.05rem);letter-spacing:-.03em;
+    margin:10px 0 2px;color:#fff;font-weight:500}
+  .kpi .cap{color:var(--muted);font-size:11.5px;line-height:1.45}
+
+  /* ---------- tables ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dim);font-weight:600;padding:0 12px 10px;border-bottom:1px solid var(--line2)}
+  td{padding:11px 12px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:top}
+  td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:0}
+  .scroll{overflow-x:auto}
+
+  .badge{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--muted)}
+  .badge.ok{color:var(--ok);border-color:rgba(111,191,139,.35);background:rgba(111,191,139,.08)}
+  .badge.warn{color:var(--warn);border-color:rgba(217,164,65,.35);background:rgba(217,164,65,.08)}
+  .badge.bad{color:var(--bad);border-color:rgba(217,115,107,.35);background:rgba(217,115,107,.08)}
+  .badge.acc{color:var(--acc);border-color:rgba(91,141,239,.4);background:var(--acc-soft)}
+
+  .note{border-left:2px solid var(--warn);background:rgba(217,164,65,.06);
+    padding:12px 16px;border-radius:0 8px 8px 0;font-size:12.5px;color:var(--ink2);margin-top:18px}
+  .note.bad{border-color:var(--bad);background:rgba(217,115,107,.07)}
+  .note.acc{border-color:var(--acc);background:var(--acc-soft)}
+  .note b{color:#fff;font-weight:580}
+
+  .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+  .tabs button{background:transparent;border:1px solid var(--line);color:var(--muted);
+    padding:7px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;
+    font-family:var(--sans);transition:all .4s var(--ease)}
+  .tabs button[aria-selected="true"]{color:#fff;border-color:var(--line2);background:var(--raise)}
+  .tabs button:hover{color:var(--ink)}
+
+  details{border-bottom:1px solid var(--line);padding:15px 0}
+  details summary{cursor:pointer;font-size:13.5px;color:var(--ink2);list-style:none;
+    display:flex;gap:12px;align-items:flex-start}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"+";color:var(--dim);font-family:var(--mono);width:14px;flex:none}
+  details[open] summary::before{content:"–"}
+  details p{margin:10px 0 0 26px;color:var(--muted);font-size:12.5px}
+
+  svg{display:block;max-width:100%;height:auto}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .figcap{color:var(--dim);font-size:11px;margin-top:10px;font-family:var(--mono)}
+
+  footer{border-top:1px solid var(--line);padding:44px var(--pad) 70px;color:var(--dim);font-size:12px}
+  footer .row{max-width:1280px;margin:0 auto;display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+  input[type=search]{width:100%;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;color:var(--ink);font-size:13px;font-family:var(--sans);margin-bottom:16px}
+  input[type=search]:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+    *{transition-duration:.01ms !important}
+  }
+  @media (max-width:860px){
+    .c4,.c5,.c6,.c7,.c8{grid-column:span 12}
+    .grid2{grid-template-columns:1fr}
+    section{padding:64px 0}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<nav class="nav">
+  <span class="brand"><span class="dot"></span>CVIAF evidence</span>
+  <a href="#overview">Overview</a>
+  <a href="#headline">Detection headline</a>
+  <a href="#fpr">Clean-null FPR</a>
+  <a href="#ladder">Dose ladder</a>
+  <a href="#baseline">Baseline vs CVIAF</a>
+  <a href="#provenance">Provenance</a>
+  <a href="#inventory">Inventories</a>
+  <a href="#limits">Method &amp; limits</a>
+  <a href="#evidence">Evidence explorer</a>
+  <a href="#research">Research basis</a>
+</nav>
+
+<main>
+  <section class="hero">
+    <span class="eyebrow"><span class="mono" id="hero-commit"></span> · laboratory study</span>
+    <h1>Integrity assurance for contributed data, models and <em>inference records</em>.</h1>
+    <p class="lede">One offline chain measures every artefact against a reference the team owns,
+      then publishes each conclusion with its confidence, its evidence and the limits of what it
+      can prove. Every number on this page is read from a committed receipt and names its
+      denominator.</p>
+    <p class="lede" style="margin-top:-22px">At a false-alarm budget frozen on clean models
+      first, its strongest measured rule catches <b>47.9% of substitution attacks</b> at dose
+      0.25 and <b>93.7%</b> at dose 0.50 — while a second rule that passes the same
+      false-alarm test catches almost none of them.</p>
+    <div class="cta">
+      <a class="btn primary" href="#headline">Read the measurements <span class="knob">↗</span></a>
+      <a class="btn" href="#" id="repo-link" target="_blank" rel="noopener">Repository <span class="knob">↗</span></a>
+    </div>
+    <p class="figcap" style="margin-top:26px">Static build over committed study results · not a live engine · no network calls in the assurance path</p>
+  </section>
+
+  <section id="overview">
+    <div class="sect-head">
+      <span class="tag">Overview</span>
+      <h2>Six numbers, each with its denominator</h2>
+      <p>The clean-null ledger and the attack ladder are different experiments on different
+        populations. They are shown separately everywhere on this page for that reason — the
+        first three tiles are the detection headline from the ladder, the last three are the
+        clean-null study it was calibrated on.</p>
+    </div>
+    <div class="bento" id="kpis"></div>
+    <div class="note acc" style="margin-top:18px">
+      <b>Zero attacked positives in the clean ledger.</b> That makes TPR, precision and expected
+      loss <i>undefined</i> in that ledger, not zero — so detection is measured on the separate
+      attack ladder, at thresholds the clean ledger froze first. Both facts are load-bearing;
+      neither replaces the other.
+    </div>
+  </section>
+
+  <section id="headline">
+    <div class="sect-head">
+      <span class="tag">Headline detection · frozen thresholds</span>
+      <h2>At a frozen 5% false-alarm budget, this is what gets caught</h2>
+      <p>Thresholds were fixed on 28,313 held-out clean models <i>before</i> any attacked arm
+        was scored, so these rates are not tuned on the attacks. They are the four cells the
+        repository's own number audit enforces — one class and one dose at a time, never
+        pooled.</p>
+    </div>
+    <div id="hl-chart"></div>
+    <div class="scroll" style="margin-top:26px"><table id="hl-table"></table></div>
+    <div class="grid2" style="margin-top:26px">
+      <div class="shell"><div class="core"><h3>The measurement that matters most here</h3>
+        <p class="sub">Bias lift is the backdoor-like case</p>
+        <div class="note bad" style="margin-top:12px" id="hl-inert-note"></div>
+      </div></div>
+      <div class="shell"><div class="core"><h3>Two rules, same false-alarm rate, different eyes</h3>
+        <p class="sub">RefDiv-mean vs CTC-mean at the identical frozen threshold</p>
+        <div class="note acc" style="margin-top:12px" id="hl-ctc-note"></div>
+      </div></div>
+    </div>
+    <div class="note" id="hl-superseded"></div>
+  </section>
+
+  <section id="fpr">
+    <div class="sect-head">
+      <span class="tag">Clean-null false alarms</span>
+      <h2>Calibration sits near the 5% target — the intervals include it</h2>
+      <p>Thresholds come from the calibration half's negatives only; the false-alarm rate is
+        measured on a disjoint held-out half that never contributed to the threshold.</p>
+    </div>
+    <div class="scroll"><table id="fpr-table"></table></div>
+    <div class="grid2" style="margin-top:34px"><div id="fpr-chart"></div>
+      <div id="fpr-notes"></div></div>
+  </section>
+
+  <section id="ladder">
+    <div class="sect-head">
+      <span class="tag">Frozen-threshold attack ladder</span>
+      <h2>Detection rises with measured damage — inside one family at a time</h2>
+      <p>Dose units differ by family (prune fraction, noise sigma, logit units), so the families
+        are never pooled and never share a severity axis.</p>
+    </div>
+    <div class="tabs" id="ladder-tabs" role="tablist"></div>
+    <div class="grid2">
+      <div class="shell"><div class="core"><h3 id="ladder-title"></h3>
+        <p class="sub" id="ladder-unit"></p><div id="ladder-chart" style="margin-top:16px"></div></div></div>
+      <div class="shell"><div class="core"><h3>Arms caught, by dose</h3>
+        <p class="sub">Hollow markers are below the declared floor of 20 and are not estimates.</p>
+        <div class="scroll"><table id="ladder-table" style="margin-top:14px"></table></div></div></div>
+    </div>
+    <div class="note" id="ladder-note"></div>
+  </section>
+
+  <section id="baseline">
+    <div class="sect-head">
+      <span class="tag">Same laboratory cohort</span>
+      <h2>Implemented baseline checks vs CVIAF — a tradeoff, not dominance</h2>
+      <p>These comparators are written by the team. They are not a reproduced operational system,
+        and the denominators are small enough that they are illustrative.</p>
+    </div>
+    <div class="grid2">
+      <div class="shell"><div class="core"><h3>Model axis</h3>
+        <p class="sub">2 scored positives, 4 negatives, 2 ASR-gated exclusions</p>
+        <div id="model-axis" style="margin-top:16px"></div></div></div>
+      <div class="shell"><div class="core"><h3>Data axis</h3>
+        <p class="sub">7 poisoned assets, 1 clean asset; 432 poisoned and 1,560 clean samples</p>
+        <div id="data-axis" style="margin-top:16px"></div></div></div>
+    </div>
+    <div class="scroll" style="margin-top:30px"><table id="baseline-table"></table></div>
+    <div class="note bad" style="margin-top:18px"><b>The unfavourable result stays visible.</b>
+      At sample level the per-sample baseline reaches TPR 84.03% / precision 93.80% while CVIAF's
+      FDR decision reaches 16.90% / 58.87%. The asset-level false-alarm reduction does not cancel
+      that, and the two units must not be swapped.</div>
+  </section>
+
+  <section id="provenance">
+    <div class="sect-head">
+      <span class="tag">Inference records</span>
+      <h2>8 attacked and 2 genuine records — abstentions kept visible</h2>
+      <p>A record checker that abstains is not the same as one that clears the record. Both are
+        shown, along with the key assumption this run was signed under.</p>
+    </div>
+    <div class="grid2"><div id="prov-chart"></div><div id="prov-notes"></div></div>
+  </section>
+
+  <section id="inventory">
+    <div class="sect-head">
+      <span class="tag">Corpus inventories</span>
+      <h2>Two populations that overlap — never added together</h2>
+      <p>The merged study and the export record share shards. Summing them would double count.</p>
+    </div>
+    <div id="inventory-chart"></div>
+    <div class="note bad" id="inventory-note"></div>
+  </section>
+
+  <section id="limits">
+    <div class="sect-head">
+      <span class="tag">Method and limits</span>
+      <h2>What this evidence does not establish</h2>
+      <p>These limits are properties of the current receipts, not of the design intent.</p>
+    </div>
+    <div id="limitations"></div>
+  </section>
+
+  <section id="evidence">
+    <div class="sect-head">
+      <span class="tag">Evidence explorer</span>
+      <h2>Every number traced to a file, field and denominator</h2>
+      <p>Rows marked <span class="badge">local artifact</span> are not tracked in git — the large
+        corpora live outside the repository, so those rows are readable here but not linkable.</p>
+    </div>
+    <input type="search" id="ev-search" placeholder="Filter by asset, file, rule or unit…" aria-label="Filter evidence rows">
+    <div class="scroll"><table id="ev-table"></table></div>
+  </section>
+
+  <section id="research">
+    <div class="sect-head">
+      <span class="tag">Research and references</span>
+      <h2>Where these methods come from</h2>
+      <p>The signals on this page are published methods, and the code names them in its
+        own docstrings. Two repository documents carry the research and its verification
+        log; the table below says which of those methods this build actually runs, which
+        it only designs against, and where each lives — and what measurement has changed
+        since the dossier was written.</p>
+    </div>
+    <div class="grid2" id="res-docs"></div>
+    <div class="scroll" style="margin-top:22px"><table id="res-run"></table></div>
+    <div class="note" id="res-planned"></div>
+    <div class="sect-head" style="margin-top:52px">
+      <h2 id="res-upd-title"></h2>
+      <p id="res-upd-where" class="mono" style="color:var(--dim);font-size:12px"></p>
+    </div>
+    <div class="scroll"><table id="res-upd"></table></div>
+    <div class="note bad" id="res-scope"></div>
+    <p class="figcap" id="res-note"></p>
+  </section>
+</main>
+
+<footer>
+  <div class="row">
+    <div>Built <span class="mono" id="foot-built"></span> from <span class="mono" id="foot-commit"></span></div>
+    <div>Static build, ready to deploy · not deployed · no uploads, API or telemetry</div>
+  </div>
+</footer>
+
+<script>
+const B = {"schema": "cviaf.deck-bundle.v1", "generated_utc": "2026-09-30T13:26:53.046781Z", "repo": "https://github.com/Collectors-AU/CVIAF", "worktree": "/Users/billasur/cv-assurance-engine/.task3", "branch": "task3-real-backbone", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "reviewed_main": "6cddfe0e4aea71f2bea8c0b137e5ad4f268cb145", "overview": {"merged_models": 56627, "calibration_negatives": 28314, "evaluation_negatives": 28313, "attacked_positives": 0, "alpha": 0.05, "fleet_models": 7503, "fleet_negatives": 3751, "ladder_built": 1188, "ladder_scored": 1055, "ladder_unscorable": 133, "min_positives": 20, "coverage_measured": 14, "coverage_total": 14, "gate_ok": true}, "fpr": [{"population": "merged 56,627", "rule": "ctc_mean_clean", "alarms": 1481, "n": 28313, "fpr": 5.2299999999999995, "lo": 4.9799999999999995, "hi": 5.5, "threshold": 0.9845092069058692, "basis": "0.05-quantile of 28314 calibration negatives", "degenerate": false}, {"population": "merged 56,627", "rule": "refdiv_mean_clean", "alarms": 1467, "n": 28313, "fpr": 5.18, "lo": 4.93, "hi": 5.45, "threshold": 0.7276592261904761, "basis": "0.05-quantile of 28314 calibration negatives", "degenerate": false}, {"population": "merged 56,627", "rule": "ctc_peak_clean", "alarms": 0, "n": 28313, "fpr": 0.0, "lo": 0.0, "hi": 0.01, "threshold": 1.0, "basis": "0.05-quantile of 28314 calibration negatives", "degenerate": true}, {"population": "merged 56,627", "rule": "ctc_q95_clean", "alarms": 0, "n": 28313, "fpr": 0.0, "lo": 0.0, "hi": 0.01, "threshold": 1.0, "basis": "0.05-quantile of 28314 calibration negatives", "degenerate": true}, {"population": "fleet 7,503", "rule": "ctc_mean_clean", "alarms": 180, "n": 3751, "fpr": 4.8, "lo": 4.16, "hi": 5.53, "threshold": 0.9847407860980113, "basis": "0.05-quantile of 3752 calibration negatives", "degenerate": false}, {"population": "fleet 7,503", "rule": "refdiv_mean_clean", "alarms": 215, "n": 3751, "fpr": 5.7299999999999995, "lo": 5.029999999999999, "hi": 6.52, "threshold": 0.7815411706349206, "basis": "0.05-quantile of 3752 calibration negatives", "degenerate": false}, {"population": "fleet 7,503", "rule": "ctc_peak_clean", "alarms": 0, "n": 3751, "fpr": 0.0, "lo": 0.0, "hi": 0.1, "threshold": 1.0, "basis": "0.05-quantile of 3752 calibration negatives", "degenerate": true}, {"population": "fleet 7,503", "rule": "ctc_q95_clean", "alarms": 0, "n": 3751, "fpr": 0.0, "lo": 0.0, "hi": 0.1, "threshold": 1.0, "basis": "0.05-quantile of 3752 calibration negatives", "degenerate": true}], "ladder": {"substitution": {"unit": "fraction of hidden units zeroed", "refdiv": [{"dose": "0.10", "caught": 13, "n": 99, "tpr": 13.131313131313133, "lo": 7.8372412413766925, "hi": 21.179712779786346, "conclusion": "measured", "inert": 88}, {"dose": "0.25", "caught": 45, "n": 94, "tpr": 47.87234042553192, "lo": 38.057168146840056, "hi": 57.85458536929418, "conclusion": "measured", "inert": 40}, {"dose": "0.50", "caught": 59, "n": 63, "tpr": 93.65079365079364, "lo": 84.78082215469362, "hi": 97.50343819866059, "conclusion": "measured", "inert": 6}, {"dose": "1.00", "caught": 7, "n": 7, "tpr": 100.0, "lo": 64.56695649333126, "hi": 100.0, "conclusion": "insufficient_denominator", "inert": 0}], "ctc": [{"dose": "0.10", "caught": 4, "n": 99, "tpr": 4.040404040404041, "lo": 1.5822638994147555, "hi": 9.932021250254229, "conclusion": "measured", "inert": 88}, {"dose": "0.25", "caught": 2, "n": 94, "tpr": 2.127659574468085, "lo": 0.5854336239172759, "hi": 7.429020489102964, "conclusion": "measured", "inert": 40}, {"dose": "0.50", "caught": 2, "n": 63, "tpr": 3.1746031746031744, "lo": 0.8749527561580449, "hi": 10.856477046607433, "conclusion": "measured", "inert": 6}, {"dose": "1.00", "caught": 7, "n": 7, "tpr": 100.0, "lo": 64.56695649333126, "hi": 100.0, "conclusion": "insufficient_denominator", "inert": 0}]}, "weight_tamper": {"unit": "head-weight noise sigma", "refdiv": [{"dose": "0.10", "caught": 7, "n": 99, "tpr": 7.07070707070707, "lo": 3.4670230283234695, "hi": 13.881485078510197, "conclusion": "measured", "inert": 73}, {"dose": "0.25", "caught": 22, "n": 99, "tpr": 22.22222222222222, "lo": 15.158101831950354, "hi": 31.361521060706725, "conclusion": "measured", "inert": 23}, {"dose": "0.50", "caught": 59, "n": 99, "tpr": 59.59595959595959, "lo": 49.74689618257911, "hi": 68.72814318177572, "conclusion": "measured", "inert": 4}, {"dose": "1.00", "caught": 92, "n": 99, "tpr": 92.92929292929293, "lo": 86.1185149214898, "hi": 96.53297697167653, "conclusion": "measured", "inert": 0}], "ctc": [{"dose": "0.10", "caught": 5, "n": 99, "tpr": 5.05050505050505, "lo": 2.1763234491416874, "hi": 11.282702686248857, "conclusion": "measured", "inert": 73}, {"dose": "0.25", "caught": 5, "n": 99, "tpr": 5.05050505050505, "lo": 2.1763234491416874, "hi": 11.282702686248857, "conclusion": "measured", "inert": 23}, {"dose": "0.50", "caught": 11, "n": 99, "tpr": 11.11111111111111, "lo": 6.318563453857474, "hi": 18.80890859586244, "conclusion": "measured", "inert": 4}, {"dose": "1.00", "caught": 29, "n": 99, "tpr": 29.292929292929294, "lo": 21.23663249451079, "hi": 38.89617729819722, "conclusion": "measured", "inert": 0}]}, "bias_lift": {"unit": "absolute logit units added", "refdiv": [{"dose": "0.10", "caught": 5, "n": 99, "tpr": 5.05050505050505, "lo": 2.1763234491416874, "hi": 11.282702686248857, "conclusion": "measured", "inert": 99}, {"dose": "0.25", "caught": 5, "n": 99, "tpr": 5.05050505050505, "lo": 2.1763234491416874, "hi": 11.282702686248857, "conclusion": "measured", "inert": 99}, {"dose": "0.50", "caught": 5, "n": 99, "tpr": 5.05050505050505, "lo": 2.1763234491416874, "hi": 11.282702686248857, "conclusion": "measured", "inert": 99}, {"dose": "1.00", "caught": 5, "n": 99, "tpr": 5.05050505050505, "lo": 2.1763234491416874, "hi": 11.282702686248857, "conclusion": "measured", "inert": 99}], "ctc": [{"dose": "0.10", "caught": 6, "n": 99, "tpr": 6.0606060606060606, "lo": 2.806979744622149, "hi": 12.596787376489957, "conclusion": "measured", "inert": 99}, {"dose": "0.25", "caught": 6, "n": 99, "tpr": 6.0606060606060606, "lo": 2.806979744622149, "hi": 12.596787376489957, "conclusion": "measured", "inert": 99}, {"dose": "0.50", "caught": 6, "n": 99, "tpr": 6.0606060606060606, "lo": 2.806979744622149, "hi": 12.596787376489957, "conclusion": "measured", "inert": 99}, {"dose": "1.00", "caught": 6, "n": 99, "tpr": 6.0606060606060606, "lo": 2.806979744622149, "hi": 12.596787376489957, "conclusion": "measured", "inert": 99}]}}, "baseline": {"model_axis": {"fixed_threshold_single_signal": {"tpr": 1.0, "fpr": 1.0, "tp": 2, "n_pos": 2, "fp": 4, "n_neg": 4}, "quantile_threshold_single_signal": {"tpr": 0.0, "fpr": 0.0, "tp": 0, "n_pos": 2, "fp": 0, "n_neg": 4}, "hand_tuned_single_signal": {"tpr": 0.0, "fpr": 0.0, "tp": 0, "n_pos": 2, "fp": 0, "n_neg": 4}, "cviaf": {"tpr": 0.5, "fpr": 0.0, "tp": 1, "n_pos": 2, "fp": 0, "n_neg": 4}}, "data_axis": {"baseline_tpr": 1.0, "baseline_fpr": 1.0, "cviaf_tpr": 0.2857, "cviaf_fpr": 0.0, "item": {"baseline": {"n_assets_with_poison": 7, "n_assets_clean": 1, "item_tpr": 0.8403, "item_fpr": 0.0154, "item_precision": 0.938, "true_positive": 363, "false_positive": 24, "n_poisoned_samples": 432, "n_clean_samples": 1560}, "cviaf": {"n_assets_with_poison": 7, "n_assets_clean": 1, "item_tpr": 0.169, "item_fpr": 0.0327, "item_precision": 0.5887, "true_positive": 73, "false_positive": 51, "n_poisoned_samples": 432, "n_clean_samples": 1560}}, "attribution": {"kinds_with_one_culprit": ["dup_flood", "ood_insert"], "n_scored": 2, "baseline_top1_correct": null, "baseline_note": "a per-sample flag list has no source field, so top-1 attribution is not merely wrong -- it is undefined", "cviaf_top1_correct": 2, "cviaf_top1_accuracy": 1.0, "kinds_without_single_culprit": ["gma", "label_flip", "oda", "oga", "rma"], "cviaf_false_accusations": 0, "cviaf_false_accusation_rate": 0.0, "note": "Trigger attacks are contributor-diffuse by construction, so on those the measurable question is the opposite one: does the framework avoid accusing a source? Both numbers are reported because a system that names a culprit every time would score a perfect top-1 and be useless."}}}, "provenance": {"baseline_digest_manifest": {"mechanism": "recompute then compare against an out-of-band enrolled digest", "tpr": 0.5, "fpr": 0.0, "abstained_on_attacked": 2, "abstained_on_genuine": 2, "structural_blind_spots": ["a record it has never enrolled has no trust anchor, so the check abstains rather than assessing -- a forged new record passes for want of a comparison, not for want of a difference", "a replayed record is byte-identical and genuine, so the digest matches exactly and the substitution is invisible"], "per_attack": {"genuine": {"n": 2, "n_detected": 0, "n_abstained": 2, "rate": 0.0}, "tampered_output": {"n": 2, "n_detected": 2, "n_abstained": 0, "rate": 1.0}, "swapped_model": {"n": 2, "n_detected": 2, "n_abstained": 0, "rate": 1.0}, "forged_record": {"n": 2, "n_detected": 0, "n_abstained": 2, "rate": 0.0}, "replayed": {"n": 2, "n_detected": 0, "n_abstained": 0, "rate": 0.0}}}, "baseline_internal_consistency": {"mechanism": "recompute the record's own hashes only", "tpr": 0.0, "fpr": 0.0, "per_attack": {"genuine": {"n": 2, "n_detected": 0, "n_abstained": 0, "rate": 0.0}, "tampered_output": {"n": 2, "n_detected": 0, "n_abstained": 0, "rate": 0.0}, "swapped_model": {"n": 2, "n_detected": 0, "n_abstained": 0, "rate": 0.0}, "forged_record": {"n": 2, "n_detected": 0, "n_abstained": 0, "rate": 0.0}, "replayed": {"n": 2, "n_detected": 0, "n_abstained": 0, "rate": 0.0}}}, "cviaf": {"mechanism": "signature over the bound payload + nonce/sequence replay controls + chain verification", "tpr": 1.0, "fpr": 0.0, "abstained_on_attacked": 0, "attack_class_named": ["inference_replay", "inference_tampering"], "per_attack": {"genuine": {"n": 2, "n_detected": 0, "n_abstained": 0, "rate": 0.0}, "tampered_output": {"n": 2, "n_detected": 2, "n_abstained": 0, "rate": 1.0}, "swapped_model": {"n": 2, "n_detected": 2, "n_abstained": 0, "rate": 1.0}, "forged_record": {"n": 2, "n_detected": 2, "n_abstained": 0, "rate": 1.0}, "replayed": {"n": 2, "n_detected": 2, "n_abstained": 0, "rate": 1.0}}}, "signing_mode": "hmac-sha256-fallback", "assumption": "ASSUMPTION WITH TEETH: the cryptography package is absent, so the provenance layer falls back to HMAC-SHA256 with a shared secret. This still detects tampering by a party who does not hold the verification key, but it is SYMMETRIC: anyone who can verify a seal can also forge one. Treat seal verification in this run as a tamper check, not as proof of origin. Install the 'full' extra to get Ed25519 and non-repudiation.", "n_attacked": 8, "n_genuine": 2}, "inventories": {"merged_study": 56627, "export_record": 22693, "components": [{"label": "fleet (seeds 150-10149)", "models": 10000}, {"label": "macOS laptop export", "models": 11637}, {"label": "git archive export", "models": 1056}], "warning": "1,056 and 11,637 are the seed_10150_28385 and seed_10264_24607 shards already inside the 56,627 study (docs/MODEL_INVENTORY.md \u00a73). The two populations overlap and must never be added."}, "auroc": [{"kind": "oga", "label": "OGA - object fabrication", "bonf": 0.9865625, "cauchy": 0.99296875}, {"kind": "oda", "label": "ODA - object cloaking", "bonf": 0.90625, "cauchy": 0.84390625}, {"kind": "clean", "label": "clean control", "bonf": 0.5, "cauchy": 0.5}], "runs": {"oda_s5": {"findings": 17, "risk": "CRITICAL", "disposition": "quarantine", "audit_len": 7, "audit_valid": true, "span_s": 27.15, "report": "runs/assurance/oda_s5"}, "demo_assurance": {"findings": 15, "duration_s": 0.71, "audit_len": 10, "report": "runs/demo_assurance"}}, "limitations": ["FPR/TPR numbers are single-population: calibration and evaluation halves come from the same clean fleet.", "The 56,627-model clean ledger has zero attacked positives, so TPR, precision and expected loss are undefined there, not zero.", "ctc_peak_clean and ctc_q95_clean sit at the corpus ceiling: their zero FPR is a range bound, not a measurement of specificity.", "Attack arms are synthetic TinyDetector models; real-backbone results are planned work, not measured capability.", "Dose units differ per attack family; never pool families or doses.", "The headline TPR is measured on the attack ladder, not in the clean-null ledger, which has no attacked positives. An earlier 193-arm single-dose experiment (substitution 46/94, weight tamper 21/99) is superseded by the 4-dose ladder (45/94, 92/99) and the two arms sets must never be merged or averaged.", "substitution at dose 1.00 has n=7, below the declared floor of 20.", "bias_lift is behaviour-inert on all 396 arms - not a proven harmful backdoor.", "The committed provenance run uses the HMAC-SHA256 fallback, not Ed25519: tamper checking under shared-key assumptions, not public-key non-repudiation.", "The 22,693-member export record overlaps the 56,627 study and is not additive.", "No byte-level image-overlap receipt has landed; do not claim leakage-free evaluation or disjoint images."], "tpr_headline": {"rule": "refdiv_mean_clean", "alpha": 0.05, "min_positives": 20, "dose_key_note": "substitution@0.5 and weight_tamper@1 are the receipt's own dose keys; the labels are the declared doses", "cells": [{"family": "substitution", "label": "Substitution", "unit": "prune fraction", "short": "Substitution", "dose": "0.25", "caught": 45, "n": 94, "tpr": 47.87234042553192, "lo": 38.057168146840056, "hi": 57.85458536929418, "conclusion": "measured", "inert": 40, "unscorable": 5, "ctc": 2}, {"family": "substitution", "label": "Substitution", "unit": "prune fraction", "short": "Substitution", "dose": "0.50", "caught": 59, "n": 63, "tpr": 93.65079365079364, "lo": 84.78082215469362, "hi": 97.50343819866059, "conclusion": "measured", "inert": 6, "unscorable": 36, "ctc": 2}, {"family": "weight_tamper", "label": "Weight tamper", "unit": "noise sigma", "short": "Weight", "dose": "1.00", "caught": 92, "n": 99, "tpr": 92.92929292929293, "lo": 86.1185149214898, "hi": 96.53297697167653, "conclusion": "measured", "inert": 0, "unscorable": 0, "ctc": 29}, {"family": "bias_lift", "label": "Bias lift", "unit": "any dose \u00b7 logit shift", "short": "Bias", "dose": "0.25", "caught": 5, "n": 99, "tpr": 5.05050505050505, "lo": 2.1763234491416874, "hi": 11.282702686248857, "conclusion": "measured", "inert": 99, "unscorable": 0, "ctc": 6}], "superseded": {"n_arms": 193, "substitution": {"caught": 46, "n": 94}, "weight_tamper": {"caught": 21, "n": 99}}}, "manifest": [{"asset": "page2/3-fpr-ctc_mean_clean-merged", "source_file": "runs/merged_fpr_tpr_report.json", "source_field": "rules.ctc_mean_clean.fpr", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "clean evaluation models", "numerator": 1481, "denominator": 28313, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, frozen 5%-quantile threshold", "exclusions": null, "limitations": ["intervals include the 5% target", "single population: calibration and evaluation halves come from the same clean fleet"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/merged_fpr_tpr_report.json"}, {"asset": "page2/3-fpr-refdiv_mean_clean-merged", "source_file": "runs/merged_fpr_tpr_report.json", "source_field": "rules.refdiv_mean_clean.fpr", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "clean evaluation models", "numerator": 1467, "denominator": 28313, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, frozen 5%-quantile threshold", "exclusions": null, "limitations": ["intervals include the 5% target", "single population: calibration and evaluation halves come from the same clean fleet"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/merged_fpr_tpr_report.json"}, {"asset": "page2/3-fpr-ctc_mean_clean-fleet", "source_file": "runs/fleet_fpr_ledger_report.json", "source_field": "rules.ctc_mean_clean.fpr", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "clean evaluation models", "numerator": 180, "denominator": 3751, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, frozen 5%-quantile threshold", "exclusions": null, "limitations": ["intervals include the 5% target", "single population: calibration and evaluation halves come from the same clean fleet"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/fleet_fpr_ledger_report.json"}, {"asset": "page2/3-fpr-refdiv_mean_clean-fleet", "source_file": "runs/fleet_fpr_ledger_report.json", "source_field": "rules.refdiv_mean_clean.fpr", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "clean evaluation models", "numerator": 215, "denominator": 3751, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, frozen 5%-quantile threshold", "exclusions": null, "limitations": ["intervals include the 5% target", "single population: calibration and evaluation halves come from the same clean fleet"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/fleet_fpr_ledger_report.json"}, {"asset": "page3-dose-substitution-0.10-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.10.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 13, "denominator": 99, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=88/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-substitution-0.10-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.10.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 4, "denominator": 99, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=88/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-substitution-0.25-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.25.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 45, "denominator": 94, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 5, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=40/94"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-substitution-0.25-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.25.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 2, "denominator": 94, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 5, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=40/94"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-substitution-0.50-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.50.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 59, "denominator": 63, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 36, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=6/63"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-substitution-0.50-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.50.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 2, "denominator": 63, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 36, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=6/63"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-substitution-1.00-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.1.00.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 7, "denominator": 7, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 92, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=0/7", "below min_positives=20: insufficient denominator"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-substitution-1.00-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.1.00.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 7, "denominator": 7, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 92, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=0/7", "below min_positives=20: insufficient denominator"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-0.10-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.0.10.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 7, "denominator": 99, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=73/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-0.10-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.0.10.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 5, "denominator": 99, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=73/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-0.25-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.0.25.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 22, "denominator": 99, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=23/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-0.25-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.0.25.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 5, "denominator": 99, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=23/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-0.50-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.0.50.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 59, "denominator": 99, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=4/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-0.50-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.0.50.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 11, "denominator": 99, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=4/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-1.00-refdiv_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.1.00.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 92, "denominator": 99, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=0/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-dose-weight_tamper-1.00-ctc_mean_clean", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.1.00.rules.ctc_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 29, "denominator": 99, "rule": "ctc_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 0, "limitations": ["dose units differ by family; do not pool", "n_behaviour_inert=0/99"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page5-model-axis-Fixed threshold (single signal)", "source_file": "runs/mvp/comparison.json", "source_field": "model_axis.scores", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "scored attack-qualified models", "numerator": 2, "denominator": 2, "rule": "Fixed threshold (single signal)", "operating_point": "alpha=0.05", "exclusions": 2, "limitations": ["n=2 positives / 4 negatives", "2 ASR-gated cases excluded from scoring"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page5-model-axis-Reference quantile (single signal)", "source_file": "runs/mvp/comparison.json", "source_field": "model_axis.scores", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "scored attack-qualified models", "numerator": 0, "denominator": 2, "rule": "Reference quantile (single signal)", "operating_point": "alpha=0.05", "exclusions": 2, "limitations": ["n=2 positives / 4 negatives", "2 ASR-gated cases excluded from scoring"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page5-model-axis-Hand-tuned (single signal)", "source_file": "runs/mvp/comparison.json", "source_field": "model_axis.scores", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "scored attack-qualified models", "numerator": 0, "denominator": 2, "rule": "Hand-tuned (single signal)", "operating_point": "alpha=0.05", "exclusions": 2, "limitations": ["n=2 positives / 4 negatives", "2 ASR-gated cases excluded from scoring"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page5-model-axis-CVIAF", "source_file": "runs/mvp/comparison.json", "source_field": "model_axis.scores", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "scored attack-qualified models", "numerator": 1, "denominator": 2, "rule": "CVIAF", "operating_point": "alpha=0.05", "exclusions": 2, "limitations": ["n=2 positives / 4 negatives", "2 ASR-gated cases excluded from scoring"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page5-asset-axis", "source_file": "runs/mvp/comparison.json", "source_field": "data_axis.scores.baseline_tpr/fpr vs cviaf_tpr/fpr", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "poisoned / clean assets", "numerator": "baseline 7/7 vs CVIAF 2/7", "denominator": "7 poisoned, 1 clean", "rule": "asset-level disposition", "operating_point": "asset rollup of per-sample flags", "exclusions": null, "limitations": ["1 clean asset: FPR 0/1 carries almost no information"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "supplement-item-level", "source_file": "runs/mvp/comparison.json", "source_field": "data_axis.scores.*_item_level", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "labelled samples", "numerator": "baseline TP363 FP24 / CVIAF TP73 FP51", "denominator": "432 poisoned, 1,560 clean", "rule": "per-sample BH decision", "operating_point": "alpha=0.05, FDR control", "exclusions": null, "limitations": ["CVIAF item TPR is far lower than the baseline's here", "unfavourable result: must stay in the supplement"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page5-provenance-Enrolled digest manifest", "source_file": "runs/mvp/comparison.json", "source_field": "provenance_axis", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "inference records", "numerator": 4, "denominator": 8, "rule": "Enrolled digest manifest", "operating_point": "HMAC-SHA256 fallback in this run", "exclusions": null, "limitations": ["8 attacked / 2 genuine", "abstentions must stay visible", "not Ed25519"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page5-provenance-Internal hash consistency", "source_file": "runs/mvp/comparison.json", "source_field": "provenance_axis", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "inference records", "numerator": 0, "denominator": 8, "rule": "Internal hash consistency", "operating_point": "HMAC-SHA256 fallback in this run", "exclusions": null, "limitations": ["8 attacked / 2 genuine", "abstentions must stay visible", "not Ed25519"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page5-provenance-CVIAF provenance", "source_file": "runs/mvp/comparison.json", "source_field": "provenance_axis", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "inference records", "numerator": 8, "denominator": 8, "rule": "CVIAF provenance", "operating_point": "HMAC-SHA256 fallback in this run", "exclusions": null, "limitations": ["8 attacked / 2 genuine", "abstentions must stay visible", "not Ed25519"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"}, {"asset": "page4-export-inventory", "source_file": "docs/MODEL_INVENTORY.md \u00a73", "source_field": "[needs value from coordinator export ledger]", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "models", "numerator": "[needs value from ledger]", "denominator": 22693, "rule": "verified export inventory", "operating_point": null, "exclusions": null, "limitations": ["OVERLAPS the 56,627 merged study: 1,056 and 11,637 are shards of it", "not additive; dedup receipt outstanding"], "in_repo": false, "repo_url": null}, {"asset": "page3-tpr-headline-substitution-0.25", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.25.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 45, "denominator": 94, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 5, "limitations": ["never pool across classes or doses", "40/94 arms behaviour-inert"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-tpr-headline-substitution-0.50", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.substitution.0.5.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 59, "denominator": 63, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": 36, "limitations": ["never pool across classes or doses", "6/63 arms behaviour-inert"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-tpr-headline-weight_tamper-1.00", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.weight_tamper.1.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 92, "denominator": 99, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": null, "limitations": ["never pool across classes or doses", "0/99 arms behaviour-inert", "dose units differ: standard deviation of the added noise"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "page3-tpr-headline-bias_lift-0.25", "source_file": "runs/tpr_ladder_at_frozen.json", "source_field": "cells.bias_lift.0.25.rules.refdiv_mean_clean", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": 5, "denominator": 99, "rule": "refdiv_mean_clean", "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json", "exclusions": null, "limitations": ["never pool across classes or doses", "99/99 arms behaviour-inert", "dose units differ: absolute logit units added to one class's output bias"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"}, {"asset": "supplement-superseded-193", "source_file": "runs/tpr_at_frozen.json", "source_field": "rules.refdiv_mean_clean.per_kind", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "attacked model arms", "numerator": "46", "denominator": 94, "rule": "refdiv_mean_clean (SUPERSEDED)", "operating_point": "n_arms=193, single pooled dose", "exclusions": null, "limitations": ["superseded by the 4-dose ladder; substitution 46/94 at dose 0.25 is NOT the ladder's 45/94 and the two must never be merged"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_at_frozen.json"}, {"asset": "page3-oda-s5-findings", "source_file": "runs/assurance/oda_s5/assurance_report.json", "source_field": "findings[]", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "findings", "numerator": 17, "denominator": null, "rule": "end-to-end report", "operating_point": "white-box, alpha=0.05", "exclusions": null, "limitations": ["this run only", "HMAC fallback signing"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/assurance_report.json"}, {"asset": "page3-oda-s5-audit", "source_file": "runs/assurance/oda_s5/assurance_report.json", "source_field": "metadata.audit_trail_length", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "hash-chained entries", "numerator": 7, "denominator": null, "rule": "audit chain", "operating_point": "chain_valid=True", "exclusions": null, "limitations": [], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/assurance_report.json"}, {"asset": "page4-oda-s5-runtime", "source_file": "runs/assurance/oda_s5/audit_trail.json", "source_field": "first/last timestamp", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "seconds", "numerator": 27.15, "denominator": null, "rule": "wall clock", "operating_point": "audit-trail span", "exclusions": null, "limitations": ["deck states 27.6 s; measured span is 27.1 s \u2014 use the measured value or cite the instrument that produced 27.6"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/audit_trail.json"}, {"asset": "supplement-demo-assurance", "source_file": "runs/demo_assurance/assurance_report.json", "source_field": "findings[] / metadata", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "findings / seconds", "numerator": 15, "denominator": null, "rule": "black-box demo run", "operating_point": "assessment_duration_seconds=0.71", "exclusions": null, "limitations": ["never combine with oda_s5 counts or timings", "white-box checks skipped"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/demo_assurance/assurance_report.json"}, {"asset": "page3-coverage", "source_file": "runs/coverage.json", "source_field": "clauses[].state", "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c", "unit": "clauses measured", "numerator": 14, "denominator": 14, "rule": "clause coverage", "operating_point": "gate_ok=True", "exclusions": null, "limitations": ["a passing gate is not proof of universal attack detection"], "in_repo": true, "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/coverage.json"}], "research": {"documents": [{"name": "CV_INTEGRITY_ASSURANCE_2026.md", "path": "CV_INTEGRITY_ASSURANCE_2026.md", "what": "2025-26 state of the art per capability, the gap against this engine, and the action list for each module. Every source fetched against its primary page and tagged with a confidence level; the classifier-to-detector transfer gap is argued from it.", "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/CV_INTEGRITY_ASSURANCE_2026.md"}, {"name": "RESEARCH_CHECKPOINT_26228.md", "path": "RESEARCH_CHECKPOINT_26228.md", "what": "The verification log behind that dossier: what was checked against which primary page, and the citations dropped or downgraded when verification failed -- a withdrawn preprint, a method that could not be shown to exist.", "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/RESEARCH_CHECKPOINT_26228.md"}], "run": [{"method": "TRACE - CTC and FTC (CVPR 2025, arXiv 2503.15293)", "role": "CTC-mean is the second rule scored on the headline table; FTC is the Island-Effect signal behind the cloaking (ODA) scores. CTC cannot see disappearance, which is why FTC exists.", "where": "trace_ctc, trace_ftc", "state": "background arm only, reimplemented at MVP scale; TRACE's foreground arm is an open gap and the paper's numbers are theirs, not quoted here", "path": "cviaf/lab/detectors.py", "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/lab/detectors.py"}, {"method": "BadDet - OGA / RMA / GMA / ODA (ECCV 2022 workshop)", "role": "names the attack rows: object generation, regional and global misclassification, object disappearance. The cloaking run is ODA.", "where": "attack kinds", "state": "taxonomy adopted; the synthetic arms are not the paper's detectors", "path": "cviaf/core/types.py", "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/core/types.py"}, {"method": "Confident-learning label screening (cleanlab family)", "role": "scores contributed boxes for label errors without retraining, in the detector-native form the problem statement needs.", "where": "label screen", "state": "implemented in the same family; the cleanlab library is not vendored", "path": "cviaf/data_integrity/__init__.py", "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/data_integrity/__init__.py"}, {"method": "Self-supervised copy detection (SSCD family, CVPR 2022)", "role": "flooding and near-duplicate detection across contributed data.", "where": "near-duplicate screen", "state": "a deterministic frozen-conv embedding stands in; SSCD is the named scaling target, per docs/SCALING_PLAN.md", "path": "cviaf/lab/attribute.py", "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/lab/attribute.py"}, {"method": "Hash-chain audit trail (AuditableLLM pattern)", "role": "every report carries a chained audit trail, so the assurance verdict is itself tamper-evident.", "where": "metadata.audit_trail", "state": "chain implemented and validated in the committed run (7 entries)", "path": "runs/assurance/oda_s5/assurance_report.json", "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/assurance_report.json"}], "planned": [["ODSCAN - IEEE S&P 2024", "white-box, detector-specific trigger scanning: the strongest scanner to benchmark against, not implemented here"], ["DISTIL - ICCV 2025, arXiv 2507.22813", "data-free trigger inversion; the white-box path that survives an air gap without the contributor's data"], ["C2PA 2.4 - AI/ML guidance", "a portable, standards-aligned provenance manifest. The seal here is a repository-local schema, and this run falls back to HMAC-SHA256"], ["OpenOOD v1.5 - arXiv 2306.09301", "a standard protocol for the OOD insertion screen; named as the validation target, not run in this build"], ["NIST TrojAI report and AI RMF", "the governance vocabulary behind the coverage statement and the disposition ladder"]], "update": {"title": "What the as-built record changed since the dossier", "where": "CV_INTEGRITY_ASSURANCE_2026.md \u00a712 \u00b7 RESEARCH_CHECKPOINT_26228.md UPDATE 3", "items": [["TRACE is implemented for one of its two arms", "trace_ctc blends backgrounds only. TRACE's second arm - clean samples are the more consistent ones under focal information - is missing, and it is the citable explanation for the measured null control.", "null control on a model with no backdoor: CTC 0.816, refdiv 0.786, FTC 0.792"], ["Three of the four trigger attacks never implanted", "With the trigger re-placed per image and two placebos drawn from the same RNG stream subtracted against each model's seed-matched clean twin, the previously published trigger rates for oga / oda / rma net to zero. Only gma survives.", "the attack ledger now reports raw, null and net as three separate columns"], ["The backdoor-like case is a measured failure", "bias_lift is behaviour-inert on all 396 arms, so the headline rate for it equals the rule's own false-alarm rate. This is the blind spot the headline table names rather than a recall figure.", "5.1% caught = 5.1% false-alarm rate"], ["Drift is mostly undecided, not merely inseparable", "The evadability result predicted the difficulty; the as-built drift battery then decided only a fifth of its cells. The under-determined verdict is emitted per cell instead of being inferred globally.", "8 decisions against 32 under-determined cells at n=160 per cell"]], "scope": "These are the improvement-loop and as-built records, not the two receipts measured above: they come from the lab's own measurement notes and the alignment matrix, and they are deliberately not mixed into the clean-null ledger or the frozen-threshold ladder.", "unbuilt": "Still unbuilt, and named as such: C2PA-aligned manifests, ODSCAN/DISTIL trigger inversion, OpenOOD, SSCD itself, a real-backbone evidence corpus, and a byte-level image-overlap audit (9,984,920 images)."}, "note": "Research basis, not results. The methods marked as run here are the mechanisms this build exercises, at the scale the receipts describe: a faithful reimplementation at MVP scale, never a reproduction of the published numbers, which stay with their authors. Full citation lists and verification status live in the two documents above; the design trace is docs/CVIAF_V3_ARCHITECTURE.md and the requirement trace is PRD_SIH26228_CVIAF.md."}};
+const $ = (s,r=document)=>r.querySelector(s);
+const el = (t,c,h)=>{const n=document.createElement(t); if(c)n.className=c; if(h!=null)n.innerHTML=h; return n;};
+const pct = v => v==null ? "—" : v.toFixed(2)+"%";
+const pct1 = v => v==null ? "—" : v.toFixed(1)+"%";  // headline figures are quoted to 1 dp
+const int = v => v==null ? "—" : v.toLocaleString("en-US");
+
+/* ---------- hero / footer ---------- */
+$("#hero-commit").textContent = "commit " + B.commit.slice(0,8) + " · " + B.branch;
+$("#foot-commit").textContent = B.commit.slice(0,8) + " (" + B.branch + ")";
+$("#foot-built").textContent = B.generated_utc.slice(0,16).replace("T"," ") + "Z";
+$("#repo-link").href = B.repo + "/tree/" + B.commit;
+
+/* ---------- KPI bento ---------- */
+const o = B.overview;
+const HLC = B.tpr_headline.cells;
+const HL_AT = f => HLC.filter(c=>c.family===f);
+const sub = HL_AT("substitution"), wt = HL_AT("weight_tamper"), bl = HL_AT("bias_lift");
+const KPI = [
+  ["Substitution attacks detected", pct1(sub[0].tpr)+" → "+pct1(sub[1].tpr),
+   "RefDiv-mean at the frozen 5% threshold · dose 0.25 "+sub[0].caught+"/"+sub[0].n+
+   ", dose 0.50 "+sub[1].caught+"/"+sub[1].n, "c4"],
+  ["Weight tamper detected", pct1(wt[0].tpr),
+   "dose 1.00 · "+wt[0].caught+"/"+wt[0].n+" arms · same rule; CTC-mean catches "+pct1(wt[0].ctc*100/wt[0].n), "c4"],
+  ["Bias lift detected", pct1(bl[0].tpr),
+   "exactly its own false-alarm rate on "+bl[0].n+" behaviour-inert arms — no backdoor recall claimed", "c4"],
+  ["Models in the clean ledger", int(o.merged_models),
+   "11 shards, 3 machines · 0 attacked positives there, so TPR is undefined in it, not zero", "c4"],
+  ["Held-out clean assets", int(o.evaluation_negatives),
+   "calibration half of "+int(o.calibration_negatives)+" fixed the thresholds the TPR was measured at", "c4"],
+  ["Attack arms scored", int(o.ladder_scored),
+   int(o.ladder_built)+" built · "+o.ladder_unscorable+" unscorable, all reported · 2 of 4 rules live; peak and q95 sit at the corpus ceiling", "c4"],
+];
+KPI.forEach(([t,n,c,cls])=>{
+  $("#kpis").append(el("div","shell "+cls,
+    `<div class="core kpi"><h3>${t}</h3><div class="n">${n}</div><div class="cap">${c}</div></div>`));
+});
+
+/* ---------- generic charts ---------- */
+function axes(w,h,pad){return {w,h,pad};}
+function bars(items,{w=560,h=230,pad=34,max=null,scaleMax=null,colors=null,label=null,fmt=v=>v.toFixed(1)}={}){
+  const W=w, H=h, pl=pad+8, pb=42, pt=14;
+  const maxv = scaleMax || max || Math.max(...items.map(d=>d.v))*1.18 || 1;
+  const bw = (W-pl-12)/items.length;
+  const y = v => pt + (H-pt-pb)*(1 - v/maxv);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label||'bar chart'}">`;
+  s+=`<line x1="${pl}" y1="${y(0)}" x2="${W-4}" y2="${y(0)}" stroke="rgba(255,255,255,.16)"/>`;
+  items.forEach((d,i)=>{
+    const x = pl + i*bw + bw*0.16, bwid = bw*0.68;
+    const c = colors? colors(i) : "var(--acc)";
+    const yy = d.hollow? y(0)+2 : y(d.v);
+    const hh = d.hollow? 0 : y(0)-y(d.v);
+    s+=`<rect x="${x}" y="${yy}" width="${bwid}" height="${Math.max(hh,0)}" rx="3" fill="${c}" opacity="${d.dim?.42:1}"/>`;
+    if(d.hollow) s+=`<rect x="${x}" y="${y(0)-3}" width="${bwid}" height="3" fill="none" stroke="${c}" stroke-dasharray="3 2"/>`;
+    if(d.err) s+=`<line x1="${x+bwid/2}" y1="${y(d.v-d.err[0])}" x2="${x+bwid/2}" y2="${y(d.v+d.err[1])}" stroke="rgba(255,255,255,.45)"/>`;
+    s+=`<text x="${x+bwid/2}" y="${y(d.v)-(d.err?d.err[1]*3:0)-7}" fill="#fff" font-size="11" font-family="var(--mono)" text-anchor="middle">${fmt(d.v)}</text>`;
+    s+=`<text x="${x+bwid/2}" y="${H-22}" fill="#9AA0A6" font-size="10.5" text-anchor="middle">${d.label}</text>`;
+    if(d.sub) s+=`<text x="${x+bwid/2}" y="${H-9}" fill="#6B7178" font-size="9.5" text-anchor="middle" font-family="var(--mono)">${d.sub}</text>`;
+  });
+  if(max) s+=`<line x1="${pl}" y1="${y(max)}" x2="${W-4}" y2="${y(max)}" stroke="var(--warn)" stroke-dasharray="5 4"/>
+    <text x="${W-6}" y="${y(max)-6}" fill="var(--warn)" font-size="10" text-anchor="end">target ${max}%</text>`;
+  return s+"</svg>";
+}
+function grouped(items,{w=560,h=250,pad=34}={}){
+  const W=w,H=h,pl=pad+8,pb=46,pt=16;
+  const y=v=>pt+(H-pt-pb)*(1-v/118);
+  const bw=(W-pl-12)/items.length;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="grouped bars">`;
+  s+=`<line x1="${pl}" y1="${y(0)}" x2="${W-4}" y2="${y(0)}" stroke="rgba(255,255,255,.16)"/>`;
+  items.forEach((d,i)=>{
+    const x0=pl+i*bw+bw*0.12, w1=bw*0.36, w2=bw*0.36;
+    s+=`<rect x="${x0}" y="${y(d.a)}" width="${w1}" height="${y(0)-y(d.a)}" rx="3" fill="var(--acc)"/>`;
+    s+=`<rect x="${x0+w1+4}" y="${y(d.b)}" width="${w2}" height="${y(0)-y(d.b)}" rx="3" fill="#5A6169"/>`;
+    s+=`<text x="${x0+w1/2}" y="${y(d.a)-6}" fill="#fff" font-size="10.5" font-family="var(--mono)" text-anchor="middle">${d.alab}</text>`;
+    s+=`<text x="${x0+w1+w2/2+4}" y="${y(d.b)-6}" fill="#C4C8CE" font-size="10.5" font-family="var(--mono)" text-anchor="middle">${d.blab}</text>`;
+    s+=`<text x="${x0+(w1+w2)/2}" y="${H-24}" fill="#9AA0A6" font-size="10.5" text-anchor="middle">${d.label}</text>`;
+    if(d.sub) s+=`<text x="${x0+(w1+w2)/2}" y="${H-9}" fill="#6B7178" font-size="9.5" text-anchor="middle" font-family="var(--mono)">${d.sub}</text>`;
+  });
+  s+=`<rect x="${pl}" y="${H-6}" width="10" height="6" fill="var(--acc)"/><text x="${pl+15}" y="${H-1}" fill="#9AA0A6" font-size="10">TPR / detected</text>`;
+  s+=`<rect x="${pl+140}" y="${H-6}" width="10" height="6" fill="#5A6169"/><text x="${pl+155}" y="${H-1}" fill="#9AA0A6" font-size="10">FPR / false alarm</text>`;
+  return s+"</svg>";
+}
+function lines(series,{w=560,h=270,pad=40,doses=[],ylabel="Caught (%)"}={}){
+  const W=w,H=h,pl=pad,pb=46,pt=16;
+  const y=v=>pt+(H-pt-pb)*(1-v/108);
+  const x=i=>pl+18+i*((W-pl-30)/(doses.length-1||1));
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="dose response">`;
+  [0,25,50,75,100].forEach(g=>{s+=`<line x1="${pl}" y1="${y(g)}" x2="${W-6}" y2="${y(g)}" stroke="rgba(255,255,255,.07)"/>
+    <text x="${pl-8}" y="${y(g)+4}" fill="#6B7178" font-size="9.5" text-anchor="end" font-family="var(--mono)">${g}</text>`;});
+  s+=`<text x="6" y="${pt+8}" fill="#6B7178" font-size="9.5" font-family="var(--mono)">${ylabel}</text>`;
+  series.forEach(sr=>{
+    const pts=sr.data.map((d,i)=>[x(i),y(d.tpr)]);
+    s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${sr.color}" stroke-width="2"/>`;
+    sr.data.forEach((d,i)=>{
+      const [px,py]=pts[i];
+      if(d.conclusion==="insufficient_denominator"){
+        s+=`<circle cx="${px}" cy="${py}" r="6" fill="#0B0C0E" stroke="${sr.color}" stroke-width="2"/>`;
+        s+=`<text x="${px}" y="${py+22}" fill="var(--warn)" font-size="9.5" text-anchor="middle" font-family="var(--mono)">${d.caught}/${d.n} · insufficient</text>`;
+      } else {
+        if(d.lo!=null) s+=`<line x1="${px}" y1="${y(d.lo)}" x2="${px}" y2="${y(d.hi)}" stroke="${sr.color}" stroke-width="1.2" opacity=".8"/>`;
+        s+=`<circle cx="${px}" cy="${py}" r="4" fill="${sr.color}"/>`;
+        s+=`<text x="${px}" y="${py-9}" fill="#fff" font-size="10" text-anchor="middle" font-family="var(--mono)">${d.caught}/${d.n}</text>`;
+      }
+    });
+    s+=`<text x="${W-6}" y="${pt+14+series.indexOf(sr)*14}" fill="${sr.color}" font-size="10.5" text-anchor="end" font-family="var(--mono)">${sr.name}</text>`;
+  });
+  doses.forEach((d,i)=>{s+=`<text x="${x(i)}" y="${H-24}" fill="#9AA0A6" font-size="10.5" text-anchor="middle" font-family="var(--mono)">${d.lab}</text>
+    <text x="${x(i)}" y="${H-9}" fill="#6B7178" font-size="9.5" text-anchor="middle" font-family="var(--mono)">n=${d.n}</text>`;});
+  return s+"</svg>";
+}
+
+/* ---------- headline detection (frozen thresholds) ---------- */
+const HL = B.tpr_headline;
+$("#hl-chart").innerHTML = `<div class="shell"><div class="core">
+  <h3>Arms caught by ${HL.rule} at the frozen threshold</h3>
+  <p class="sub">${HL.cells.map(c=>c.label).filter((v,i,a)=>a.indexOf(v)===i).join(" · ")}
+    — dose units differ by family and are never pooled</p>
+  ${bars(HL.cells.map(c=>({label:c.label.split(" ")[0], sub:c.caught+"/"+c.n, v:c.tpr,
+      err:[c.tpr-c.lo, c.hi-c.tpr]})),
+    {max:HL.alpha*100,scaleMax:100,h:300,label:"true positive rate at the frozen false-alarm rate",
+     colors:i=>HL.cells[i].family==="bias_lift"?"var(--warn)":"var(--acc)"})}
+  <p class="figcap">Bars carry 95% Wilson intervals. The dashed line is the frozen
+    ${pct1(HL.alpha*100)} false-alarm rate every threshold was set to — the bias-lift bar sits on
+    it because the rule fires on that class at chance, not because the class is caught.</p>
+</div></div>`;
+$("#hl-table").innerHTML =
+  `<tr><th>Attack family</th><th>Dose (unit)</th><th class="num">Caught / scored</th>
+   <th class="num">TPR (95% Wilson)</th><th class="num">CTC-mean, same threshold</th>
+   <th class="num">Unscorable</th><th class="num">Behaviour-inert</th></tr>` +
+  HL.cells.map(c=>{
+    const floor = c.n < HL.min_positives ? ` <span class="badge warn">n&lt;${HL.min_positives}</span>` : "";
+    const inert = c.family==="bias_lift" ? ` <span class="badge warn">inert</span>` : "";
+    return `<tr><td>${c.label}${inert}</td><td class="mono">${c.dose} · ${c.unit}</td>
+      <td class="num">${c.caught} / ${c.n}${floor}</td>
+      <td class="num"><b>${pct1(c.tpr)}</b> <span style="color:var(--dim)">[${pct1(c.lo)}, ${pct1(c.hi)}]</span></td>
+      <td class="num">${pct1(c.ctc*100/c.n)} (${c.ctc}/${c.n})</td>
+      <td class="num">${c.unscorable||"—"}</td>
+      <td class="num">${c.inert}/${c.n}</td></tr>`;
+  }).join("");
+$("#hl-inert-note").innerHTML = `All <b>${bl[0].n}</b> bias-lift arms show zero relative F1 change:
+  the modification moves weights without damaging the model, so catching ${pct1(bl[0].tpr)} of them
+  equals the false-alarm rate. This run therefore <b>does not</b> demonstrate recall on a harmful
+  backdoor — it demonstrates the blind spot, and says so by name.`;
+$("#hl-ctc-note").innerHTML = `On clean models both rules pass the same 5% test
+  (refdiv ${pct(B.fpr.find(r=>r.population.startsWith("merged")&&r.rule==="refdiv_mean_clean").fpr)},
+  ctc ${pct(B.fpr.find(r=>r.population.startsWith("merged")&&r.rule==="ctc_mean_clean").fpr)}).
+  On attacks they diverge hard: at dose 0.50 substitution refdiv catches ${sub[1].caught}/${sub[1].n}
+  and ctc ${sub[1].ctc}/${sub[1].n}; at weight tamper dose 1.00, ${wt[0].caught}/${wt[0].n} against
+  ${wt[0].ctc}/${wt[0].n}. Equal specificity, very unequal sensitivity — which is the discovery
+  the ordering (freeze the cost first) exists to make.`;
+$("#hl-superseded").innerHTML = `<b>Superseded, and kept apart on purpose.</b> An earlier
+  ${HL.superseded.n_arms}-arm single-dose experiment reported substitution
+  ${HL.superseded.substitution.caught}/${HL.superseded.substitution.n} and weight tamper
+  ${HL.superseded.weight_tamper.caught}/${HL.superseded.weight_tamper.n} for the same rule. Those arms
+  are not the ladder's arms: the newer 4-dose ladder reports ${sub[0].caught}/${sub[0].n} at dose 0.25,
+  and the two must never be merged or averaged.`;
+
+/* ---------- FPR ---------- */
+const merged = B.fpr.filter(r=>r.population.startsWith("merged"));
+const fleet  = B.fpr.filter(r=>r.population.startsWith("fleet"));
+let h = `<tr><th>Population</th><th>Rule</th><th class="num">Alarms / n</th><th class="num">FPR (95% Wilson)</th><th class="num">Threshold</th><th>Status</th></tr>`;
+B.fpr.forEach(r=>{
+  const st = r.degenerate ? `<span class="badge warn">degenerate · ceiling</span>`
+           : `<span class="badge ok">measured</span>`;
+  h += `<tr><td>${r.population}</td><td class="mono">${r.rule}</td>
+    <td class="num">${int(r.alarms)} / ${int(r.n)}</td>
+    <td class="num">${pct(r.fpr)} <span style="color:var(--dim)">[${pct(r.lo)}, ${pct(r.hi)}]</span></td>
+    <td class="num">${r.threshold.toFixed(6)}</td><td>${st}</td></tr>`;
+});
+$("#fpr-table").innerHTML = h;
+$("#fpr-chart").innerHTML = `<div class="shell"><div class="core"><h3>False-alarm rate by rule</h3>
+  <p class="sub">Merged ledger, ${int(o.evaluation_negatives)} held-out clean models</p>
+  ${bars(merged.map(r=>({label:r.rule.replace("_clean","").replace("_","\n"),v:r.fpr,
+    err:[r.fpr-r.lo,r.hi-r.fpr],color:0})),{max:6,label:"false-alarm rate"})}
+  <p class="figcap">Bars carry 95% Wilson intervals. Both measured rules include the 5% target.</p></div></div>`;
+$("#fpr-notes").innerHTML = `<div class="shell"><div class="core"><h3>Why two of four rules are retired</h3>
+  <p class="sub" style="margin-bottom:12px">${merged[0]? merged[0].basis : ""}</p>
+  ${merged.filter(r=>r.degenerate).map(r=>`<div class="note" style="margin-top:10px"><b>${r.rule}</b> threshold sits at 1.0 —
+    the ceiling of the clean corpus. Nothing can exceed it, so its zero false-alarm rate is a range bound and the rule
+    cannot fire on an attack either.</div>`).join("")}
+  <div class="note acc" style="margin-top:12px">A separate earlier ledger is kept apart:
+    <b>${int(o.fleet_models)}</b> models, ${int(o.fleet_negatives)} held-out negatives.</div></div></div>`;
+
+/* ---------- ladder ---------- */
+const fams = Object.keys(B.ladder);
+const NICE = {substitution:"Substitution (pruned units)",weight_tamper:"Weight tamper (head noise)",bias_lift:"Bias lift (logit shift)"};
+let active = fams[0];
+$("#ladder-tabs").innerHTML = fams.map(f=>`<button role="tab" data-f="${f}" aria-selected="${f===active}">${NICE[f]}</button>`).join("");
+function drawLadder(){
+  const L = B.ladder[active];
+  const doses = L.refdiv.map(d=>({lab:d.dose, n:d.n}));
+  $("#ladder-title").textContent = NICE[active];
+  $("#ladder-unit").textContent = "dose unit — " + L.unit;
+  $("#ladder-chart").innerHTML = lines([
+    {name:"refdiv_mean_clean",color:"#5B8DEF",data:L.refdiv},
+    {name:"ctc_mean_clean",color:"#9AA0A6",data:L.ctc},
+  ],{doses});
+  let t=`<tr><th>Dose</th><th class="num">RefDiv</th><th class="num">CTC mean</th><th class="num">Behaviour-inert</th></tr>`;
+  L.refdiv.forEach((d,i)=>{
+    const c=L.ctc[i];
+    t+=`<tr><td class="mono">${d.dose}</td>
+      <td class="num">${d.caught}/${d.n} ${d.conclusion==="insufficient_denominator"?'<span class="badge warn">n&lt;20</span>':""}</td>
+      <td class="num">${c.caught}/${c.n}</td>
+      <td class="num">${d.inert}/${d.n}</td></tr>`;
+  });
+  $("#ladder-table").innerHTML = t;
+  const inert = L.refdiv.reduce((a,d)=>a+d.inert,0), tot = L.refdiv.reduce((a,d)=>a+d.n,0);
+  $("#ladder-note").innerHTML = active==="bias_lift"
+    ? `<b>Behaviour-inert modification.</b> ${inert} of ${tot} bias-lift arms show zero relative F1 change.
+       A rule catching some of them is reacting to a weight-space change, not to a damaged model.
+       The headline section states the same result as a single number.`
+    : `RefDiv is the strongest measured live signal in these receipts. It is one rule in the fused framework,
+       not the framework. Excluded arms are shown by the falling denominators, not hidden.
+       The headline section fixes the four cells that get quoted.`;
+}
+$("#ladder-tabs").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-f]"); if(!b) return;
+  active=b.dataset.f;
+  [...$("#ladder-tabs").children].forEach(x=>x.setAttribute("aria-selected", x===b));
+  drawLadder();
+});
+drawLadder();
+
+/* ---------- baseline ---------- */
+const MA=B.baseline.model_axis, ORDER=["fixed_threshold_single_signal","quantile_threshold_single_signal","hand_tuned_single_signal","cviaf"];
+const NAME={fixed_threshold_single_signal:"Fixed threshold",quantile_threshold_single_signal:"Reference quantile",hand_tuned_single_signal:"Hand-tuned",cviaf:"CVIAF"};
+$("#model-axis").innerHTML = grouped(ORDER.map(k=>({label:NAME[k],
+  sub:`${MA[k].tp}/${MA[k].n_pos} · ${MA[k].fp}/${MA[k].n_neg}`,
+  a:MA[k].tpr*100, b:MA[k].fpr*100,
+  alab:`${MA[k].tp}/${MA[k].n_pos}`, blab:`${MA[k].fp}/${MA[k].n_neg}`})));
+const DA=B.baseline.data_axis;
+$("#data-axis").innerHTML = grouped([
+  {label:"Asset level",sub:"7 poisoned · 1 clean",a:DA.baseline_tpr*100,b:DA.baseline_fpr*100,alab:"7/7",blab:"1/1"},
+  {label:"Asset level",sub:"7 poisoned · 1 clean",a:DA.cviaf_tpr*100,b:DA.cviaf_fpr*100,alab:"2/7",blab:"0/1"},
+  {label:"Sample level",sub:"432 poisoned · 1,560 clean",a:DA.item.baseline.item_tpr*100,b:DA.item.baseline.item_fpr*100,alab:"TPR 84.0",blab:"FPR 1.5"},
+  {label:"Sample level",sub:"432 poisoned · 1,560 clean",a:DA.item.cviaf.item_tpr*100,b:DA.item.cviaf.item_fpr*100,alab:"TPR 16.9",blab:"FPR 3.3"},
+],{h:270});
+$("#baseline-table").innerHTML =
+ `<tr><th>What changed</th><th>Before — implemented baseline</th><th>After — CVIAF</th><th>Boundary</th></tr>
+  <tr><td>Model axis</td><td>fixed threshold 2/2 TPR, 4/4 FPR</td><td>1/2 TPR, 0/4 FPR</td><td>2 positives, 4 negatives, 2 ASR-gated excluded</td></tr>
+  <tr><td>Inference tamper + replay</td><td>enrolled digest 4/8, abstains on 2 attacked and 2 genuine</td><td>8/8, FPR 0/2</td><td>HMAC fallback; tamper check, not proof of origin</td></tr>
+  <tr><td>Data asset triage</td><td>7/7 TPR but 1/1 false alarm</td><td>2/7 TPR, 0/1 false alarm</td><td>fewer asset false alarms, lower recall in this run</td></tr>
+  <tr><td>Sample decisions</td><td>TP 363 / FP 24 · TPR 84.03% · precision 93.80%</td><td>TP 73 / FP 51 · TPR 16.90% · precision 58.87%</td><td>unfavourable to CVIAF and retained</td></tr>
+  <tr><td>Attribution</td><td>hash-only: top-1 undefined, 0/8 detected</td><td>top-1 2/2 on single-culprit classes</td><td>2 scored classes; not universal source accuracy</td></tr>`;
+
+/* ---------- provenance ---------- */
+const P=B.provenance;
+$("#prov-chart").innerHTML = `<div class="shell"><div class="core"><h3>Attacked records detected</h3>
+  <p class="sub">${P.n_attacked} attacked and ${P.n_genuine} genuine inference records</p>
+  ${bars([
+    {label:"Enrolled digest",sub:"4/8 · abstains",v:P.baseline_digest_manifest.tpr*100,hollow:false},
+    {label:"Internal hash only",sub:"0/8 · blind",v:P.baseline_internal_consistency.tpr*100},
+    {label:"CVIAF provenance",sub:"8/8 · 0/2 false",v:P.cviaf.tpr*100},
+  ],{max:100,colors:i=>i===2?"var(--acc)":"#5A6169",label:"provenance detection"})}
+  <p class="figcap">Abstentions: enrolled digest abstained on 2 attacked and 2 genuine records.</p></div></div>`;
+$("#prov-notes").innerHTML = `<div class="shell"><div class="core"><h3>Signature mode in this run</h3>
+  <p class="sub">signing_mode = <span class="mono">${P.signing_mode}</span></p>
+  <div class="note" style="margin-top:14px"><b>Symmetry, stated plainly.</b> ${P.assumption}</div>
+  <div class="note acc" style="margin-top:12px">Per attack family CVIAF detected 2/2 in each of four families
+   (tampered output, swapped model, forged record, replay).</div></div></div>`;
+
+/* ---------- inventory ---------- */
+const INV=B.inventories;
+$("#inventory-chart").innerHTML = bars([
+  {label:"Merged study",sub:int(INV.merged_study)+" models",v:INV.merged_study},
+  ...INV.components.map(c=>({label:c.label.split(" ")[0],sub:int(c.models)+" models",v:c.models})),
+],{scaleMax:62000,label:"corpus inventory",h:250,fmt:v=>Math.round(v).toLocaleString("en-US")});
+$("#inventory-note").innerHTML = `<b>Not additive.</b> ${INV.warning}
+  A byte-level image-overlap receipt is still outstanding, so no claim of independent images or
+  leakage-free evaluation is made anywhere on this page.`;
+
+/* ---------- limitations ---------- */
+$("#limitations").innerHTML = B.limitations.map((t,i)=>
+  `<details${i===0?" open":""}><summary>${t.split(".")[0]}.</summary><p>${t}</p></details>`).join("");
+
+/* ---------- research basis ---------- */
+const RS=B.research;
+$("#res-docs").innerHTML = RS.documents.map(d=>
+  `<div class="shell"><div class="core"><h3 class="mono">${d.name}</h3>
+     <p class="sub" style="margin-top:10px">${d.what}</p>
+     ${d.url ? `<div style="margin-top:16px"><a class="btn" href="${d.url}" target="_blank" rel="noopener">Open in repository <span class="knob">↗</span></a></div>`
+             : `<div class="note bad" style="margin-top:14px">Not tracked in the repository, so no link is offered.</div>`}
+   </div></div>`).join("");
+$("#res-run").innerHTML =
+  `<tr><th>Published method</th><th>What it does in this evidence</th><th>State in this build</th><th>Where it lives</th></tr>` +
+  RS.run.map(r=>`<tr><td>${r.method}</td><td>${r.role}</td>
+    <td><span class="badge acc">run</span> ${r.state}</td>
+    <td class="mono">${r.url ? `<a href="${r.url}" target="_blank" rel="noopener">${r.path}</a>` : r.path}
+      <br><span style="color:var(--dim)">${r.where}</span></td></tr>`).join("");
+$("#res-planned").innerHTML = `<b>Design basis, not run here — stated so the boundary needs no
+  inference.</b> ${RS.planned.map(p=>`<span class="mono">${p[0]}</span> — ${p[1]}`).join("; ")}.`;
+const RU = RS.update;
+$("#res-upd-title").textContent = RU.title;
+$("#res-upd-where").textContent = RU.where;
+$("#res-upd").innerHTML =
+  `<tr><th>What the measurement changed</th><th>Why</th><th>The number</th></tr>` +
+  RU.items.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="mono">${r[2]}</td></tr>`).join("");
+$("#res-scope").innerHTML = `<b>Scope, stated so these do not get merged.</b> ${RU.scope} `
+  + RU.unbuilt + " The dossier's §12 status board and the checkpoint's UPDATE 3 carry the full "
+  + "disposition of every recommendation.";
+$("#res-note").textContent = RS.note;
+
+/* ---------- evidence explorer ---------- */
+function drawEvidence(q=""){
+  const rows=B.manifest.filter(e=>!q || JSON.stringify(e).toLowerCase().includes(q.toLowerCase()));
+  let t=`<tr><th>Slide asset</th><th>Source file</th><th>Field</th><th>Unit</th><th class="num">Numerator</th><th class="num">Denominator</th><th>Link</th></tr>`;
+  rows.forEach(e=>{
+    const link = e.repo_url
+      ? `<a href="${e.repo_url}" target="_blank" rel="noopener">open ↗</a>`
+      : `<span class="badge">local artifact</span>`;
+    t+=`<tr><td>${e.asset}</td><td class="mono">${e.source_file}</td><td class="mono" style="max-width:280px">${(e.source_field||"").slice(0,90)}</td>
+      <td>${e.unit||""}</td><td class="num">${e.numerator??""}</td><td class="num">${e.denominator??""}</td><td>${link}</td></tr>`;
+  });
+  $("#ev-table").innerHTML = t;
+  if(!rows.length) $("#ev-table").innerHTML = `<tr><td style="color:var(--muted)">No matching evidence rows.</td></tr>`;
+}
+drawEvidence();
+$("#ev-search").addEventListener("input",e=>drawEvidence(e.target.value));
+
+/* ---------- scroll reveal ---------- */
+const io = new IntersectionObserver(es=>es.forEach(en=>{
+  if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+}),{rootMargin:"0px 0px -8% 0px",threshold:.05});
+document.querySelectorAll("section > *").forEach(n=>{n.classList.add("reveal");io.observe(n);});
+</script>
+</body>
+</html>

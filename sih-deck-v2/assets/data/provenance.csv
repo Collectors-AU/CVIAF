@@ -1,0 +1,4 @@
+system,detected,n_attacked,tpr_pct,false_alarms,n_genuine,abstained_attacked,abstained_genuine
+Enrolled digest manifest,0.5,8,50.0,0.0,2,2,2
+Internal hash consistency,0.0,8,0.0,0.0,2,0,0
+CVIAF provenance,1.0,8,100.0,0.0,2,0,0

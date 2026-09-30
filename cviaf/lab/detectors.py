@@ -383,8 +383,159 @@ def trace_ftc(
 
 
 # --------------------------------------------------------------------------- #
-# behavioural fingerprint (substitution)
+# TRACE: the FOREGROUND (focal) arm
+#
+# The gap this closes, stated as the paper states it. TRACE's first observation is
+# the background arm implemented above (`trace_ctc`): a poisoned object stays
+# confident when the SCENE changes under it. Its second observation is the mirror
+# image, and we had not implemented it: a clean object stays consistent when the
+# object's own appearance changes, because the model is keying on real structure,
+# whereas a trigger dominates the local features and visibly re-renders when the
+# focal properties of that patch change.
+#
+# So the direction is INVERTED relative to CTC:
+#     CTC    stability (1 - CV) under background transforms; HIGH  = suspicious
+#     this   variability (CV)   under foreground transforms;  HIGH  = suspicious
+#
+# Why that matters for the null control: the background arm reads AUROC 0.816 on a
+# model with NO backdoor (measured, runs/mvp/eval.json), i.e. it is partly responding
+# to the stamp's high-contrast ink. A foreground arm that transforms only the object
+# patch is a different measurement of a different quantity, so it is a real
+# independent test of whether the CTC null is the stamp or a genuine sensitivity.
+#
+# Honest scope note: the published TRACE figures are YOLOv5 / Faster-RCNN / DETR on
+# COCO and VOC. This is the mechanism at 64x64 MVP scale, and its numbers are ours.
 # --------------------------------------------------------------------------- #
+
+
+def _box_blur(x: np.ndarray, radius: int = 1) -> np.ndarray:
+    """Separable moving average with edge padding. No scipy dependency."""
+    out = np.asarray(x, np.float64)
+    k = 2 * radius + 1
+    for axis in (0, 1):
+        a = np.moveaxis(out, axis, -1)
+        n = a.shape[-1]
+        padded = np.pad(a, [(0, 0)] * (a.ndim - 1) + [(radius, radius)], mode="edge")
+        zero = np.zeros(padded.shape[:-1] + (1,), padded.dtype)
+        cs = np.concatenate([zero, np.cumsum(padded, axis=-1)], axis=-1)
+        window = (cs[..., k:k + n] - cs[..., :n]) / float(k)
+        out = np.moveaxis(window, -1, axis)
+    return out
+
+
+def _focal_variants(patch: np.ndarray) -> List[Tuple[str, np.ndarray]]:
+    """TRACE foreground transforms: the object's own appearance, the scene untouched.
+
+    Deliberately *point operations plus one scale-space pair* rather than a learned
+    augmentation. The claim being tested is "the model's belief in a REAL object
+    survives changes to that object's rendering", so the transforms must be ones a
+    genuine object tolerates -- a tank photographed at a different gamma is still a
+    tank. A trigger, by contrast, is a specific pattern the model was trained to key
+    on, so re-rendering it moves the belief.
+    """
+    p = np.clip(np.asarray(patch, np.float64), 0.0, 1.0)
+    blur = _box_blur(p, radius=1)
+    return [
+        ("identity", p),
+        ("gamma_lo", p ** 0.65),
+        ("gamma_hi", p ** 1.55),
+        ("contrast", np.clip((p - 0.5) * 1.5 + 0.5, 0.0, 1.0)),
+        ("blur", blur),
+        ("sharpen", np.clip(p + 0.9 * (p - blur), 0.0, 1.0)),
+    ]
+
+
+def _crop_patch(img: np.ndarray, box: np.ndarray, pad_frac: float):
+    """Bounding-box crop with fractional padding, clipped to the image."""
+    H, W = img.shape[0], img.shape[1]
+    x0, y0, x1, y1 = (float(v) for v in box)
+    px, py = pad_frac * max(x1 - x0, 1.0), pad_frac * max(y1 - y0, 1.0)
+    x0i = int(max(0, np.floor(x0 - px))); y0i = int(max(0, np.floor(y0 - py)))
+    x1i = int(min(W, np.ceil(x1 + px))); y1i = int(min(H, np.ceil(y1 + py)))
+    if x1i - x0i < 2 or y1i - y0i < 2:
+        return None, None
+    return img[y0i:y1i, x0i:x1i].copy(), (y0i, y1i, x0i, x1i)
+
+
+def trace_foreground(
+    model: TinyDetector,
+    images: np.ndarray,
+    score_thresh: float = DEFAULT_SCORE_THRESH,
+    max_objects: int = 4,
+    pad_frac: float = 0.25,
+    min_detections: int = 1,
+) -> Dict[str, Any]:
+    """Focal Transformation Consistency -- TRACE's second observation.
+
+    For each detection, crop the object with a little padding, re-render ONLY that
+    crop under a set of focal transforms, paste it back, and read the model's raw
+    objectness at the object's own cell. The statistic is the coefficient of
+    variation across the transforms, so **HIGH = suspicious** -- the opposite sign to
+    ``trace_ctc``, and the reason the two are reported as a pair rather than averaged.
+
+    Cost control: at most ``max_objects`` detections per image are probed, each with
+    six renders. That is bounded and deterministic, which is what lets it sit in the
+    same pass as the other detectors without a timeout.
+    """
+    n = len(images)
+    scores = np.full(n, np.nan, np.float64)
+    usable = np.zeros(n, bool)
+    per_image: List[List[Dict[str, Any]]] = []
+
+    for i in range(n):
+        det0 = model.predict(images[i], score_thresh=score_thresh)
+        cells = det0.get("cells", np.zeros((0, 2), np.int64))
+        if len(cells) == 0:
+            per_image.append([])
+            continue
+        objs: List[Dict[str, Any]] = []
+        for k, (ci, cj) in enumerate(cells[:max_objects]):
+            box = det0["boxes"][k]
+            crop, bounds = _crop_patch(images[i], box, pad_frac)
+            if crop is None:
+                continue
+            y0, y1, x0, x1 = bounds
+            series: List[float] = []
+            for _name, variant in _focal_variants(crop):
+                probe = images[i].copy()
+                probe[y0:y1, x0:x1] = variant
+                obj = model.predict(probe, score_thresh=score_thresh)["obj"]
+                series.append(_read_cell(obj, int(ci), int(cj)))
+            arr = np.asarray(series, np.float64)
+            mean = float(arr.mean())
+            cv = float(arr.std() / mean) if mean > 1e-9 else 1.0
+            objs.append({
+                "cell": [int(ci), int(cj)],
+                "label": int(det0["labels"][k]),
+                "cv": cv,
+                "mean_objectness": mean,
+                "min_objectness": float(arr.min()),
+                "n_variants": int(arr.size),
+            })
+        per_image.append(objs)
+        if len(objs) >= min_detections:
+            scores[i] = float(np.max([o["cv"] for o in objs]))
+            usable[i] = True
+
+    return {
+        "score": scores,               # higher = more unstable under focal change = suspicious
+        "usable": usable,
+        "objects": per_image,
+        "method": "trace_foreground",
+        # The sign below is DECLARED from the paper, not measured here. It is stated as a
+        # hypothesis because the stamped-clean-model null (cviaf.lab.arms) is the test that
+        # settles it, and a declared sign published as a calibrated one is how an arm with
+        # an inverted statistic ships as a detector.
+        "direction": ("DECLARED sign, inverted vs trace_ctc: high = more VARIABLE under "
+                      "focal change = suspicious. Calibrate it on a trigger-stamped clean "
+                      "model before publishing a detection from this arm."),
+        "statistic": "CV(raw objectness at detection cells) over foreground focal transforms",
+        "aggregation": f"max over at most {max_objects} objects per image",
+        "access_required": "model.black_box",
+        "inapplicable_reason": "no detections on the base image",
+        "citation": "Zhang et al., TRACE, CVPR 2025 (foreground/focal arm)",
+    }
+
 
 def reference_divergence(
     suspect: TinyDetector,
@@ -444,6 +595,140 @@ def reference_divergence(
         "access_required": "model.black_box + a trusted reference model from AB1.refmodels",
         "targets": "FN-inducing attacks (object disappearance / cloaking)",
         "salience_gate": require_salience,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# pre-NMS class-prior divergence (the trigger-FREE model-level signal)
+#
+# Implemented from: Wang, Zhao, Lin, Yang, Wang, Zhi, Xie, Shen, "Detecting
+# Backdoors in Object Detection via Pre-NMS Prediction Distribution Shift"
+# (DistScan), arXiv:2608.19088. Reported there: 96.99% average detection accuracy
+# on 288 models across YOLOv5 and Faster R-CNN, COCO and PASCAL VOC, over three
+# scene-level attacks, +27.32pp over the best applicable baseline. Those are their
+# numbers on their models; ours are measured separately and are not comparable.
+#
+# Why it matters more here than any single detector we already had: this signal is
+# computed on CLEAN INPUTS WITH NO TRIGGER PRESENT. Every test-time criterion in
+# this lab had to be rebuilt with a placebo arm precisely because stamping a
+# trigger changes the image and a clean model responds to that change (measured
+# up to 0.988 attack success on a model with no backdoor). A signal that never
+# stamps anything cannot fail that way -- it is structurally immune to the
+# contamination, rather than corrected for it.
+#
+# The mechanism, per the paper: a detector's pre-NMS prediction generation is
+# optimised directly on the training data, so it implicitly encodes the training
+# class-frequency prior. Backdoor injection distorts that prior and the distortion
+# persists on clean inputs, so comparing the observed pre-NMS class distribution
+# against the training class frequencies separates backdoored from benign models
+# without trigger knowledge, extra training, or weight access.
+#
+# Access level, stated honestly: the paper requires only pre-NMS *predictions*,
+# which a black-box detector API exposes by setting the confidence/NMS thresholds
+# to zero. This implementation reads them from the head's logits directly, which is
+# white-box. The two are equivalent quantities; the requirement to restate is that
+# the API must expose candidates before NMS.
+# --------------------------------------------------------------------------- #
+
+
+def js_divergence(p: np.ndarray, q: np.ndarray, eps: float = 1e-12) -> float:
+    """Jensen-Shannon divergence in bits, bounded in [0, 1].
+
+    Bounded and symmetric, which is why it is usable as a thresholded statistic: a
+    KL divergence is unbounded and asymmetric, so a fixed threshold on it would
+    mean different things depending on which way the class prior moved.
+    """
+    p = np.asarray(p, np.float64)
+    q = np.asarray(q, np.float64)
+    p = p / max(float(p.sum()), eps)
+    q = q / max(float(q.sum()), eps)
+    m = 0.5 * (p + q)
+
+    def _kl(a: np.ndarray, b: np.ndarray) -> float:
+        keep = a > 0
+        if not keep.any():
+            return 0.0
+        return float(np.sum(a[keep] * np.log2(a[keep] / np.maximum(b[keep], eps))))
+
+    return float(np.clip(0.5 * _kl(p, m) + 0.5 * _kl(q, m), 0.0, 1.0))
+
+
+def pre_nms_class_counts(
+    model: TinyDetector,
+    images: np.ndarray,
+    conf: float = 0.5,
+) -> np.ndarray:
+    """Per-class histogram of a model's pre-NMS predictions over a clean set.
+
+    A "pre-NMS prediction" here is a grid cell the model is confident about: its
+    objectness and its best class probability both clear ``conf``. Deliberately no
+    NMS, no top-k, no score threshold on the product -- those are the final-output
+    stages, and the whole point of this signal is that the shift is visible BEFORE
+    the model commits to a detection.
+    """
+    n_classes = int(model.cfg.n_classes)
+    counts = np.zeros(n_classes, np.float64)
+    for im in images:
+        obj_logit, cls_logit, _ = model.head_forward(model.features(im))
+        obj_p = sigmoid(obj_logit)
+        cls_p = softmax(cls_logit, axis=-1)
+        best = np.argmax(cls_p, axis=-1)
+        best_p = np.take_along_axis(cls_p, best[..., None], axis=-1)[..., 0]
+        keep = (obj_p >= conf) & (best_p >= conf)
+        if keep.any():
+            counts += np.bincount(best[keep].ravel(), minlength=n_classes)[:n_classes]
+    return counts
+
+
+def training_class_frequencies(labels: Sequence[np.ndarray],
+                              n_classes: int = NUM_CLASSES) -> np.ndarray:
+    """Reference distribution: class counts in the TRAINING ground truth.
+
+    Grounded against the training data rather than against another model, which is
+    what makes this signal model-independent. The paper notes this is a practical
+    assumption because standardised inspection frameworks (IARPA TrojAI) ship
+    per-model dataset statistics, and released models commonly document training
+    composition without releasing raw images.
+    """
+    counts = np.zeros(int(n_classes), np.float64)
+    for lab in labels:
+        arr = np.asarray(lab).ravel()
+        if arr.size:
+            counts += np.bincount(arr.astype(np.int64),
+                                  minlength=int(n_classes))[:int(n_classes)]
+    return counts
+
+
+def pre_nms_class_divergence(
+    model: TinyDetector,
+    images: np.ndarray,
+    reference_counts: np.ndarray,
+    conf: float = 0.5,
+) -> Dict[str, Any]:
+    """JS divergence between the observed pre-NMS class prior and the training prior.
+
+    Higher = the model's internal class prior has moved away from the data it was
+    trained on, which is what backdoor injection does. Returns the histogram as well
+    as the scalar, because "which classes moved" is what turns a flag into a finding.
+    """
+    obs = pre_nms_class_counts(model, images, conf=conf)
+    ref = np.asarray(reference_counts, np.float64)
+    return {
+        "score": js_divergence(obs, ref),
+        "observed_counts": obs.tolist(),
+        "reference_counts": ref.tolist(),
+        "observed_share": (obs / max(float(obs.sum()), 1e-12)).tolist(),
+        "reference_share": (ref / max(float(ref.sum()), 1e-12)).tolist(),
+        "n_pre_nms_predictions": int(obs.sum()),
+        "confidence_gate": float(conf),
+        "method": "pre_nms_class_divergence",
+        "access_required": ("model.pre_nms_candidates -- a black-box API can expose "
+                            "these by zeroing the confidence and NMS thresholds; read "
+                            "here directly from the head, which is white-box"),
+        "trigger_required": False,
+        "targets": ("class-prior distortion from any poisoning attack, including "
+                    "scene-level attacks that leave negligible trigger behaviour"),
+        "citation": "Wang et al., arXiv:2608.19088 (DistScan)",
     }
 
 

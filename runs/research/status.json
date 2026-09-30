@@ -1,0 +1,16 @@
+{
+ "updated_utc": "2026-09-28T16:33:33Z",
+ "cycles_done": 45,
+ "elapsed_minutes": 449.91,
+ "open_gaps": 5,
+ "critical": 0,
+ "high": 0,
+ "top": [
+  "below_null:paired",
+  "below_null:unpaired",
+  "open:https://arxiv.org/abs/2510.03839",
+  "open:https://cvpr.thecvf.com/virtual/2025/pos",
+  "open:https://openaccess.thecvf.com/content/CV"
+ ],
+ "ledger_findings": 5
+}

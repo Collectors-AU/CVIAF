@@ -1,0 +1,51 @@
+[
+ {
+  "topic": "TRACE foreground arm",
+  "queries": [
+   "TRACE CVPR 2025 focal information transform object detection backdoor",
+   "test-time backdoor detection foreground transformation consistency"
+  ],
+  "closes_gap": "trace_ctc implements only the BACKGROUND arm of TRACE; the paper's second observation (clean samples are more consistent under different focal information) implies a foreground arm whose direction is inverted. Our implementation is missing it."
+ },
+ {
+  "topic": "scene-level attacks that actually implant",
+  "queries": [
+   "Detector Collapse scene-level backdoor object detection",
+   "BadDet object generation implantation rate small detector",
+   "backdoor attack that breaks transformation consistency defenses"
+  ],
+  "closes_gap": "three of four trigger attacks never implanted in this corpus (placebo-controlled). gma is the only positive. Detector Collapse is cited as implanting without victim-target class correspondence, which is exactly the case our local recipes fail."
+ },
+ {
+  "topic": "anytime-valid monitoring",
+  "queries": [
+   "e-process anytime-valid sequential testing distribution shift",
+   "safe testing martingale wealth monitoring machine learning"
+  ],
+  "closes_gap": "MONITOR/RE-ATTEST re-checks a fixed-sample p-value on a stream, which inflates the error rate under repeated peeking. E-SHIFT (arXiv:2510.03839) is the closest match to our drift module."
+ },
+ {
+  "topic": "calibrating a low-resolution histogram statistic",
+  "queries": [
+   "Jensen-Shannon divergence histogram sample size small validation set",
+   "pre-NMS class distribution backdoor detection validation set size"
+  ],
+  "closes_gap": "pre_nms_class_divergence measures mean JS 0.068 on clean models with max 0.188, so the null swamps the signal at 40 images. DistScan uses 800. Need a defensible image count or a variance reduction, not a looser threshold."
+ },
+ {
+  "topic": "conformal validity under shift",
+  "queries": [
+   "conformal prediction covariate shift weighted coverage guarantee",
+   "conformal abstention violated assumption report"
+  ],
+  "closes_gap": "our conformal p-values are exchangeability-based and the drift module can report covariate shift, which is precisely when coverage fails. Report/condition/abstain is unimplemented."
+ },
+ {
+  "topic": "label attribution",
+  "queries": [
+   "influence function contributor attribution poisoning detection",
+   "AUM ranking label noise small-loss criterion"
+  ],
+  "closes_gap": "'which contributor poisoned this' is currently answered from duplicate/spectral signals only; ranked review lists are not individual-detection claims and must not be reported as such."
+ }
+]

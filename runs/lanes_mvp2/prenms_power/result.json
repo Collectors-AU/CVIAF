@@ -1,0 +1,131 @@
+{
+ "lane": "prenms_power",
+ "title": "Pre-NMS signal: how many images before it can carry a decision",
+ "question": "The pre-NMS class-prior divergence null (mean 0.0677, max 0.1876 at 40 images) is wider than the effect. What sample size makes the null clear the effect, instead of loosening the threshold?",
+ "depends_on": [],
+ "params": {
+  "corpus_dir": "runs/mvp2",
+  "sizes": [
+   10,
+   20,
+   40,
+   80
+  ],
+  "repeats": 16,
+  "max_clean": 6,
+  "max_positive": 4,
+  "max_images": 60
+ },
+ "status": "ok",
+ "seconds": 12.642,
+ "evidence": [
+  {
+   "id": "prenms_power.required_n",
+   "claim": "Measured effect 0.0956 is cleared at n=40 images (null p95 below the effect). Below that sample size the null and the effect overlap and the signal must not be reported as a detection.",
+   "number": 40,
+   "context": "null p95 at n=10/20/40/80: 10:0.1188, 20:0.1050, 40:0.0780, 80:0.0844",
+   "source": "cviaf.lab.power.sample_size_calibration"
+  }
+ ],
+ "gaps": [],
+ "artifacts": [
+  "runs/lanes_mvp2/prenms_power/power.json"
+ ],
+ "detail": {
+  "corpus_dir": "runs/mvp2",
+  "calibration": {
+   "signal": "pre_nms_class_divergence",
+   "confidence_gate": 0.35,
+   "repeats": 16,
+   "null_curve": [
+    {
+     "n": 10,
+     "n_draws": 96,
+     "mean": 0.04614957651313519,
+     "sd": 0.034883120443926136,
+     "p95": 0.11875491579653294,
+     "max": 0.13832644102989203
+    },
+    {
+     "n": 20,
+     "n_draws": 96,
+     "mean": 0.03525764604779152,
+     "sd": 0.03536244762612938,
+     "p95": 0.10499240724387945,
+     "max": 0.14315044878783528
+    },
+    {
+     "n": 40,
+     "n_draws": 96,
+     "mean": 0.02859475574405962,
+     "sd": 0.027398870977045367,
+     "p95": 0.07801251307510929,
+     "max": 0.09607765976232124
+    },
+    {
+     "n": 80,
+     "n_draws": 96,
+     "mean": 0.030424048250842925,
+     "sd": 0.030732369362714035,
+     "p95": 0.08443390369324975,
+     "max": 0.09849662878401205
+    }
+   ],
+   "positive_models": [
+    {
+     "index": 0,
+     "full_sample_js": 0.12989394572899154
+    },
+    {
+     "index": 1,
+     "full_sample_js": 0.10007330233813694
+    },
+    {
+     "index": 2,
+     "full_sample_js": 0.0970068620044324
+    },
+    {
+     "index": 3,
+     "full_sample_js": 0.05554184812754086
+    }
+   ],
+   "measured_effect": 0.09562898954977543,
+   "effect_used": 0.09562898954977543,
+   "required_sample_size": 40,
+   "at_n40": {
+    "null_p95": 0.07801251307510929,
+    "null_max": 0.09607765976232124,
+    "effect": 0.09562898954977543,
+    "effect_clears_p95": true,
+    "effect_clears_max": false
+   },
+   "power_by_size": [
+    {
+     "n": 10,
+     "null_p95": 0.11875491579653294,
+     "detected_fraction": 0.25,
+     "n_positives": 4
+    },
+    {
+     "n": 20,
+     "null_p95": 0.10499240724387945,
+     "detected_fraction": 0.5,
+     "n_positives": 4
+    },
+    {
+     "n": 40,
+     "null_p95": 0.07801251307510929,
+     "detected_fraction": 0.75,
+     "n_positives": 4
+    },
+    {
+     "n": 80,
+     "null_p95": 0.08443390369324975,
+     "detected_fraction": 0.75,
+     "n_positives": 4
+    }
+   ],
+   "claim": "Measured effect 0.0956 is cleared at n=40 images (null p95 below the effect). Below that sample size the null and the effect overlap and the signal must not be reported as a detection."
+  }
+ }
+}

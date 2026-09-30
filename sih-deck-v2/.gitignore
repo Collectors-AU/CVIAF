@@ -1,0 +1,16 @@
+# Scratch working material: intermediate contact sheets, tab screenshots and
+# captured HTML used while checking layouts. Regenerate by re-running the
+# build scripts; nothing here is a cited artefact.
+assets/screenshots/_work/
+# intermediate HTML the SVG->PNG rasteriser needs, not a deliverable
+assets/diagrams/_arch.html
+
+__pycache__/
+*.pyc
+.DS_Store
+
+# The repository root ignores data/ for the corpus. The deck's own data layer is
+# small, cited CSVs plus the dashboard bundle, and belongs in the repo; keep the
+# negation so a clean clone can regenerate and check every figure.
+!assets/data/
+!site/data/

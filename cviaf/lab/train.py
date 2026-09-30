@@ -301,7 +301,22 @@ def _asr_single(
         return out
 
     imgs, infos = trigger_view(ds, spec, seed)
-    successes = 0          # paired, causal criterion
+    # The placebo arm: identical stamp geometry, matched marker, drawn from the same
+    # rng stream. Every criterion below asks what the REAL trigger does that the
+    # PLACEBO does not, which is the only formulation that survives a measurement that
+    # went badly: the object-generation criterion fired on 100% of held-out images of
+    # one clean model and 0% of another, because "a checkerboard landed in the corner"
+    # is an object to some models and not to others. Tuning the recipe does not fix
+    # that -- a 3px trigger behaved the same way -- because the contamination is not the
+    # patch's size, it is that the criterion could not separate "the model saw the
+    # trigger" from "the model saw an object".
+    # Two placebos, and the effect must beat BOTH. One was measurably not enough: with a
+    # single channel-swapped placebo the object-generation criterion still fired on 100%
+    # of one clean model's held-out images, which means that model scores the real marker
+    # above the swapped one while having no backdoor at all. A model-dependent null needs
+    # a max over several matched controls, not a single control.
+    placebos = [trigger_view(ds, spec, seed, placebo=v)[0] for v in (1, 2)]
+    successes = 0          # paired + placebo-controlled, causal
     successes_strict = 0   # legacy IoU criterion, kept for comparability
     considered = 0
     n = len(ds)
@@ -311,6 +326,7 @@ def _asr_single(
         info = infos[i]
         det_t = model.predict(imgs[i], score_thresh=score_thresh)
         det_c = model.predict(ds.images[i], score_thresh=score_thresh)
+        det_ps = [model.predict(pv[i], score_thresh=score_thresh) for pv in placebos]
         bt, lt = det_t["boxes"], det_t["labels"]
         loc = info.location
 
@@ -320,10 +336,16 @@ def _asr_single(
             considered += 1
             cx, cy = (loc[0] + loc[2]) / 2.0, (loc[1] + loc[3]) / 2.0
             # Phantom appears: high-confidence target-class detection localised at the
-            # trigger on the triggered image, and NOT on the same image untriggered.
+            # trigger on the triggered image, and NOT on the same image untriggered AND
+            # NOT with a placebo stamp of the same geometry. Both baselines are needed:
+            # the untriggered view catches "the model already saw an object there", and
+            # the placebo view catches "the model sees ANY marker there as an object".
             s_t = _max_score(det_t, spec.target_class, cx, cy, tol, near=True)
             s_c = _max_score(det_c, spec.target_class, cx, cy, tol, near=True)
-            successes += int(s_t >= score_thresh and (s_t - s_c) >= 0.20)
+            s_p = max(_max_score(d, spec.target_class, cx, cy, tol, near=True)
+                      for d in det_ps)
+            successes += int(s_t >= score_thresh
+                             and (s_t - max(s_c, s_p)) >= 0.20)
             # legacy: IoU against the padded patch
             pad = 3
             target = np.array([max(0, loc[0] - pad), max(0, loc[1] - pad),
@@ -345,13 +367,25 @@ def _asr_single(
             if s_clean < score_thresh:
                 continue
             s_trig = _max_score(det_t, vclass, vcx, vcy, 0.0, near=False)
+            # Placebo-controlled: the victim must survive the placebo stamp and not the
+            # real one. This is what removes occlusion as a confound, and occlusion was
+            # the confound -- a 10px trigger stamped on the object covered 16% of a 64px
+            # image, so a clean model "lost" the victim 90.6% of the time and the
+            # criterion was measuring the sticker, not the backdoor. With the placebo
+            # stamp covering the identical pixels, an occlusion-driven disappearance
+            # happens in both views and cancels.
+            s_plac = max(_max_score(d, vclass, vcx, vcy, 0.0, near=False)
+                         for d in det_ps)
             if kind == "oda":
-                successes += int(s_trig < score_thresh)
+                successes += int(s_trig < score_thresh and s_plac >= score_thresh)
             else:
                 if vclass == spec.target_class:
                     continue
                 s_wrong = _max_score(det_t, spec.target_class, vcx, vcy, 0.0, near=False)
-                successes += int(s_trig < score_thresh and s_wrong >= score_thresh)
+                s_wrong_p = max(_max_score(d, spec.target_class, vcx, vcy, 0.0, near=False)
+                                for d in det_ps)
+                successes += int(s_trig < score_thresh and s_wrong >= score_thresh
+                                 and s_wrong > s_wrong_p)
             considered += 1
             successes_strict += int(
                 (not any(box_iou(b, vc) >= 0.30 for b in bt)) if kind == "oda"
@@ -374,6 +408,12 @@ def _asr_single(
                  "containment/centre proximity, not mask IoU. asr_strict_iou retains "
                  "the original IoU>=0.30 criterion for comparability."),
         "n_success": successes, "n_success_strict_iou": successes_strict,
+        "placebo_controlled": True, "n_placebos": len(placebos),
+        "placebo_note": ("every criterion requires the effect to exceed two placebo "
+                         "stamps matched on size, position, contrast, luminance and "
+                         "spatial frequency, stamped on the same image at the same "
+                         "places, so occlusion and generic patch salience cancel "
+                         "instead of posing as attack success"),
     }
 
 
@@ -425,23 +465,109 @@ class ModelArtifact:
 
 
 def _behaviour_divergence(before: Dict[str, float], after: Dict[str, float]) -> Dict[str, Any]:
-    """How much did the tamper actually move the model?
+    """How much did the tamper move the model's behaviour on clean held-out data?
 
-    The model-attack analogue of the ASR gate, and it exists for the same reason: a
-    detector cannot find a substitution that did not substitute anything. A weight
-    perturbation of 0.001 is not an attack, it is a rounding step, and scoring a
-    detector against it would produce a number that looks like a capability and is
-    really a measurement of noise.
+    This is reported, NOT used as the gate, and that distinction is the result of a
+    measurement. A weight modification can change nothing about utility and still be
+    exactly the attack the framework exists to catch: zeroing 6% of the hidden units
+    (``prune_0.0625`` in scripts/tamper_probe.py) left F1 at 0.722, unchanged to three
+    decimals, while rewriting a weight statistic that is 0.0 for every one of the
+    eleven clean models in the corpus. Gating such an artifact out because "utility did
+    not drop" would be an integrity framework declaring a tampered artifact harmless
+    because it still works. Integrity is not utility.
+
+    So the gate is "did the artifact change at all" (see ``weights_changed`` on the
+    manifest), and harm is an ATTRIBUTE the evaluation stratifies by -- giving the
+    detection-vs-harm curve the report needs. The sign convention matters here too: the
+    first version compared the signed relative change against the floor with ``<``, so
+    a tamper that IMPROVED F1 by 20% printed "moved only -0.200 (< 0.1)" and was
+    excluded for the wrong reason.
     """
     f1b = float(before.get("f1", 0.0))
     f1a = float(after.get("f1", 0.0))
-    rel = (f1b - f1a) / max(f1b, 1e-9)
+    rel_drop = (f1b - f1a) / max(f1b, 1e-9)     # +ve = the tamper hurt
     return {
         "f1_before": f1b, "f1_after": f1a,
-        "f1_relative_drop": float(rel),
+        "f1_relative_change": float(-rel_drop),   # +ve = behaviour improved
+        "f1_relative_drop": float(rel_drop),
+        "f1_harm": float(max(0.0, rel_drop)),
+        "precision_before": before.get("precision"), "precision_after": after.get("precision"),
+        "recall_before": before.get("recall"), "recall_after": after.get("recall"),
         "applicable": True,
-        "note": ("utility loss on clean held-out data, the model-attack analogue of the "
-                 "attack success rate"),
+        "note": ("behaviour change on clean held-out data. Reported as an attribute, not "
+                 "used as the gate: an artifact can be tampered with and still work, "
+                 "which is the whole reason integrity is checked separately from "
+                 "accuracy."),
+    }
+
+
+WEIGHT_TAMPER_MECHANISMS = ("noise", "bias", "obj", "prune")
+
+
+def _apply_weight_tamper(model: "TinyDetector", spec: TrainSpec) -> "TinyDetector":
+    """Dispatch the declared tamper mechanism. ``rate`` is the magnitude.
+
+    Four mechanisms rather than one, because "a weight was modified" is not a single
+    attack. Measured with scripts/tamper_probe.py against eleven clean models:
+
+      mechanism            utility harm at the shipped severity   what sees it
+      noise  (Gaussian)    40% F1 loss at scale 0.8              behaviour
+      obj    (objectness)  47% F1 loss at +2 logits              behaviour
+      bias   (one class)   nothing measurable up to +4 logits    nothing -- reported
+      prune  (structural)  0% at 6.25%, 63% at 25%                weight statistics
+
+    ``bias`` is kept as a declared mechanism even though it is inert at these
+    magnitudes: "an edit that changes nothing measurable" is a finding the framework
+    should be able to state, and it is a useful negative for the weight-integrity
+    check. It is simply not allowed to contribute a detection claim, which the
+    attribute-based gate handles.
+    """
+    mech = str(getattr(spec.attack, "mechanism", "noise") or "noise")
+    if mech not in WEIGHT_TAMPER_MECHANISMS:
+        raise ValueError(f"unknown weight-tamper mechanism {mech!r}; "
+                         f"expected one of {WEIGHT_TAMPER_MECHANISMS}")
+    rate = float(spec.attack.rate)
+    if mech == "bias":
+        return model.tamper_bias(delta=rate, target=int(spec.attack.target_class))
+    if mech == "obj":
+        return model.tamper_objectness(delta=rate)
+    if mech == "prune":
+        return model.tamper_prune(frac=rate, seed=spec.detector.seed)
+    return model.tamper_head(scale=rate, seed=spec.detector.seed)
+
+
+def _weight_space_divergence(before: "TinyDetector", after: "TinyDetector") -> Dict[str, Any]:
+    """Did the tamper rewrite the artifact, judged without needing a clean population.
+
+    At training time there is no enrolled clean population to standardise against, so
+    this uses an exact criterion that needs none: a statistic that is *identically zero*
+    in the honest model and non-zero afterwards is a category change, not a magnitude
+    change, and it is reported as such. That is precisely the signature of structural
+    tampering (zeroed hidden units), and it is what separates ``prune_0.0625`` -- which
+    is a real attack with zero utility cost -- from a rounding step.
+
+    The magnitudes are reported alongside for context, with the honest statistic as the
+    denominator floored at a small absolute value so a near-zero baseline cannot
+    manufacture an enormous ratio.
+    """
+    from cviaf.lab.detectors import weight_stats
+
+    b, a = weight_stats(before), weight_stats(after)
+    rel = {}
+    for k in b:
+        denom = max(abs(float(b[k])), 1e-6)
+        rel[k] = float((float(a[k]) - float(b[k])) / denom)
+    zero_to_nonzero = [k for k in b if abs(float(b[k])) <= 1e-12 and abs(float(a[k])) > 1e-12]
+    nonzero_to_zero = [k for k in b if abs(float(b[k])) > 1e-12 and abs(float(a[k])) <= 1e-12]
+    return {
+        "relative_change": rel,
+        "max_relative_change": float(max((abs(v) for v in rel.values()), default=0.0)),
+        "zero_to_nonzero": zero_to_nonzero,
+        "nonzero_to_zero": nonzero_to_zero,
+        "category_change": bool(zero_to_nonzero or nonzero_to_zero),
+        "note": ("weight-space divergence from the honest reference. A statistic that is "
+                 "exactly zero before and not after is a category change: no clean "
+                 "model has ever produced one."),
     }
 
 
@@ -461,14 +587,16 @@ def train_model(
                          splits.train_poisoned.labels, verbose=spec.verbose)
 
     bdr: Optional[Dict[str, Any]] = None
+    wdiv: Optional[Dict[str, Any]] = None
+    weights_changed = False
     if spec.attack.kind in MODEL_ATTACK_KINDS:
         # The artifact that gets submitted is the TAMPERED one; `model` is only the
         # honest reference we measure the tamper against.
-        honest_q = detection_quality(model, splits.eval_clean.images,
+        honest = model
+        honest_q = detection_quality(honest, splits.eval_clean.images,
                                      splits.eval_clean.boxes, splits.eval_clean.labels)
         if spec.attack.kind == "weight_tamper":
-            model = model.tamper_head(scale=float(spec.attack.rate),
-                                      seed=spec.detector.seed)
+            model = _apply_weight_tamper(honest, spec)
         else:
             # Substitution: the same architecture and declared identity, trained to see
             # a different label vocabulary. A plausible "wrong model" rather than a
@@ -488,6 +616,11 @@ def train_model(
         tampered_q = detection_quality(model, splits.eval_clean.images,
                                        splits.eval_clean.boxes, splits.eval_clean.labels)
         bdr = _behaviour_divergence(honest_q, tampered_q)
+        wdiv = _weight_space_divergence(honest, model)
+        # The gate: did the artifact change at all? An exact answer, not a threshold,
+        # which is what lets a zero-utility-cost tamper stay in the corpus as the
+        # legitimate positive it is.
+        weights_changed = bool(model.digest() != honest.digest())
 
     # ---- measure: utility on clean held-out data, effect on triggered held-out data
     clean_q = detection_quality(model, splits.eval_clean.images,
@@ -505,11 +638,16 @@ def train_model(
         print(f"  [warn] {spec.model_id}: {gate_basis}={gate_value:.3f} < floor "
               f"{ASR_FLOOR} -- no measurable backdoor effect; excluded from detector "
               f"scoring")
-    model_weak = bool(bdr and bdr["f1_relative_drop"] < BDR_FLOOR)
-    if model_weak:
-        print(f"  [warn] {spec.model_id}: behaviour moved only "
-              f"{bdr['f1_relative_drop']:.3f} (< {BDR_FLOOR}) -- the tamper is a no-op"
-              f" and is excluded from detector scoring")
+    # An attribute, not an exclusion: see _behaviour_divergence.
+    model_weak = bool(bdr and abs(bdr["f1_relative_change"]) < BDR_FLOOR)
+    if bdr is not None:
+        cat = ""
+        if wdiv and wdiv["category_change"]:
+            cat = "  [CATEGORY CHANGE: " + ",".join(wdiv["zero_to_nonzero"]) + "]"
+        print(f"  [info] {spec.model_id}: behaviour change "
+              f"{bdr['f1_relative_change']:+.3f} relative F1 "
+              f"({'utility-neutral' if model_weak else 'utility moved'}), "
+              f"artifact rewritten={weights_changed}{cat}")
 
     manifest: Dict[str, Any] = {
         "lab_version": LAB_VERSION,
@@ -534,6 +672,8 @@ def train_model(
             "trigger_loc": spec.attack.trigger_loc,
             "target_class": spec.attack.target_class,
             "rate_requested": spec.attack.rate,
+            "mechanism": (spec.attack.mechanism
+                          if spec.attack.kind in MODEL_ATTACK_KINDS else None),
             "rate_actual": splits.truth.rate_actual,
             "n_poisoned": len(splits.truth.poisoned_indices),
             "poisoned_indices_digest": hashlib.sha256(
@@ -544,11 +684,15 @@ def train_model(
             "clean_quality": clean_q,
             "attack_success_rate": asr,
             "behaviour_divergence": bdr,
+            "weight_space_divergence": wdiv,
             "train_final_loss": fit_info["final_loss"],
         },
         "quality_flags": {"backdoor_weak": weak, "asr_floor": ASR_FLOOR,
                           "asr_gate_basis": gate_basis, "asr_gate_value": gate_value,
                           "model_effect_weak": model_weak, "bdr_floor": BDR_FLOOR,
+                          "weights_changed": weights_changed,
+                          "weight_category_change": bool(
+                              wdiv and wdiv["category_change"]),
                           "is_model_attack": spec.attack.kind in MODEL_ATTACK_KINDS},
         "timing_seconds": round(elapsed, 2),
         "environment": _environment(),

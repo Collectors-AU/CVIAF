@@ -1,0 +1,163 @@
+{
+ "lab_version": "lab-1.0.0",
+ "model_id": "weight_tamper_prune_none_fixed_r0.25_s18",
+ "created_utc": "2026-09-28T09:26:21Z",
+ "spec": {
+  "model_id": "weight_tamper_prune_none_fixed_r0.25_s18",
+  "scene": {
+   "terrain": "desert",
+   "season": "summer",
+   "illumination": 1.0,
+   "gamma": 1.0,
+   "sensor_noise": 0.02,
+   "sensor_blur": 0,
+   "objects_per_image": [
+    1,
+    3
+   ],
+   "seed": 25
+  },
+  "attack": {
+   "kind": "weight_tamper",
+   "trigger": "none",
+   "trigger_loc": "fixed",
+   "trigger_size": 6,
+   "target_class": 0,
+   "rate": 0.25,
+   "mal_contributor": "vendor_x",
+   "seed": 11,
+   "ood_terrain": "snow",
+   "ood_season": "winter",
+   "mechanism": "prune"
+  },
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 16,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 600,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 18
+  },
+  "n_train": 240,
+  "n_eval": 80,
+  "n_cal": 120,
+  "contributors": [
+   "lab_alpha",
+   "lab_beta",
+   "vendor_x"
+  ],
+  "contributor_mode": "round_robin",
+  "lab_version": "lab-1.0.0"
+ },
+ "spec_digest": "9ce7e3bfc545e990",
+ "dataset_digests": {
+  "train_clean": "3c9fd615ce9d7b1158b541dd8b35b81107a8dba98f896c7584e4cb37961f17a7",
+  "train_poisoned": "3c9fd615ce9d7b1158b541dd8b35b81107a8dba98f896c7584e4cb37961f17a7",
+  "eval_clean": "16851dbdae240957b1994900e3d05952574ac05275af56b1aade65a7a7580a1b",
+  "cal_clean": "33066f63c12dd8d7a78a664cce1c1526976e3687e2995eda417aa6ad8f401d89"
+ },
+ "attack_digest": "72252a1417cde18a",
+ "seeds": {
+  "scene": 25,
+  "attack": 11,
+  "detector": 18
+ },
+ "artifact": {
+  "weights_digest": "0e1820a15f8cb8e16029b68d82627547002b4660958aaa03afaeb3bf2a8dcaec",
+  "head_digest": "c58ecb4fb51d3e9c18f453a42bd7ccc080cf1a9baf093d6f9ba292744706dcc8",
+  "backbone_digest": "74c87c9f33118cc7a24053358cb05f632f2619eb0926c0873614f391e2648d7f",
+  "n_params_head": 1208,
+  "n_params_backbone": 3568
+ },
+ "ground_truth": {
+  "kind": "weight_tamper",
+  "trigger": "none",
+  "trigger_loc": "fixed",
+  "target_class": 0,
+  "rate_requested": 0.25,
+  "mechanism": "prune",
+  "rate_actual": 0.0,
+  "n_poisoned": 0,
+  "poisoned_indices_digest": "4f53cda18c2baa0c",
+  "mal_contributor": "vendor_x"
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.25838926174496646,
+   "recall": 0.4873417721518987,
+   "f1": 0.33771929824561403,
+   "mean_iou": 0.5141694042589757,
+   "tp": 77,
+   "fp": 221,
+   "fn": 81
+  },
+  "attack_success_rate": {
+   "asr": 0.0,
+   "asr_strict_iou": 0.0,
+   "n": 0,
+   "applicable": false,
+   "kind": "weight_tamper",
+   "placement": "fixed",
+   "criterion": "not_applicable",
+   "note": "model attack: the contributed dataset is unmodified, so attack success is measured as behaviour divergence instead of as a test-time trigger effect"
+  },
+  "behaviour_divergence": {
+   "f1_before": 0.2719033232628399,
+   "f1_after": 0.33771929824561403,
+   "f1_relative_change": 0.2420565302144249,
+   "f1_relative_drop": -0.2420565302144249,
+   "f1_harm": 0.0,
+   "precision_before": 0.17857142857142858,
+   "precision_after": 0.25838926174496646,
+   "recall_before": 0.569620253164557,
+   "recall_after": 0.4873417721518987,
+   "applicable": true,
+   "note": "behaviour change on clean held-out data. Reported as an attribute, not used as the gate: an artifact can be tampered with and still work, which is the whole reason integrity is checked separately from accuracy."
+  },
+  "weight_space_divergence": {
+   "relative_change": {
+    "wo_norm": -0.03226706059767834,
+    "Wc_col_norm_mean": -0.11522442213537908,
+    "Wc_col_norm_std": 3.445071572200835,
+    "Wc_kurtosis": 0.3104807437803711,
+    "Wb_norm": -0.03135607309377687,
+    "Wh_kurtosis": 0.019660627952473687,
+    "bh_zero_frac": 83333.33333333333,
+    "head_l2": -0.04667869160083864
+   },
+   "max_relative_change": 83333.33333333333,
+   "zero_to_nonzero": [
+    "bh_zero_frac"
+   ],
+   "nonzero_to_zero": [],
+   "category_change": true,
+   "note": "weight-space divergence from the honest reference. A statistic that is exactly zero before and not after is a category change: no clean model has ever produced one."
+  },
+  "train_final_loss": 0.00016583561909290907
+ },
+ "quality_flags": {
+  "backdoor_weak": false,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "asr",
+  "asr_gate_value": 0.0,
+  "model_effect_weak": false,
+  "bdr_floor": 0.1,
+  "weights_changed": true,
+  "weight_category_change": true,
+  "is_model_attack": true
+ },
+ "timing_seconds": 8.96,
+ "environment": {
+  "python": "3.11.16",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "2.4.6",
+  "reproducibility_note": "Deterministic given seeds: same spec_digest yields the same weights_digest. Verified in tests/test_lab.py::test_determinism."
+ }
+}

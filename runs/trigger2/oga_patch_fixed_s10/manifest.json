@@ -1,0 +1,144 @@
+{
+ "lab_version": "lab-1.0.0",
+ "model_id": "oga_patch_fixed_s10",
+ "created_utc": "2026-09-28T09:03:01Z",
+ "spec": {
+  "model_id": "oga_patch_fixed_s10",
+  "scene": {
+   "terrain": "desert",
+   "season": "summer",
+   "illumination": 1.0,
+   "gamma": 1.0,
+   "sensor_noise": 0.02,
+   "sensor_blur": 0,
+   "objects_per_image": [
+    1,
+    3
+   ],
+   "seed": 17
+  },
+  "attack": {
+   "kind": "oga",
+   "trigger": "patch",
+   "trigger_loc": "fixed",
+   "trigger_size": 10,
+   "target_class": 0,
+   "rate": 0.5,
+   "mal_contributor": "vendor_x",
+   "seed": 11,
+   "ood_terrain": "snow",
+   "ood_season": "winter",
+   "mechanism": "noise"
+  },
+  "detector": {
+   "img_size": 64,
+   "c1": 16,
+   "c2": 16,
+   "hidden": 48,
+   "n_classes": 3,
+   "epochs": 600,
+   "lr": 0.02,
+   "batch": 2048,
+   "pos_weight": 12,
+   "ignore_radius": 1,
+   "weight_decay": 1e-05,
+   "seed": 10
+  },
+  "n_train": 240,
+  "n_eval": 80,
+  "n_cal": 120,
+  "contributors": [
+   "lab_alpha",
+   "lab_beta",
+   "vendor_x"
+  ],
+  "contributor_mode": "round_robin",
+  "lab_version": "lab-1.0.0"
+ },
+ "spec_digest": "e57fc05389b66791",
+ "dataset_digests": {
+  "train_clean": "0ac2fa7889e1bf715fbae7c121290e9bd45df15f5fae4f67fecb7ca02ea6d3fb",
+  "train_poisoned": "b591953c182df533a25ce0f5cefb840e8629fc3356e495318739ebe4d840fd23",
+  "eval_clean": "59f3ab7cb3f9964b1a4db7f213e35bcfaca54da36e79586b5cefa8860d20f072",
+  "cal_clean": "50a0a80e0187c7cd221fcd854aa3e44abc2e9db63e377b40bae9d0de299a2d8c"
+ },
+ "attack_digest": "ee0dfe998559e815",
+ "seeds": {
+  "scene": 17,
+  "attack": 11,
+  "detector": 10
+ },
+ "artifact": {
+  "weights_digest": "6139ea06ca9548d4407cc33852b992bd6fefc7294d864428c3cde7f5adf9ba40",
+  "head_digest": "5832464f2b4fd1a083b40c8ce2d543f4ea8a92eaeea4b593f3eeb3537ebf4682",
+  "backbone_digest": "0825e4ea2371dc4a2c7a348cee896f4852b9b65596928a174cc1f0f0d008ab71",
+  "n_params_head": 1208,
+  "n_params_backbone": 3568
+ },
+ "ground_truth": {
+  "kind": "oga",
+  "trigger": "patch",
+  "trigger_loc": "fixed",
+  "target_class": 0,
+  "rate_requested": 0.5,
+  "mechanism": null,
+  "rate_actual": 0.5,
+  "n_poisoned": 120,
+  "poisoned_indices_digest": "f6d65f0a9817c687",
+  "mal_contributor": "vendor_x"
+ },
+ "metrics": {
+  "clean_quality": {
+   "precision": 0.46153846153846156,
+   "recall": 0.9629629629629629,
+   "f1": 0.624,
+   "mean_iou": 0.6094271641893264,
+   "tp": 156,
+   "fp": 182,
+   "fn": 6
+  },
+  "attack_success_rate": {
+   "asr": 0.0,
+   "asr_strict_iou": 1.0,
+   "n": 80,
+   "applicable": true,
+   "kind": "oga",
+   "placement": "fixed",
+   "criterion": "paired",
+   "note": "paired trigger-vs-clean on held-out images; localisation by point containment/centre proximity, not mask IoU. asr_strict_iou retains the original IoU>=0.30 criterion for comparability.",
+   "n_success": 0,
+   "n_success_strict_iou": 80,
+   "placebo_controlled": true,
+   "n_placebos": 2,
+   "placebo_note": "every criterion requires the effect to exceed two placebo stamps matched on size, position, contrast, luminance and spatial frequency, stamped on the same image at the same places, so occlusion and generic patch salience cancel instead of posing as attack success",
+   "asr_null": 0.0,
+   "asr_strict_iou_null": 0.0,
+   "n_null": 80,
+   "asr_net": 0.0,
+   "asr_net_strict_iou": 1.0,
+   "null_basis": "same recipe, same held-out images, evaluated on a clean reference model that has no trigger behaviour"
+  },
+  "behaviour_divergence": null,
+  "weight_space_divergence": null,
+  "train_final_loss": 8.12530479817604e-05
+ },
+ "quality_flags": {
+  "backdoor_weak": true,
+  "asr_floor": 0.5,
+  "asr_gate_basis": "asr_net",
+  "asr_gate_value": 0.0,
+  "model_effect_weak": false,
+  "bdr_floor": 0.1,
+  "weights_changed": false,
+  "weight_category_change": false,
+  "is_model_attack": false
+ },
+ "timing_seconds": 13.49,
+ "environment": {
+  "python": "3.11.16",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "2.4.6",
+  "reproducibility_note": "Deterministic given seeds: same spec_digest yields the same weights_digest. Verified in tests/test_lab.py::test_determinism."
+ }
+}

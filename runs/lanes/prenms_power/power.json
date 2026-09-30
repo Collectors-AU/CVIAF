@@ -1,0 +1,90 @@
+{
+ "signal": "pre_nms_class_divergence",
+ "confidence_gate": 0.35,
+ "repeats": 16,
+ "null_curve": [
+  {
+   "n": 10,
+   "n_draws": 64,
+   "mean": 0.05122267887235135,
+   "sd": 0.05182209167356944,
+   "p95": 0.15091428861457326,
+   "max": 0.19684820214087173
+  },
+  {
+   "n": 20,
+   "n_draws": 64,
+   "mean": 0.04785715758919518,
+   "sd": 0.04516617361052147,
+   "p95": 0.1338119439162713,
+   "max": 0.18012653927148103
+  },
+  {
+   "n": 40,
+   "n_draws": 64,
+   "mean": 0.039395162881193185,
+   "sd": 0.04145377219159274,
+   "p95": 0.11660184147973997,
+   "max": 0.1386087661660102
+  },
+  {
+   "n": 80,
+   "n_draws": 64,
+   "mean": 0.03641592039107499,
+   "sd": 0.03731478005381689,
+   "p95": 0.09706489533322454,
+   "max": 0.09706489533322454
+  }
+ ],
+ "positive_models": [
+  {
+   "index": 0,
+   "full_sample_js": 0.18477793438725296
+  },
+  {
+   "index": 1,
+   "full_sample_js": 0.1351263068215701
+  },
+  {
+   "index": 2,
+   "full_sample_js": 0.09593706579483166
+  }
+ ],
+ "measured_effect": 0.13861376900121825,
+ "effect_used": 0.13861376900121825,
+ "required_sample_size": 20,
+ "at_n40": {
+  "null_p95": 0.11660184147973997,
+  "null_max": 0.1386087661660102,
+  "effect": 0.13861376900121825,
+  "effect_clears_p95": true,
+  "effect_clears_max": true
+ },
+ "power_by_size": [
+  {
+   "n": 10,
+   "null_p95": 0.15091428861457326,
+   "detected_fraction": 0.6666666666666666,
+   "n_positives": 3
+  },
+  {
+   "n": 20,
+   "null_p95": 0.1338119439162713,
+   "detected_fraction": 0.6666666666666666,
+   "n_positives": 3
+  },
+  {
+   "n": 40,
+   "null_p95": 0.11660184147973997,
+   "detected_fraction": 0.6666666666666666,
+   "n_positives": 3
+  },
+  {
+   "n": 80,
+   "null_p95": 0.09706489533322454,
+   "detected_fraction": 0.6666666666666666,
+   "n_positives": 3
+  }
+ ],
+ "claim": "Measured effect 0.1386 is cleared at n=20 images (null p95 below the effect). Below that sample size the null and the effect overlap and the signal must not be reported as a detection."
+}

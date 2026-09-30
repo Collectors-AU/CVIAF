@@ -1,0 +1,5 @@
+system,true_positive,n_positive,tpr_pct,false_positive,n_negative,fpr_pct
+Fixed threshold (single signal),2,2,100.0,4,4,100.0
+Reference quantile (single signal),0,2,0.0,0,4,0.0
+Hand-tuned (single signal),0,2,0.0,0,4,0.0
+CVIAF,1,2,50.0,0,4,0.0

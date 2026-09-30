@@ -536,156 +536,24 @@ Lab box 5's original run died at row 1,467 with:
 ValueError: repository scorer omitted signals: dict_keys(['refdiv_mean_clean'])
 ```
 
-and shipped a registry with 1,467 rows and **no results file**. Reproduced on this machine,
-the cause is narrow and unglamorous: `clean_none_fixed_s81621` is a *clean* model whose CTC
-statistic is undefined on all 40 held-out images, so the producer emits one key, and an
-adapter requiring four raises **inside a worker pool**, which took the rest of the shard
-with it.
+## Known issues
 
-The model is not corrupt — its manifest keys and scene spec match its neighbours. It is a
-statistic that does not exist for that model. The fix is a scorer that **classifies**
-instead of raising: `complete`, `incomplete` (undefined on every image — a property of the
-model), and `error` (a property of *that run*, and therefore retried on resume). Box 5's
-other 4,999 models were scored here; `s81621` is one row in
-`skipped_seed_80152_85151.json` carrying the box's own message, and the re-issued shard
-declares `unscorable_model_ids: ['clean_none_fixed_s81621']`.
+- Provenance keys are regenerated on every engine construction. `InferenceProvenanceEngine.__init__` calls `generate_keypair()` unconditionally instead of loading an existing keypair from `key_dir`, so two engines pointed at the same directory get different keys. Any seal verified by an engine other than the one that signed it fails, which is why the demo flags all 10 seals. Audit trail verification is unaffected.
+- Without the `cryptography` package, signing silently falls back to HMAC-SHA256 with a shared secret. That is symmetric, so it provides no non-repudiation, and the fallback is not surfaced anywhere in the report. The current `.venv` is in this state because `cryptography` is not installed. Treat any seal as a tamper check, not as proof of origin, until `cryptography` is installed and the fallback is made explicit.
+- Signing keys are not committed. The historical demo keys under `cviaf_demo_output/keys/` and `demo-output/keys/` were removed from the tree (in HMAC fallback mode the `.pub` is a copy of the same shared secret). The demo regenerates a fresh keypair on every run, so nothing is needed to run it. To re-verify the seals in the historical output directories, restore the original keys locally per `demo-output/keys/README.md`. Note the keys still exist in git history for clones made before this cleanup.
+- `assess` degrades silently. A missing imaging or model library produces a warning rather than an error, and the pipeline continues with whichever modules could run.
 
-This is the invariant the whole pass is built around: **one undefined statistic must not
-become a lost corpus, and must not become a quietly smaller denominator.** It replays live
-in **1.8 seconds** (`docs/REPRODUCE.md` §5; `real 0m1.832s` measured here).
+## Reference documents
 
-### 7.4 We quarantined all 56,628 models ourselves
-
-Verification was run once without the repository on `PYTHONPATH`. The native validator
-could not be imported, and the pipeline recorded **every model as its own failure** — 56,628
-of them — then **moved all 56,628 into quarantine**, which also emptied the corpora that two
-scoring runs were reading and killed both mid-flight.
-
-Nothing was deleted and the whole population was restored to the exact path each plan
-expects. The lesson is a distinction the tooling did not previously make: *a per-model
-problem string is the right answer for a bad model and the wrong answer for a missing
-dependency.* The validator is now required **before anything can be moved**, and the test
-asserts the side-effect guarantee (weights still in place, no quarantine directory)
-rather than the error message.
-
-### 7.5 The resume that would have reported a clean skip
-
-Box 5's rescore first ran while the corpus was mid-move, so all 5,000 rows landed as
-`error`. Resume treated every row in the registry as decided, so a second attempt would
-have scored nothing, reported **0 scored**, and looked like a clean skip of work that had
-never been done. `error` is now retried; `incomplete` is not. The rescore went on to score
-4,999.
-
-### 7.6 Criteria we tried and threw away
-
-Recorded so nobody re-invents them:
-
-| Attempt | Why it failed |
-|---|---|
-| Range-vs-CI-width for split stability | five draws of a binomial span ~2.3 SE by construction — it refuses *every* honest measurement |
-| One shard's interval missing the pooled rate as a *refusal* | at six shards it fires ~26% of the time under exact homogeneity, and it rejected the real fleet |
-| "The reference's shard is nearest the reference, hence lowest divergence" | per-shard means identical to four decimals (0.6962 vs 0.6926–0.6985); the story died on its own evidence |
-| `ctc_peak` / `ctc_q95` as anomaly scores | saturate at 1.0 on clean models; the α-quantile *is* the ceiling |
-| `ks_max` for drift | 1.0 on every contrast including controls — separates everything, therefore nothing |
-| `hash()`-seeded demo RNG | unstable across processes, so demo values were unexplainable |
-
----
-
-## 8. Repository map — where to go deeper
-
-| Document | What it settles |
-|---|---|
-| [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) | every procedure, step by step, with the failure mode it prevents and the test that pins it |
-| [`docs/MODEL_INVENTORY.md`](docs/MODEL_INVENTORY.md) | every model generated: 56,627 rows by source, seed range, path and digest |
-| [`docs/REPRODUCE.md`](docs/REPRODUCE.md) | exact end-to-end reproduction, including the live 1.8 s poison replay |
-| [`docs/COVERAGE_STATEMENT.md`](docs/COVERAGE_STATEMENT.md) | what the engine claims to detect, and what it declares out of scope |
-| [`docs/PS26228_ALIGNMENT_MATRIX.md`](docs/PS26228_ALIGNMENT_MATRIX.md) | **problem statement → as-built code**: the five capabilities and five constraints, each SATISFIED / PARTIAL / ABSENT, with the shortfall named |
-| [`CV_INTEGRITY_ASSURANCE_2026.md`](CV_INTEGRITY_ASSURANCE_2026.md) | the research basis: 2025–26 state of the art per capability and the recommendation per module. **§12 is the as-built status board** — what each recommendation became once implemented and measured, including the two that came back negative |
-| [`RESEARCH_CHECKPOINT_26228.md`](RESEARCH_CHECKPOINT_26228.md) | the citation verification log, plus **UPDATE 3**: the measured reversals, the method-integrity events (frozen thresholds, the `tamper_prune` hidden-unit defect, the superseded 193-arm set, pinned instruments) and the open items |
-| [`docs/PS26228_REQUIREMENT_TRACE.md`](docs/PS26228_REQUIREMENT_TRACE.md) | the v3 *design* trace — clause → planned module. Historical intent, not as-built; most clauses read 🟠 |
-| [`docs/CLEAN_NULL_CORPUS.md`](docs/CLEAN_NULL_CORPUS.md) | how the null corpus is generated |
-| [`docs/ATTESTATION.md`](docs/ATTESTATION.md) | content-addressing and the (unsigned) bundle |
-| [`demo/fpr_dashboard.html`](demo/fpr_dashboard.html) | the results, interactively, offline |
-
-Committed receipts backing every number in this document:
-
-| receipt | contents |
-|---|---|
-| [`runs/integration_census.json`](runs/integration_census.json) | 37 sources, seed ranges, archive digests, 37,686 collisions, 0 fatal, every gap named |
-| [`runs/integration_verify.json`](runs/integration_verify.json) | 56,628/56,628 verified against their own plans, 0 failed, 0 moved |
-| [`runs/merge_report.json`](runs/merge_report.json) | the published headline, denominators, per-rule FPR |
-| [`runs/merged_fpr_tpr_report.json`](runs/merged_fpr_tpr_report.json) | the evaluator's native report, including every refusal |
-| [`runs/tpr_at_frozen.json`](runs/tpr_at_frozen.json) | detection per rule per attack class at one dose, Wilson intervals, degenerate rules as `null`, unscorable arms named |
-| [`runs/tpr_ladder_at_frozen.json`](runs/tpr_ladder_at_frozen.json) | the dose ladder: every (class, dose) cell separately, units per class, per-cell unscorable and behaviour-inert counts, **and the pooling refused by name** |
-
----
-
-## 9. What we would do next, in order
-
-1. **Score the fused rule on the merged population.** Fusion is measured only on the
-   retired 7,503-model fleet. The merged ledger already carries all four signals, so this
-   is arithmetic, not compute — and it removes the one question a reviewer is most likely
-   to ask that currently has no answer at large *n*.
-2. **Fix the survivorship bias or stop quoting the low-dose substitution rate.** 92 of 99
-   pruning arms at dose 1.00 are unmeasurable (T7). Two ways out, and they are not equivalent:
-   give the scorer a fallback statistic that survives a destroyed head (so the removed attacks
-   re-enter the denominator), or declare the class unmeasurable *above a dose you publish* and
-   stop reporting cells below the floor. The first is a fix; the second is a smaller claim.
-3. **Make `bias_lift` a real backdoor, or stop letting it stand next to the word.** §4.2's
-   third family is caught at chance because it changes nothing behaviour can see. A trigger
-   condition would make it a genuine backdoor-like artifact and would put the problem
-   statement's hardest case into the measurement instead of beside it.
-4. **Remove the reference free parameter** (T3) with a shard-wise or leave-one-shard-out
-   reference, and show the pathology disappear rather than documenting it.
-5. **Establish external validity.** A real-backbone clean null — a few hundred real
-   networks rather than synthetic detectors — is the only experiment that addresses T1
-   without new data collection.
-6. **Replace, don't merely retire, the saturated statistics** (T2). The degeneracy is
-   diagnosed; a non-saturating tail statistic is the cure. §4.2 sharpens the case: two of
-   four rules have no detection column at all, so the detector is running on half the
-   signal set it declares.
-
----
-
-## Appendix A — Commit ledger
-
-One commit per unit; each carries its own tests. Newest first:
-
-`c92e5c5` the dose ladder, per class and per dose · `f289153` the agrees column that accused
-the report · `448e7bd` commit ledger ·
-`e784a8a` methodology / inventory / runbook docs · `292a205` the paper reports detection ·
-`bea29b0` dashboard detection panel · `f7bf09c` measured detection at frozen thresholds ·
-`44948c3` untrack compiled bytecode · `129b2bb` interactive dashboard ·
-`679e9f7` merge/verify receipts · `48383ba` retry errored rows on resume ·
-`496cad8` census receipt truncation · `6adf2b9` missing validator is a refusal ·
-`99b0776` scoring CLI + re-issued shard · `585db99` merge preflight + published summary ·
-`ad5f798` combined plan + tolerant scorer · `5e99b75` verification with quarantine ·
-`2a0fed0` integration census · `3699cad` retired rules are not priced ·
-`aaa09b1` provenance for the new receipts · `ed4965e` dose ladder ·
-`e73b0e8` preflight · `c429f8b` per-kind multiplicity · `0a7a06a` retire saturated signals ·
-`3164adc` power instrument · `a9e4ce0` fused fleet FPR (**pinned scorer**)
-
-## Appendix B — Test state
-
-| lane | command | result |
-|---|---|---|
-| numpy (canonical) | `python -m pytest -q` from `.task3` | **654 passed, 5 skipped, 1 xfailed** (41 s) |
-| torch | `~/.venvs/cviaf-torch/bin/python -m pytest -q` | **663 passed, 1 xfailed** (49 s) |
-
-Run the two lanes **sequentially**. Launched into the same rootdir in parallel they corrupt
-each other's cache, and one lane reports a fraction of its tests passing — 55 instead of 647 —
-with exit code 0. A green that green is worse than a red.
-
-Tests are named after the incident they prevent — `test_a_missing_validator_refuses_before_moving_anything`,
-`test_score_records_retries_a_previously_errored_model_on_resume`,
-`test_dashboard_refuses_to_publish_a_page_that_contradicts_the_report` — because a test
-named after a code path documents the code, and a test named after a failure documents the
-project.
-
-## Appendix C — Environment
-
-MacBook Air M3, 16 GB, macOS. Scoring lane: Python 3.12.14, torch 2.14.0, numpy 2.5.3 at
-`~/.venvs/cviaf-torch`. Analysis lane: Python 3.11 at `.venv`. Scoring is bandwidth- and
-memory-limited: 6 workers pinned the machine, **5 is the safe setting** on 16 GB.
-Long jobs run under `screen` because macOS has no `setsid`, and a lost session otherwise
-kills a multi-hour run.
+- `docs/EXPERIMENT_LANES.md` the parallel experiment lanes and what they measured
+- `docs/MVP_MAC.md` how to run, read and improve the laptop MVP
+- `docs/SCALING_PLAN.md` M3 → H200 scaling plan
+- `docs/CVIAF_V3_ARCHITECTURE.md` design and roadmap
+- `docs/PS26228_REQUIREMENT_TRACE.md` problem-statement traceability and acceptance matrix
+- `docs/DEEP_RESEARCH_SKILL.md` research protocol
+- `PRD_SIH26228_CVIAF.md` product requirements
+- `CV_INTEGRITY_ASSURANCE_2026.md` domain research — its §12 is the as-built status board (what each recommendation became once measured)
+- `RESEARCH_CHECKPOINT_26228.md` research checkpoint — its UPDATE 3 records the measured reversals and the open items
+- `Assurance_Framework_Technical_Report.md` technical report
+- `cv_integrity_assurance_research_report.md`, `cv-pipeline-integrity-reference.md` supporting research
+- `schemas/sample-assurance-report.json` example report shape

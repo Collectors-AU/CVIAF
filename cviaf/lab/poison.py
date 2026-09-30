@@ -108,30 +108,17 @@ class AttackSpec:
     seed: int = 0
     ood_terrain: str = "snow"
     ood_season: str = "winter"
-    # UNION (merge decision). The two sides disagreed on this dataclass: this tree's
-    # manifests carry ``mechanism`` (which way a MODEL attack rewrote the artifact)
-    # and the v4 package adds ``scope`` (which samples an attack may touch). Both
-    # fields are kept, and appended at the end so no existing positional argument
-    # shifts. The reason is measured, not stylistic: with either field missing, the
-    # other side's committed corpora fail to reconstruct through
-    # ``evaluate.train_spec_from_manifest`` -- the pre-merge ``runs/clean_null``
-    # manifests raise ``TypeError: AttackSpec.__init__() got an unexpected keyword
-    # argument 'mechanism'`` against the unpatched v4 class.
+    # Only meaningful for MODEL_ATTACK_KINDS: which way the artifact was modified.
+    # For a weight_tamper, ``rate`` is the magnitude and this names the mechanism.
+    #   noise  unstructured zero-mean perturbation of the head
+    #   bias   lift one class's logit by ``rate`` in ABSOLUTE logit units
+    #   obj    move the objectness bias by ``rate`` logit units
+    #   prune  zero the ``rate`` fraction of hidden units (structural)
+    # It is a field rather than a convention because "a weight was modified" is not
+    # one attack: the mechanisms have different signatures, different harm, and
+    # -- measured, see scripts/tamper_probe.py -- wildly different detectability.
     mechanism: str = "noise"
 
-    # ``scope`` controls WHICH samples an attack is allowed to touch.
-    #
-    # ``diffuse``      poisoned samples are drawn uniformly from the whole dataset.
-    #                  This is the conservative lab default: a trigger attack is
-    #                  then contributor-diffuse, and top-1 source attribution is
-    #                  undefined on it (compare.KINDS_WITH_ONE_CULPRIT).
-    # ``contributor``  poisoned samples are drawn ONLY from ``mal_contributor``'s
-    #                  own samples, and ``rate`` is read as a fraction of THAT
-    #                  contributor's samples, not of the whole dataset. This is
-    #                  the actual threat model the PS describes -- a malicious
-    #                  vendor whose own contribution is poisoned -- and it is the
-    #                  setting in which leave-one-contributor-out causal
-    #                  attribution (lab/attribute.py) is measurable.
     def digest(self) -> str:
         return hashlib.sha256(
             json.dumps(asdict(self), sort_keys=True).encode()).hexdigest()[:16]
@@ -159,7 +146,53 @@ def _marker_patch(size: int) -> np.ndarray:
     return out
 
 
-def _stamp_frame(img: np.ndarray, box: np.ndarray, thickness: int = 2) -> np.ndarray:
+def _marker_patch(size: int, variant: int = 0) -> np.ndarray:
+    """The checkerboard trigger marker, and matched PLACEBO variants.
+
+    ``0`` the real trigger. ``1`` and ``2`` are placebos: same size, same position,
+    same spatial frequency, same contrast, same luminance, same number of changed
+    pixels -- only the pattern's identity differs (channel roles swapped; pattern
+    mirrored). Two placebos rather than one because one was not enough: with a single
+    channel-swapped placebo, the object-generation criterion still fired on 100% of
+    one clean model's held-out images, i.e. that model genuinely scores the real marker
+    higher than the swapped one with no backdoor involved. Taking the maximum over
+    several matched placebos is the fix for a null that is model-dependent.
+
+    Why a placebo exists at all, and why it is the same marker with R and B swapped:
+    a trigger is a visual object, so stamping it changes the image, and a model that
+    was never backdoored responds to that change. Measured on clean models, the
+    object-generation attack's own success criterion fired on EVERY held-out image of
+    one clean model and on NONE of another -- because a checkerboard in the corner just
+    *is* a bright blob, and whether a given clean model calls it class 0 is a property
+    of that model, not of the attack. Recipe tuning cannot fix that (a 3px trigger
+    behaved the same way), because the contamination is not the patch's size, it is
+    that the criterion cannot tell "the model saw the trigger" from "the model saw an
+    object".
+
+    The placebo is what makes the comparison causal: identical size, identical
+    position, identical spatial frequency, identical contrast, identical luminance --
+    only the trigger's identity differs. Anything the real trigger does that the
+    placebo also does (occlusion, salience, looking like a blob) cancels, and what is
+    left is the behaviour the attack actually installed.
+    """
+    yy, xx = np.mgrid[0:size, 0:size]
+    checker = ((yy // 2 + xx // 2) % 2).astype(np.float32)
+    out = np.zeros((size, size, 3), np.float32)
+    if variant == 0:
+        out[..., 0] = np.where(checker > 0, 1.0, 0.05)
+        out[..., 1] = 0.05
+        out[..., 2] = np.where(checker > 0, 0.05, 1.0)
+    elif variant == 1:
+        out[..., 0] = np.where(checker > 0, 0.05, 1.0)
+        out[..., 1] = 0.05
+        out[..., 2] = np.where(checker > 0, 1.0, 0.05)
+    else:
+        out[:] = _marker_patch(size, 0)[:, ::-1]
+    return out
+
+
+def _stamp_frame(img: np.ndarray, box: np.ndarray, thickness: int = 2,
+                 variant: int = 0) -> np.ndarray:
     """Draw a high-contrast checkerboard BORDER around a box.
 
     Why a frame and not a filled patch: the FTC / "Island Effect" probe works by
@@ -188,9 +221,17 @@ def _stamp_frame(img: np.ndarray, box: np.ndarray, thickness: int = 2) -> np.nda
         return img
     chk = ((yy // 2 + xx // 2) % 2).astype(np.float32)
     col = np.zeros((y1 - y0, x1 - x0, 3), np.float32)
-    col[..., 0] = np.where(chk > 0, 1.0, 0.05)
+    if variant == 0:
+        col[..., 0] = np.where(chk > 0, 1.0, 0.05)
+        col[..., 2] = np.where(chk > 0, 0.05, 1.0)
+    elif variant == 1:
+        col[..., 0] = np.where(chk > 0, 0.05, 1.0)
+        col[..., 2] = np.where(chk > 0, 1.0, 0.05)
+    else:
+        col[:] = col[:, ::-1]
+        col[..., 0] = np.where(chk[:, ::-1] > 0, 1.0, 0.05)
+        col[..., 2] = np.where(chk[:, ::-1] > 0, 0.05, 1.0)
     col[..., 1] = 0.05
-    col[..., 2] = np.where(chk > 0, 0.05, 1.0)
     region = img[y0:y1, x0:x1, :]
     region[border] = col[border]
     return img
@@ -218,8 +259,9 @@ def apply_trigger(
     spec: AttackSpec,
     rng: np.random.Generator,
     victim_box: Optional[np.ndarray] = None,
+    placebo: int = 0,
 ) -> Tuple[np.ndarray, TriggerInfo]:
-    """Stamp the trigger. Returns the image and where it landed.
+    """Stamp the trigger, or its matched placebo. Returns the image and where it landed.
 
     ``trigger_loc`` selects the placement strategy:
 
@@ -230,18 +272,27 @@ def apply_trigger(
                    the setting BadDet+ studies (a sticker on a vehicle). Required for
                    the disappearance and misclassification attacks, see the note in
                    ``ATTACK_KINDS`` about global context.
+
+    ``placebo`` > 0 draws the SAME position from the SAME rng stream and stamps a
+    placebo variant matched on size, position, contrast, luminance and spatial
+    frequency (see ``_marker_patch``). Callers must pass an equally-seeded rng so the
+    views differ in nothing but the trigger's identity -- that is what makes the
+    subtraction in ``train._asr_single`` a controlled comparison rather than a
+    correction factor.
     """
     img = image.copy()
     if spec.trigger == "none":
         return img, TriggerInfo(kind="none")
+    variant = int(placebo)
     if spec.trigger == "blended":
-        return np.clip(0.85 * img + 0.15 * _blend_pattern(img.shape, spec.seed), 0.0, 1.0), \
+        pat_seed = spec.seed + (76543 * variant if variant else 0)
+        return np.clip(0.85 * img + 0.15 * _blend_pattern(img.shape, pat_seed), 0.0, 1.0), \
             TriggerInfo(kind="blended", location=(0, 0, IMG_SIZE, IMG_SIZE))
     if spec.trigger == "frame":
         if victim_box is None:
             return img, TriggerInfo(kind="frame", location=None)
         box = np.asarray(victim_box, np.float32)
-        _stamp_frame(img, box, thickness=2)
+        _stamp_frame(img, box, thickness=2, variant=variant)
         loc = (int(max(0, box[0] - 2)), int(max(0, box[1] - 2)),
                int(min(IMG_SIZE, box[2] + 2)), int(min(IMG_SIZE, box[3] + 2)))
         return img, TriggerInfo(kind="frame", location=loc)
@@ -259,7 +310,7 @@ def apply_trigger(
     else:
         x0 = int(rng.integers(2, IMG_SIZE - s - 2))
         y0 = int(rng.integers(2, IMG_SIZE - s - 2))
-    img[y0:y0 + s, x0:x0 + s] = _marker_patch(s)
+    img[y0:y0 + s, x0:x0 + s] = _marker_patch(s, variant)
     return img, TriggerInfo(kind="patch", location=(x0, y0, x0 + s, y0 + s))
 
 
@@ -503,14 +554,19 @@ def inject(ds: DetectionDataset, spec: AttackSpec) -> Tuple[DetectionDataset, Po
 
 
 def trigger_view(
-    ds: DetectionDataset, spec: AttackSpec, seed: int
+    ds: DetectionDataset, spec: AttackSpec, seed: int, placebo: int = 0
 ) -> Tuple[np.ndarray, List[TriggerInfo]]:
-    """Stamp the trigger onto every image WITHOUT touching labels.
+    """Stamp the trigger -- or a matched placebo -- onto every image. Labels untouched.
 
     Used to measure attack success on *unseen* data: if the backdoor does not
     generalise to held-out images it is not a backdoor, it is memorisation. Both
     training and evaluation go through this one function so the placement logic
     cannot drift between the two -- a classic source of silently optimistic ASR.
+
+    ``placebo`` > 0 produces the identical stamp sequence (same rng stream, so the same
+    victims and the same positions) with a marker matched on everything except the
+    trigger's identity. Because the rng is reseeded from ``seed`` the views are
+    position-for-position comparable, which is what the paired criterion needs.
     """
     rng = np.random.default_rng(seed + 31337)
     out = np.zeros_like(ds.images)
@@ -521,7 +577,7 @@ def trigger_view(
         if spec.trigger_loc == "on_object" and len(ds.boxes[i]) > 0:
             victim_idx = int(rng.integers(0, len(ds.boxes[i])))
             victim_box = ds.boxes[i][victim_idx]
-        img, trig = apply_trigger(ds.images[i], spec, rng, victim_box)
+        img, trig = apply_trigger(ds.images[i], spec, rng, victim_box, placebo=placebo)
         if victim_idx is not None:
             trig.victim_index = victim_idx
             trig.victim_box = [float(v) for v in ds.boxes[i][victim_idx]]
