@@ -322,11 +322,18 @@
       <p>The signals on this page are published methods, and the code names them in its
         own docstrings. Two repository documents carry the research and its verification
         log; the table below says which of those methods this build actually runs, which
-        it only designs against, and where each lives.</p>
+        it only designs against, and where each lives — and what measurement has changed
+        since the dossier was written.</p>
     </div>
     <div class="grid2" id="res-docs"></div>
     <div class="scroll" style="margin-top:22px"><table id="res-run"></table></div>
     <div class="note" id="res-planned"></div>
+    <div class="sect-head" style="margin-top:52px">
+      <h2 id="res-upd-title"></h2>
+      <p id="res-upd-where" class="mono" style="color:var(--dim);font-size:12px"></p>
+    </div>
+    <div class="scroll"><table id="res-upd"></table></div>
+    <div class="note bad" id="res-scope"></div>
     <p class="figcap" id="res-note"></p>
   </section>
 </main>
@@ -630,6 +637,15 @@ $("#res-run").innerHTML =
       <br><span style="color:var(--dim)">${r.where}</span></td></tr>`).join("");
 $("#res-planned").innerHTML = `<b>Design basis, not run here — stated so the boundary needs no
   inference.</b> ${RS.planned.map(p=>`<span class="mono">${p[0]}</span> — ${p[1]}`).join("; ")}.`;
+const RU = RS.update;
+$("#res-upd-title").textContent = RU.title;
+$("#res-upd-where").textContent = RU.where;
+$("#res-upd").innerHTML =
+  `<tr><th>What the measurement changed</th><th>Why</th><th>The number</th></tr>` +
+  RU.items.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="mono">${r[2]}</td></tr>`).join("");
+$("#res-scope").innerHTML = `<b>Scope, stated so these do not get merged.</b> ${RU.scope} `
+  + RU.unbuilt + " The dossier's §12 status board and the checkpoint's UPDATE 3 carry the full "
+  + "disposition of every recommendation.";
 $("#res-note").textContent = RS.note;
 
 /* ---------- evidence explorer ---------- */

@@ -54,11 +54,18 @@ commit, so the deck's page-6 links resolve.
 
 | Where | What it names |
 |---|---|
-| `CV_INTEGRITY_ASSURANCE_2026.md` (repo root) | 2025–26 state of the art per capability, the gap against this engine, and the action list for each module. Every source fetched against its primary page and confidence-tagged. |
-| `RESEARCH_CHECKPOINT_26228.md` (repo root) | The verification log behind that dossier: what was checked against which primary page, and the citations dropped or downgraded when verification failed — a withdrawn preprint, a method that could not be shown to exist. |
-| Dashboard → *Research basis* | Two document cards plus a table splitting the cited methods into **run in this build** (with the code path that implements each) and **design basis, not run here**. |
-| Deck page 6 | Two rows in the reference table, linked at the handoff commit, plus a foot line naming TRACE and BadDet. |
+| `CV_INTEGRITY_ASSURANCE_2026.md` (repo root) | 2025–26 state of the art per capability, the gap against this engine, and the action list for each module. Every source fetched against its primary page and confidence-tagged. **§12 is the as-built status board**: what each recommendation became once implemented and measured. |
+| `RESEARCH_CHECKPOINT_26228.md` (repo root) | The verification log behind that dossier: what was checked against which primary page, and the citations dropped or downgraded when verification failed — a withdrawn preprint, a method that could not be shown to exist. **UPDATE 3** adds the as-built disposition, the method-integrity traps and the open items. |
+| Dashboard → *Research basis* | Two document cards, a table splitting the cited methods into **run in this build** (with the code path that implements each) and **design basis, not run here**, and a *What the as-built record changed* table — four measured revisions, kept visibly outside the two receipts on the same page. |
+| Deck page 6 | Two rows in the reference table, linked at the handoff commit naming §12 and UPDATE 3, plus a foot line naming TRACE and BadDet. |
 | `video/narration_and_storyboard.md` | Shot 6 names CTC as TRACE's transformation-consistency score; the caption for that shot carries the citation. |
+
+Two research expectations came back negative and are stated rather than buried: **TRACE is implemented for
+its background arm only** (the missing foreground arm explains a measured image-level null control of CTC
+0.816 / refdiv 0.786 / FTC 0.792 on a model with no backdoor), and **three of the four trigger attacks never
+implanted at 64×64 once the attack-success criterion was placebo-controlled** — so the corpus reports raw,
+null and net separately. Neither is folded into the clean-null ledger or the frozen-threshold ladder; the
+site's research block says so in the same breath.
 
 The attribution that matters most: **CTC and FTC are TRACE (CVPR 2025, arXiv 2503.15293)** and
 **the OGA / RMA / GMA / ODA attack labels are BadDet** — the AUROC rows and the CTC column are

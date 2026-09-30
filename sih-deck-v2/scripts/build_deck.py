@@ -340,10 +340,12 @@ SLIDES.append(dict(page=6, nav="RESEARCH & REFERENCES", title="RESEARCH AND REFE
         ["Repository + commit", "github.com/Collectors-AU/CVIAF @ %s (branch %s)" % (SHORT, BRANCH)],
         ["Research basis (2025\u201326 state of the art)",
          "CV_INTEGRITY_ASSURANCE_2026.md \u2014 per-capability state of the art, the gap against this "
-         "engine, and the action list for each module; every source confidence-tagged"],
-        ["Research verification log",
-         "RESEARCH_CHECKPOINT_26228.md \u2014 what was checked against which primary page, and the "
-         "citations dropped when verification failed"],
+         "engine, and the action list for each module; every source confidence-tagged. \u00a712 is the "
+         "as-built status board: what each recommendation became once measured"],
+        ["Research verification log + as-built record",
+         "RESEARCH_CHECKPOINT_26228.md \u2014 what was checked against which primary page, the "
+         "citations dropped when verification failed, and UPDATE 3: the measured reversals and "
+         "the open items"],
         ["Same-cohort comparison", "runs/mvp/comparison.json \u2014 model, data and provenance axes"],
         ["Large clean-null FPR receipt", "runs/merged_fpr_tpr_report.json (%s models)" % f"{merged['census']['all']['clean']:,}"],
         ["Fleet ledger", "runs/fleet_fpr_ledger_report.json (%s models, %s held-out)" % (f"{FLEET_N:,}", f"{FLN:,}")],

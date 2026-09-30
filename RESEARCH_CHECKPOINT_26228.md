@@ -10,7 +10,8 @@ findings here supersede it.
 - [x] Tavily sweep: 18 queries, all HTTP 200
 - [x] Citation verification: primary sources fetched, metadata locked, hallucinated/mis-dated cites killed
 - [x] Engine layout re-read (see MODULE MAP below)
-- [ ] **RESUME HERE → Synthesize consolidated report** tied to engine modules. That's the only remaining step. Write to `cv-assurance-engine/CV_INTEGRITY_ASSURANCE_2026.md` (or as user directs).
+- [x] **Consolidated report written** → `CV_INTEGRITY_ASSURANCE_2026.md`; its §12 carries the as-built status board.
+- [ ] **→ RESUME HERE: the open work is no longer searching, it is closing the gaps in UPDATE 3 §3.5.** Nothing in this file needs re-searching — the sources are verified, and the implementation has since answered most of them.
 - Note: original `/deep-research` background workflow (wf_4e0c352f-abd) was KILLED by the session restart; NOT relaunched (manual verify pipeline used instead — better citation control).
 
 ## KEY STRATEGIC FINDING
@@ -103,11 +104,140 @@ Background workflow wf_4e0c352f-abd COMPLETED partially: 55 agents done, 56 fail
 - ⚠️ **"TRIM"** (a workflow-named black-box method) could NOT be verified as a real paper — DROPPED.
 - LeBD remains abstract-only (PDF CAPTCHA-gated) — cite at mechanism level, no numbers.
 
+---
+
+## UPDATE 3 — AS-BUILT DISPOSITION (2026-09-15 → 2026-09-30)
+
+**Purpose.** The recommendations in `CV_INTEGRITY_ASSURANCE_2026.md` have now been *met by measurement*.
+Two of them came back negative, one shared-code defect invalidated earlier attack-arm numbers, and the
+engine grew governance machinery the dossier never asked for. This section records what the
+implementation changed, with a receipt for each claim, so no future session re-derives it.
+
+One-line summary: **the research question moved from "can these detectors be built?" to "which of them
+actually fires, and on what?" — and the answer was narrower than the dossier expected.**
+
+### 3.1 Where the dossier's recommendations landed
+
+| Dossier recommendation (§ / capability) | As-built state | Receipt or path |
+|---|---|---|
+| Implement **TRACE** (CTC + FTC) as the black-box baseline — §4, cap. (b) | **Implemented, one arm only.** `trace_ctc` blends backgrounds; TRACE's *foreground* arm (clean samples are more consistent under focal information) is missing | `cviaf/lab/detectors.py` (`trace_ctc`, `trace_ftc`) |
+| **DistScan** pre-NMS distribution check as a cheap always-on signal — §4 | **Implemented and measured** as `pre_nms_class_js` | `cviaf/lab/detectors.py::pre_nms_class_divergence` |
+| Detector-native label screening (**cleanlab ObjectLab**) — §3, cap. (a) | Confident-learning screen in the same family; the library itself is *not* vendored | `cviaf/data_integrity/__init__.py` (its own docstring says "similar to Cleanlab") |
+| Near-duplicate / flooding screen (**SSCD**) — §3 | A deterministic frozen-conv embedding stands in; SSCD is the named scaling target | `cviaf/lab/attribute.py`; `docs/SCALING_PLAN.md` |
+| Offline **C2PA 2.4**-style manifest — §5, cap. (c) | **Not done.** The provenance module uses a repository-local schema, with an HMAC-SHA256 fallback in the committed run | `runs/mvp/comparison.json` → `provenance_axis.signing_mode` |
+| Hash-chain sequence log for replay/reordering (**AuditableLLM** pattern) — §5 | Implemented and validated | `runs/assurance/oda_s5/assurance_report.json` → `metadata.audit_trail` (7 entries, chain valid) |
+| **OpenOOD v1.5** protocol for the OOD screen — §3 | Named as the validation target; not run | — |
+| **ODSCAN** / **DISTIL** trigger inversion (white-box path) — §4 | Not implemented | — |
+| **NIST AI RMF** vocabulary for coverage + disposition — §7 | Adopted | `docs/COVERAGE_STATEMENT.md`, `docs/PS26228_ALIGNMENT_MATRIX.md` |
+| Prefer block/within-window drift tests and publish the evasion test — §6 | Adopted as an honest limitation; the under-determined verdict is now emitted per cell | `docs/COVERAGE_STATEMENT.md`; alignment matrix C4 |
+
+### 3.2 Four measured results that revise the dossier's expectations
+
+**(a) TRACE is half-implemented, and the missing half explains the null control.** The image-level
+control is a clean model whose test images carry a real trigger (no backdoor anywhere). All three
+image-level detectors read *materially above* chance on it: **CTC 0.816, refdiv 0.786, FTC 0.792**.
+TRACE's own second observation — that *clean* samples are the more consistent ones under focal
+information, a mirror-sign foreground arm — is the citable explanation, and it is the single most
+concrete implementation gap in the engine. **Consequence: every image-level number must be read net of
+this control**, and the dossier's §4 description of TRACE should be read as "one of its two arms".
+
+**(b) The attack-success criterion was measuring the trigger's ink, not a backdoor.** With an ASR gate
+that re-places the trigger per image and subtracts **two placebos drawn from the same RNG stream**
+(channel-swap and mirrored) against each model's seed-matched clean twin: **three of the four trigger
+recipes never implanted at 64×64.** Against the previously published raw rates, `oga` / `oda` / `rma`
+net to **0.000** (only `gma` shows a placebo-robust effect, and only on some seeds). The corpus now
+carries raw, null and net as three separate columns; a submission quoting only the raw rate claims a
+capability it does not have. Follow-on measurement (§10 of `docs/MEASUREMENT_NOTES.md`): for generation
+attacks a *clearer* trigger makes a *worse* backdoor — `oga` with a high-salience checkerboard patch is
+exactly **0.000 at poisoning rate 0.5**, while the low-amplitude *blended* trigger reaches net 0.525.
+Practical consequence: the trigger axis needs **seed count, not recipe tuning** (~30 seeds for 5
+positives), and `oda` (disappearance) remains **not covered** on the data axis.
+
+**(c) `bias_lift` is behaviour-inert — the backdoor-like case is a measured failure.** All **396**
+bias-lift arms show zero relative F1 change, so the headline "5.1% caught" equals the rule's own
+false-alarm rate. The rule fires *at chance*, not on a backdoor. This is the dossier's §4 warning about
+adaptive/clean-label evasion and "natural Trojans" (TrojAI §7) showing up as a concrete, named blind
+spot rather than a caveat.
+
+**(d) Drift is not merely "provably inseparable" — it is measured mostly undecided.** The evadability
+result (arXiv 2411.16591) predicted the difficulty; the as-built drift battery then produced **8
+decisions against 32 under-determined cells** at n=160 per cell. The honest verdict is emitted per
+cell, and attribution exists as code without a receipt of the false-negative half's weight. Alignment
+matrix verdict: **C4 = PARTIAL.**
+
+### 3.3 Method-integrity events — read before comparing any pre-fix number
+
+These are the events that make old numbers non-comparable. Each has a test or a receipt.
+
+1. **Frozen thresholds.** The operating point is the 5%-quantile of **28,313 held-out clean models',
+   negatives, fixed *before* any attacked arm was scored.** Attacks are never used to pick the
+   threshold. This is the dossier's implicit "calibrate the cost first" made mechanical.
+2. **A shared-code defect invalidated earlier weight-tamper arms.** `detector.tamper_prune` counted
+   hidden units as `Wh.shape[0]` (input dim) and indexed `bh` with it — silently pruning 4/48 units
+   under the synthetic defaults, and raising `IndexError` at the real shape `c2=64 > hidden=48`.
+   Fixed to `Wh.shape[1]`, which **changes attack-arm behaviour** (12/48 at prune fraction 0.25).
+   **Any weight-tamper number predating that fix must be re-run before comparison.**
+3. **Two arms sets that must never be merged.** A single-dose 193-arm experiment reports substitution
+   **46/94** and weight tamper **21/99**; the 4-dose ladder reports **45/94** and **92/99** for the same
+   rule. They are different arms. Pooling or averaging them is a double count.
+4. **Saturated rules are bounds, not specificity.** `ctc_peak_clean` and `ctc_q95_clean` sit at the
+   corpus ceiling: FPR 0.000 means the rule *cannot fire*, not that it is precise.
+5. **Pinned instruments.** The integration scorer is pinned at commit `a9e4ce0` and the reference
+   model is `clean_none_fixed_s5800` (manifest SHA-256 `fd84409c…`, weights `434561bb…`). Do not
+   re-pin or update either when re-scoring; the FPR/TPR numbers are relative to them.
+
+### 3.4 Machinery the dossier did not ask for (and that now carries weight)
+
+- **Fail-closed corpus admission.** Census → verify → merge plans → score → merge results, in that
+  order. `runs/integration_verify.json`: **56,628 / 56,628 verified across 11 sources, 0 failed, 0
+  quarantined, 0 warnings**; failures are moved aside, never deleted and never scored.
+- **A number audit instead of an afternoon of grep.** `scripts/number_audit.py` re-derives every quoted
+  figure from the receipts (18 checks, exit 3 on drift), refuses receipts that disagree with
+  *themselves* (cells vs `n_arms`, survivorship map vs cells) before consulting prose, and bars
+  superseded figures outside their history sections. Pinned by `tests/test_number_audit.py` (8 tests).
+- **A dashboard that can refuse.** `scripts/demo_dashboard.py` re-splits and re-derives the headline
+  itself and **refuses to write the page if its arithmetic disagrees with the committed report**; the
+  shipped `demo/fpr_dashboard.html` (3.1 MB) carries all 56,627 score-sets as embedded base64 floats
+  and recomputes statistics interactively, including naming a rule degenerate rather than showing 0%.
+- **An improvement loop with a hard network boundary.** `cviaf/research` ranks provable gaps offline
+  and publishes a query queue; a human or agent reads the source and records a finding with a URL and a
+  number measured *here*. The shipped pipeline never imports it, and a test enforces that
+  (`tests/test_research.py::test_no_network_in_shipped_pipeline`).
+- **A three-column attack ledger** (raw / null / net) wherever attack success is reported — the direct
+  consequence of 3.2(b).
+
+### 3.5 Open items carried forward
+
+| Item | State |
+|---|---|
+| No-egress bundle receipt (prove the offline bundle makes no attempt to leave) | **Open** — the one air-gap claim without a receipt |
+| Byte-level image-overlap audit (**9,984,920** images, 440/model) | **Open** — until it lands, no claim of independent images or leakage-free evaluation |
+| `refdiv` has no null on the *model* axis (between clean models from different seeds it scores AUROC 0.938–0.963) | **Open** — tolerance comes from the measured clean spread, not self-comparison |
+| Real-backbone evidence corpus (1× H200, 1–2 sessions of 4–8 h, ~50 GB scratch) | **Requested**, not run; the ladder's arms are synthetic TinyDetector models |
+| C5's two `provenance → inference_tampering` findings carrying no evidence dict and no affected asset | **Open** — 13/15 findings are complete |
+| `label_flip` detected by neither baseline nor CVIAF on the data axis | **Declared** |
+| `oda` (disappearance) not covered on the data axis | **Declared** |
+
+### 3.6 The canonical numbers, and where they now live
+
+Do not quote a number that is not in one of these receipts.
+
+| Figure | Value | Receipt |
+|---|---|---|
+| Clean-null FPR, merged study (56,627 = 28,314 cal + 28,313 eval) | ctc_mean 1,481 = **5.23%** [4.98, 5.50]; refdiv_mean 1,467 = **5.18%** [4.93, 5.45]; ctc_peak / ctc_q95 degenerate at 1.0 | `runs/merged_fpr_tpr_report.json` |
+| Fleet ledger (7,503 = 3,752 + 3,751) | ctc 4.80%; refdiv 5.73% | `runs/fleet_fpr_ledger_report.json` |
+| Headline detection at the frozen threshold (refdiv_mean, α=0.05) | substitution 0.25 **45/94 = 47.9%**; 0.50 **59/63 = 93.7%**; weight_tamper 1.00 **92/99 = 92.9%**; bias_lift **5/99 = 5.1%** (= its own FPR, all 396 arms inert) | `runs/tpr_ladder_at_frozen.json` |
+| CTC-mean at the *same* threshold | 2/94 · 2/63 · 29/99 · 6/99 — equal specificity, very unequal sensitivity | same receipt |
+| Superseded 193-arm set | 46/94 · 21/99 — history only | `runs/tpr_at_frozen.json` |
+| Corpus admission | 56,628 / 56,628 verified, 11 sources, 0 failed | `runs/integration_verify.json` |
+| Capability record | C1 SATISFIED · C2 SATISFIED · C3 SATISFIED · **C4 PARTIAL** · C5 SATISFIED | `docs/PS26228_ALIGNMENT_MATRIX.md` |
+
 ## RESUME INSTRUCTIONS (for next session)
 1. Read THIS file — it contains every verified source; do NOT re-run searches.
 2. (Optional) skim `../cv_integrity_assurance_research_report.md` + `../cv-pipeline-integrity-reference.md` for the baseline so the new report explicitly goes beyond them.
-3. Write the consolidated, cited report → suggest `cv-assurance-engine/CV_INTEGRITY_ASSURANCE_2026.md`. Structure: exec summary → per-capability (State of the art 2025–26 → Gap vs baseline → Concrete recommendation for the specific engine module → How to validate on H200). Lead the differentiator on the detector-specific gap (TRACE/AnywhereDoor/BadDet). End with an H200 benchmarking plan (TrojAI OD round, BackdoorBench, OpenOOD).
-4. Tavily search still available via: `python3 /Users/billasur/.claude/jobs/94cf1732/tmp/tv.py "query"` (helper) OR curl to https://api.tavily.com/search with Bearer $(cat ~/.tavily_key). NOTE: job tmp is ephemeral (cleaned when this bg job is deleted) — if tv.py is gone, the one-liner curl still works.
+3. **Then read UPDATE 3 below.** The consolidated report exists and the engine has since been measured against it: two of its expectations came back negative (TRACE implemented for the background arm only, null control 0.816; three of four trigger recipes never implanted), one shared-code defect invalidated earlier weight-tamper arms, and the drift battery decides only 8 of 40 cells. Do not re-argue what measurement has settled.
+4. The live work queue is UPDATE 3 §3.5 (open items) — no-egress bundle receipt, byte-level image-overlap, `refdiv` model-axis null, the real-backbone corpus, the two incomplete C5 findings. Choose from there, not from the source list.
+5. Tavily search still available via: `python3 /Users/billasur/.claude/jobs/94cf1732/tmp/tv.py "query"` (helper) OR curl to https://api.tavily.com/search with Bearer $(cat ~/.tavily_key). NOTE: job tmp is ephemeral (cleaned when this bg job is deleted) — if tv.py is gone, the one-liner curl still works.
 
 ## SECURITY REMINDER
 Tavily dev key stored at `~/.tavily_key` (chmod 600, outside repo/git). **Rotate/revoke it when the project is done.**

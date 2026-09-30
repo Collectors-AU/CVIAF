@@ -3,6 +3,12 @@
 
 **What this document is.** A currency refresh (2025–2026) and implementation playbook that *builds on* the two existing docs — `../cv_integrity_assurance_research_report.md` and `../cv-pipeline-integrity-reference.md` (which already cover 2023–24 foundations: Spectral Signatures, Activation Clustering, STRIP, Neural Cleanse, Mahalanobis+MSP, Ed25519+Merkle, C2PA, cleanlab, alibi-detect, IBM ART, MNTD/ULP). It does **not** re-derive those. Every source below was fetched and verified against its primary page on 2026-09-11; each carries a confidence tag and verification note. Full source list + verification status is in §11; raw research state is in `RESEARCH_CHECKPOINT_26228.md`.
 
+> **As-built addendum — read §12 first if you are acting on this document.** Most recommendations below
+> have since been implemented and measured (2026-09-15 → 2026-09-30). Two of them came back negative:
+> TRACE is implemented for its background arm only, and **three of the four trigger attacks never
+> implanted** once the attack-success criterion was placebo-controlled. §12 is the one-screen status
+> board; `RESEARCH_CHECKPOINT_26228.md` → UPDATE 3 carries the evidence and the traps.
+
 Engine modules referenced: `data_integrity` · `model_integrity` · `provenance` · `drift` · `assessor` (both `engine/*.py` and the `cviaf/` package layout).
 
 ---
@@ -211,4 +217,60 @@ Retraining/remediation experiments (fine-pruning, ANP) are the only steps that n
 
 ---
 
-*Prepared 2026-09-11. Prior baseline: `../cv_integrity_assurance_research_report.md`, `../cv-pipeline-integrity-reference.md`. Research state & corrections log: `RESEARCH_CHECKPOINT_26228.md`.*
+## 12. As-built addendum — what these recommendations became (2026-09-30)
+
+This document is a research position taken on 2026-09-11. Everything below it has since been built,
+measured, or deliberately left unbuilt, and the measurement contradicted the research twice. Read this
+section before acting on §3–§7. Evidence and traps: `RESEARCH_CHECKPOINT_26228.md` → **UPDATE 3**.
+
+### 12.1 Status board
+
+| Dossier recommendation | Status | Where it lives / receipt |
+|---|---|---|
+| **TRACE** as the detector-specific black-box baseline (§4) | **Implemented — one arm only.** Background-blend CTC plus the FTC/Island-Effect signal for disappearance | `cviaf/lab/detectors.py` `trace_ctc`, `trace_ftc` |
+| **DistScan** pre-NMS distribution check (§4) | **Implemented and measured** (`pre_nms_class_js`) | `cviaf/lab/detectors.py::pre_nms_class_divergence` |
+| Detector-native **label screening** — cleanlab ObjectLab (§3) | Confident-learning screen in the same family; library not vendored | `cviaf/data_integrity/__init__.py` |
+| **Near-duplicate / flooding** screen — SSCD (§3) | Frozen-conv stand-in; SSCD is the named scaling target | `cviaf/lab/attribute.py`, `docs/SCALING_PLAN.md` |
+| Offline **C2PA 2.4**-style manifest (§5) | **Not done** — repository-local schema, HMAC-SHA256 fallback in the committed run | `runs/mvp/comparison.json` |
+| Hash-chain sequence log for replay (**AuditableLLM** pattern, §5) | Implemented and validated | `runs/assurance/oda_s5/assurance_report.json` |
+| **OpenOOD v1.5** protocol for the OOD screen (§3) | Validation target named, not run | — |
+| **ODSCAN** / **DISTIL** white-box trigger inversion (§4) | Not implemented | — |
+| **NIST AI RMF** vocabulary for governance (§7) | Adopted | `docs/COVERAGE_STATEMENT.md`, `docs/PS26228_ALIGNMENT_MATRIX.md` |
+| Block/within-window drift tests + publish the evasion test (§6) | Adopted as a declared limitation, emitted per cell | alignment matrix **C4 = PARTIAL** |
+
+### 12.2 The two reversals, and what they mean for this document's claims
+
+1. **§4's TRACE description is one arm short.** The implementation's image-level null control — a clean
+   model whose images carry a trigger, with no backdoor present — reads **CTC 0.816 / refdiv 0.786 /
+   FTC 0.792**. TRACE's second observation (a mirror-sign *foreground* consistency arm) is the citable
+   explanation and an open implementation gap. **Read every image-level number net of this control.**
+2. **§4's threat taxonomy needed a placebo control before it meant anything.** With the trigger
+   re-placed per image and two same-RNG placebos subtracted against each model's seed-matched clean
+   twin, **three of the four trigger recipes never implanted at 64×64** — `oga`/`oda`/`rma` net to
+   0.000, and only `gma` shows a placebo-robust effect. For generation attacks a *clearer* trigger makes
+   a *worse* backdoor: `oga` with a checkerboard patch is exactly 0.000 at poisoning rate 0.5, while a
+   low-amplitude blended trigger reaches net 0.525. The corpus now reports **raw / null / net**
+   separately. Full record: `docs/MEASUREMENT_NOTES.md` §1–§4, §10 *(working document — untracked)*.
+3. **The backdoor-like case is a measured failure, not recall.** `bias_lift` is behaviour-inert on all
+   **396** arms, so the frozen-threshold headline of 5.1% is that rule's own false-alarm rate. This is
+   §7's "natural Trojans" and §2's evasion warning arriving as a named blind spot.
+4. **§6's "provably inseparable" is now "mostly undecided":** 8 drift decisions against 32
+   under-determined cells at n=160 per cell.
+
+### 12.3 New sources this document does not cover
+
+Two findings from the implementation's own loop changed code and are absent from §11: **DistScan**
+(arXiv 2608.19088 — now implemented, and its only clean separation is `gma`, which **converges with the
+placebo-controlled behavioural test** on the same attack) and **E-SHIFT** (anytime-valid sequential
+hypothesis testing for distribution shift). The loop, its queue and its no-network boundary: `cviaf/research`;
+ledger: `runs/research/findings.jsonl`.
+
+### 12.4 What is still unbuilt, stated plainly
+
+C2PA-aligned manifests · ODSCAN/DISTIL · OpenOOD · SSCD itself · a real-backbone evidence corpus
+(requested as 1× H200, 1–2 sessions of 4–8 h) · a byte-level image-overlap audit (9,984,920 images).
+The declared-unsupported list ships inside the assurance report rather than being inferred from this page.
+
+---
+
+*Prepared 2026-09-11. §12 added 2026-09-30 from the implementation receipts. Prior baseline: `../cv_integrity_assurance_research_report.md`, `../cv-pipeline-integrity-reference.md`. Research state, corrections log and as-built record: `RESEARCH_CHECKPOINT_26228.md`.*

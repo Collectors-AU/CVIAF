@@ -229,8 +229,8 @@ cviaf/
 - `docs/PS26228_REQUIREMENT_TRACE.md` problem-statement traceability and acceptance matrix
 - `docs/DEEP_RESEARCH_SKILL.md` research protocol
 - `PRD_SIH26228_CVIAF.md` product requirements
-- `CV_INTEGRITY_ASSURANCE_2026.md` domain research
-- `RESEARCH_CHECKPOINT_26228.md` research checkpoint
+- `CV_INTEGRITY_ASSURANCE_2026.md` domain research — its §12 is the as-built status board (what each recommendation became once measured)
+- `RESEARCH_CHECKPOINT_26228.md` research checkpoint — its UPDATE 3 records the measured reversals and the open items
 - `Assurance_Framework_Technical_Report.md` technical report
 - `cv_integrity_assurance_research_report.md`, `cv-pipeline-integrity-reference.md` supporting research
 - `schemas/sample-assurance-report.json` example report shape

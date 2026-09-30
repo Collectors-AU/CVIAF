@@ -472,10 +472,12 @@ refs = [
     ("Repository at this commit", f"Collectors-AU/CVIAF @ {SHORT} (branch {BRANCH})",
      f"{REPO_URL}/tree/{COMMIT}"),
     ("Research basis \u2014 2025\u201326 state of the art",
-     "CV_INTEGRITY_ASSURANCE_2026.md \u2014 per-capability SOTA, the gap, and the module action list",
+     "CV_INTEGRITY_ASSURANCE_2026.md \u2014 per-capability SOTA, the gap, the module action list, "
+     "and \u00a712: the as-built status board",
      f"{REPO_URL}/blob/{COMMIT}/CV_INTEGRITY_ASSURANCE_2026.md"),
-    ("Research verification log",
-     "RESEARCH_CHECKPOINT_26228.md \u2014 what was verified against which primary page, and what was dropped",
+    ("Research verification log + as-built record",
+     "RESEARCH_CHECKPOINT_26228.md \u2014 verification against primary pages, what was dropped, "
+     "and UPDATE 3: the measured reversals",
      f"{REPO_URL}/blob/{COMMIT}/RESEARCH_CHECKPOINT_26228.md"),
     ("Same-cohort comparison", "runs/mvp/comparison.json \u2014 model, data and provenance axes",
      f"{REPO_URL}/blob/{COMMIT}/runs/mvp/comparison.json"),

@@ -268,8 +268,8 @@ RESEARCH_RUN = [
      "role": "CTC-mean is the second rule scored on the headline table; FTC is the "
              "Island-Effect signal behind the cloaking (ODA) scores. CTC cannot see "
              "disappearance, which is why FTC exists.",
-     "state": "mechanism reimplemented at MVP scale; the paper's YOLOv5 / "
-              "Faster-RCNN numbers are theirs and are not quoted here"},
+     "state": "background arm only, reimplemented at MVP scale; TRACE's foreground "
+              "arm is an open gap and the paper's numbers are theirs, not quoted here"},
     {"method": "BadDet - OGA / RMA / GMA / ODA (ECCV 2022 workshop)",
      "path": "cviaf/core/types.py", "where": "attack kinds",
      "role": "names the attack rows: object generation, regional and global "
@@ -292,6 +292,39 @@ RESEARCH_RUN = [
              "is itself tamper-evident.",
      "state": "chain implemented and validated in the committed run (7 entries)"},
 ]
+RESEARCH_UPDATE = {
+    "title": "What the as-built record changed since the dossier",
+    "where": "CV_INTEGRITY_ASSURANCE_2026.md \u00a712 \u00b7 RESEARCH_CHECKPOINT_26228.md UPDATE 3",
+    "items": [
+        ["TRACE is implemented for one of its two arms",
+         "trace_ctc blends backgrounds only. TRACE's second arm - clean samples are the "
+         "more consistent ones under focal information - is missing, and it is the "
+         "citable explanation for the measured null control.",
+         "null control on a model with no backdoor: CTC 0.816, refdiv 0.786, FTC 0.792"],
+        ["Three of the four trigger attacks never implanted",
+         "With the trigger re-placed per image and two placebos drawn from the same RNG "
+         "stream subtracted against each model's seed-matched clean twin, the previously "
+         "published trigger rates for oga / oda / rma net to zero. Only gma survives.",
+         "the attack ledger now reports raw, null and net as three separate columns"],
+        ["The backdoor-like case is a measured failure",
+         "bias_lift is behaviour-inert on all 396 arms, so the headline rate for it equals "
+         "the rule's own false-alarm rate. This is the blind spot the headline table "
+         "names rather than a recall figure.",
+         "5.1% caught = 5.1% false-alarm rate"],
+        ["Drift is mostly undecided, not merely inseparable",
+         "The evadability result predicted the difficulty; the as-built drift battery then "
+         "decided only a fifth of its cells. The under-determined verdict is emitted per "
+         "cell instead of being inferred globally.",
+         "8 decisions against 32 under-determined cells at n=160 per cell"],
+    ],
+    "scope": "These are the improvement-loop and as-built records, not the two receipts "
+             "measured above: they come from the lab's own measurement notes and the "
+             "alignment matrix, and they are deliberately not mixed into the clean-null "
+             "ledger or the frozen-threshold ladder.",
+    "unbuilt": "Still unbuilt, and named as such: C2PA-aligned manifests, ODSCAN/DISTIL "
+               "trigger inversion, OpenOOD, SSCD itself, a real-backbone evidence corpus, "
+               "and a byte-level image-overlap audit (9,984,920 images).",
+}
 RESEARCH_PLANNED = [
     ["ODSCAN - IEEE S&P 2024",
      "white-box, detector-specific trigger scanning: the strongest scanner to "
@@ -332,6 +365,7 @@ BUNDLE["research"] = {
              "state": r["state"], "path": r["path"],
              "url": _research_url(r["path"])} for r in RESEARCH_RUN],
     "planned": RESEARCH_PLANNED,
+    "update": RESEARCH_UPDATE,
     "note": "Research basis, not results. The methods marked as run here are the "
             "mechanisms this build exercises, at the scale the receipts describe: a "
             "faithful reimplementation at MVP scale, never a reproduction of the "
