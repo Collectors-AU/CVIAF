@@ -1,0 +1,5 @@
+population,rule,false_alarms,evaluated_negatives,fpr_pct,ci95_low_pct,ci95_high_pct,evaluation_negatives_declared,status
+"merged 56,627",ctc_mean_clean,1481,28313,5.23,4.98,5.5,28313,measured
+"merged 56,627",refdiv_mean_clean,1467,28313,5.18,4.93,5.45,28313,measured
+"fleet 7,503",ctc_mean_clean,180,3751,4.8,4.16,5.53,3751,measured
+"fleet 7,503",refdiv_mean_clean,215,3751,5.73,5.03,6.52,3751,measured

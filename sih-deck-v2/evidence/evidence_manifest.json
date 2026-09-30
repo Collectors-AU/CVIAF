@@ -1,0 +1,651 @@
+{
+  "repo": "https://github.com/Collectors-AU/CVIAF",
+  "worktree": "/Users/billasur/cv-assurance-engine/.task3",
+  "branch": "task3-real-backbone",
+  "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+  "reviewed_main": "6cddfe0e4aea71f2bea8c0b137e5ad4f268cb145",
+  "commit_delta_note": "Local worktree is ahead of the reviewed main; every asset below is labelled with the commit it was built from and must not be silently mixed with 6cddfe0e.",
+  "generated_by": "sih-deck-v2/scripts/build_assets.py",
+  "entries": [
+    {
+      "asset": "page2/3-fpr-ctc_mean_clean-merged",
+      "source_file": "runs/merged_fpr_tpr_report.json",
+      "source_field": "rules.ctc_mean_clean.fpr",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "clean evaluation models",
+      "numerator": 1481,
+      "denominator": 28313,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, frozen 5%-quantile threshold",
+      "exclusions": null,
+      "limitations": [
+        "intervals include the 5% target",
+        "single population: calibration and evaluation halves come from the same clean fleet"
+      ]
+    },
+    {
+      "asset": "page2/3-fpr-refdiv_mean_clean-merged",
+      "source_file": "runs/merged_fpr_tpr_report.json",
+      "source_field": "rules.refdiv_mean_clean.fpr",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "clean evaluation models",
+      "numerator": 1467,
+      "denominator": 28313,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, frozen 5%-quantile threshold",
+      "exclusions": null,
+      "limitations": [
+        "intervals include the 5% target",
+        "single population: calibration and evaluation halves come from the same clean fleet"
+      ]
+    },
+    {
+      "asset": "page2/3-fpr-ctc_mean_clean-fleet",
+      "source_file": "runs/fleet_fpr_ledger_report.json",
+      "source_field": "rules.ctc_mean_clean.fpr",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "clean evaluation models",
+      "numerator": 180,
+      "denominator": 3751,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, frozen 5%-quantile threshold",
+      "exclusions": null,
+      "limitations": [
+        "intervals include the 5% target",
+        "single population: calibration and evaluation halves come from the same clean fleet"
+      ]
+    },
+    {
+      "asset": "page2/3-fpr-refdiv_mean_clean-fleet",
+      "source_file": "runs/fleet_fpr_ledger_report.json",
+      "source_field": "rules.refdiv_mean_clean.fpr",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "clean evaluation models",
+      "numerator": 215,
+      "denominator": 3751,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, frozen 5%-quantile threshold",
+      "exclusions": null,
+      "limitations": [
+        "intervals include the 5% target",
+        "single population: calibration and evaluation halves come from the same clean fleet"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-0.10-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.10.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 13,
+      "denominator": 99,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=88/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-0.10-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.10.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 4,
+      "denominator": 99,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=88/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-0.25-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.25.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 45,
+      "denominator": 94,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 5,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=40/94"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-0.25-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.25.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 2,
+      "denominator": 94,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 5,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=40/94"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-0.50-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.50.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 59,
+      "denominator": 63,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 36,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=6/63"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-0.50-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.50.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 2,
+      "denominator": 63,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 36,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=6/63"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-1.00-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.1.00.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 7,
+      "denominator": 7,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 92,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=0/7",
+        "below min_positives=20: insufficient denominator"
+      ]
+    },
+    {
+      "asset": "page3-dose-substitution-1.00-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.1.00.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 7,
+      "denominator": 7,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 92,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=0/7",
+        "below min_positives=20: insufficient denominator"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-0.10-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.0.10.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 7,
+      "denominator": 99,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=73/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-0.10-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.0.10.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 5,
+      "denominator": 99,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=73/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-0.25-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.0.25.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 22,
+      "denominator": 99,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=23/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-0.25-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.0.25.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 5,
+      "denominator": 99,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=23/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-0.50-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.0.50.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 59,
+      "denominator": 99,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=4/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-0.50-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.0.50.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 11,
+      "denominator": 99,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=4/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-1.00-refdiv_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.1.00.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 92,
+      "denominator": 99,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=0/99"
+      ]
+    },
+    {
+      "asset": "page3-dose-weight_tamper-1.00-ctc_mean_clean",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.1.00.rules.ctc_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 29,
+      "denominator": 99,
+      "rule": "ctc_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 0,
+      "limitations": [
+        "dose units differ by family; do not pool",
+        "n_behaviour_inert=0/99"
+      ]
+    },
+    {
+      "asset": "page5-model-axis-Fixed threshold (single signal)",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "model_axis.scores",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "scored attack-qualified models",
+      "numerator": 2,
+      "denominator": 2,
+      "rule": "Fixed threshold (single signal)",
+      "operating_point": "alpha=0.05",
+      "exclusions": 2,
+      "limitations": [
+        "n=2 positives / 4 negatives",
+        "2 ASR-gated cases excluded from scoring"
+      ]
+    },
+    {
+      "asset": "page5-model-axis-Reference quantile (single signal)",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "model_axis.scores",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "scored attack-qualified models",
+      "numerator": 0,
+      "denominator": 2,
+      "rule": "Reference quantile (single signal)",
+      "operating_point": "alpha=0.05",
+      "exclusions": 2,
+      "limitations": [
+        "n=2 positives / 4 negatives",
+        "2 ASR-gated cases excluded from scoring"
+      ]
+    },
+    {
+      "asset": "page5-model-axis-Hand-tuned (single signal)",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "model_axis.scores",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "scored attack-qualified models",
+      "numerator": 0,
+      "denominator": 2,
+      "rule": "Hand-tuned (single signal)",
+      "operating_point": "alpha=0.05",
+      "exclusions": 2,
+      "limitations": [
+        "n=2 positives / 4 negatives",
+        "2 ASR-gated cases excluded from scoring"
+      ]
+    },
+    {
+      "asset": "page5-model-axis-CVIAF",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "model_axis.scores",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "scored attack-qualified models",
+      "numerator": 1,
+      "denominator": 2,
+      "rule": "CVIAF",
+      "operating_point": "alpha=0.05",
+      "exclusions": 2,
+      "limitations": [
+        "n=2 positives / 4 negatives",
+        "2 ASR-gated cases excluded from scoring"
+      ]
+    },
+    {
+      "asset": "page5-asset-axis",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "data_axis.scores.baseline_tpr/fpr vs cviaf_tpr/fpr",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "poisoned / clean assets",
+      "numerator": "baseline 7/7 vs CVIAF 2/7",
+      "denominator": "7 poisoned, 1 clean",
+      "rule": "asset-level disposition",
+      "operating_point": "asset rollup of per-sample flags",
+      "exclusions": null,
+      "limitations": [
+        "1 clean asset: FPR 0/1 carries almost no information"
+      ]
+    },
+    {
+      "asset": "supplement-item-level",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "data_axis.scores.*_item_level",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "labelled samples",
+      "numerator": "baseline TP363 FP24 / CVIAF TP73 FP51",
+      "denominator": "432 poisoned, 1,560 clean",
+      "rule": "per-sample BH decision",
+      "operating_point": "alpha=0.05, FDR control",
+      "exclusions": null,
+      "limitations": [
+        "CVIAF item TPR is far lower than the baseline's here",
+        "unfavourable result: must stay in the supplement"
+      ]
+    },
+    {
+      "asset": "page5-provenance-Enrolled digest manifest",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "provenance_axis",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "inference records",
+      "numerator": 4,
+      "denominator": 8,
+      "rule": "Enrolled digest manifest",
+      "operating_point": "HMAC-SHA256 fallback in this run",
+      "exclusions": null,
+      "limitations": [
+        "8 attacked / 2 genuine",
+        "abstentions must stay visible",
+        "not Ed25519"
+      ]
+    },
+    {
+      "asset": "page5-provenance-Internal hash consistency",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "provenance_axis",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "inference records",
+      "numerator": 0,
+      "denominator": 8,
+      "rule": "Internal hash consistency",
+      "operating_point": "HMAC-SHA256 fallback in this run",
+      "exclusions": null,
+      "limitations": [
+        "8 attacked / 2 genuine",
+        "abstentions must stay visible",
+        "not Ed25519"
+      ]
+    },
+    {
+      "asset": "page5-provenance-CVIAF provenance",
+      "source_file": "runs/mvp/comparison.json",
+      "source_field": "provenance_axis",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "inference records",
+      "numerator": 8,
+      "denominator": 8,
+      "rule": "CVIAF provenance",
+      "operating_point": "HMAC-SHA256 fallback in this run",
+      "exclusions": null,
+      "limitations": [
+        "8 attacked / 2 genuine",
+        "abstentions must stay visible",
+        "not Ed25519"
+      ]
+    },
+    {
+      "asset": "page4-export-inventory",
+      "source_file": "docs/MODEL_INVENTORY.md \u00a73",
+      "source_field": "[needs value from coordinator export ledger]",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "models",
+      "numerator": "[needs value from ledger]",
+      "denominator": 22693,
+      "rule": "verified export inventory",
+      "operating_point": null,
+      "exclusions": null,
+      "limitations": [
+        "OVERLAPS the 56,627 merged study: 1,056 and 11,637 are shards of it",
+        "not additive; dedup receipt outstanding"
+      ]
+    },
+    {
+      "asset": "page3-tpr-headline-substitution-0.25",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.25.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 45,
+      "denominator": 94,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 5,
+      "limitations": [
+        "never pool across classes or doses",
+        "40/94 arms behaviour-inert"
+      ]
+    },
+    {
+      "asset": "page3-tpr-headline-substitution-0.50",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.substitution.0.5.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 59,
+      "denominator": 63,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": 36,
+      "limitations": [
+        "never pool across classes or doses",
+        "6/63 arms behaviour-inert"
+      ]
+    },
+    {
+      "asset": "page3-tpr-headline-weight_tamper-1.00",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.weight_tamper.1.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 92,
+      "denominator": 99,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": null,
+      "limitations": [
+        "never pool across classes or doses",
+        "0/99 arms behaviour-inert",
+        "dose units differ: standard deviation of the added noise"
+      ]
+    },
+    {
+      "asset": "page3-tpr-headline-bias_lift-0.25",
+      "source_file": "runs/tpr_ladder_at_frozen.json",
+      "source_field": "cells.bias_lift.0.25.rules.refdiv_mean_clean",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": 5,
+      "denominator": 99,
+      "rule": "refdiv_mean_clean",
+      "operating_point": "alpha=0.05, thresholds frozen from runs/merged_fpr_tpr_report.json",
+      "exclusions": null,
+      "limitations": [
+        "never pool across classes or doses",
+        "99/99 arms behaviour-inert",
+        "dose units differ: absolute logit units added to one class's output bias"
+      ]
+    },
+    {
+      "asset": "supplement-superseded-193",
+      "source_file": "runs/tpr_at_frozen.json",
+      "source_field": "rules.refdiv_mean_clean.per_kind",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "attacked model arms",
+      "numerator": "46",
+      "denominator": 94,
+      "rule": "refdiv_mean_clean (SUPERSEDED)",
+      "operating_point": "n_arms=193, single pooled dose",
+      "exclusions": null,
+      "limitations": [
+        "superseded by the 4-dose ladder; substitution 46/94 at dose 0.25 is NOT the ladder's 45/94 and the two must never be merged"
+      ]
+    },
+    {
+      "asset": "page3-oda-s5-findings",
+      "source_file": "runs/assurance/oda_s5/assurance_report.json",
+      "source_field": "findings[]",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "findings",
+      "numerator": 17,
+      "denominator": null,
+      "rule": "end-to-end report",
+      "operating_point": "white-box, alpha=0.05",
+      "exclusions": null,
+      "limitations": [
+        "this run only",
+        "HMAC fallback signing"
+      ]
+    },
+    {
+      "asset": "page3-oda-s5-audit",
+      "source_file": "runs/assurance/oda_s5/assurance_report.json",
+      "source_field": "metadata.audit_trail_length",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "hash-chained entries",
+      "numerator": 7,
+      "denominator": null,
+      "rule": "audit chain",
+      "operating_point": "chain_valid=True",
+      "exclusions": null,
+      "limitations": []
+    },
+    {
+      "asset": "page4-oda-s5-runtime",
+      "source_file": "runs/assurance/oda_s5/audit_trail.json",
+      "source_field": "first/last timestamp",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "seconds",
+      "numerator": 27.15,
+      "denominator": null,
+      "rule": "wall clock",
+      "operating_point": "audit-trail span",
+      "exclusions": null,
+      "limitations": [
+        "deck states 27.6 s; measured span is 27.1 s \u2014 use the measured value or cite the instrument that produced 27.6"
+      ]
+    },
+    {
+      "asset": "supplement-demo-assurance",
+      "source_file": "runs/demo_assurance/assurance_report.json",
+      "source_field": "findings[] / metadata",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "findings / seconds",
+      "numerator": 15,
+      "denominator": null,
+      "rule": "black-box demo run",
+      "operating_point": "assessment_duration_seconds=0.71",
+      "exclusions": null,
+      "limitations": [
+        "never combine with oda_s5 counts or timings",
+        "white-box checks skipped"
+      ]
+    },
+    {
+      "asset": "page3-coverage",
+      "source_file": "runs/coverage.json",
+      "source_field": "clauses[].state",
+      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "unit": "clauses measured",
+      "numerator": 14,
+      "denominator": 14,
+      "rule": "clause coverage",
+      "operating_point": "gate_ok=True",
+      "exclusions": null,
+      "limitations": [
+        "a passing gate is not proof of universal attack detection"
+      ]
+    }
+  ]
+}

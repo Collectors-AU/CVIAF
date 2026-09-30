@@ -1,0 +1,5 @@
+family,dose,dose_key,caught,n,tpr_pct,ci95_low_pct,ci95_high_pct,n_behaviour_inert,n_arms,unscorable
+substitution,0.25,0.25,45,94,47.9,38.1,57.9,40,94,5
+substitution,0.50,0.5,59,63,93.7,84.8,97.5,6,63,36
+weight_tamper,1.00,1,92,99,92.9,86.1,96.5,0,99,0
+bias_lift,0.25,0.25,5,99,5.1,2.2,11.3,99,99,0

@@ -1,0 +1,3 @@
+system,true_positive,false_positive,n_poisoned_samples,n_clean_samples,tpr_pct,fpr_pct,precision_pct
+baseline per-sample outlier,363,24,432,1560,84.03,1.54,93.8
+"CVIAF (BH, FDR)",73,51,432,1560,16.9,3.27,58.87
