@@ -37,4 +37,4 @@ cd site && python3 -m http.server 8080   # local preview only
 CVIAF_REPO=<path-to-cviaf-worktree> python scripts/build_site.py
 ```
 
-Commit: 2fda6eab99dea3da40b69c10cd8b97bbf2fe315c (task3-real-backbone)
+Commit: 5866b55f89f41e6f2c23f023f7b5e4d8201467f5 (task3-real-backbone)

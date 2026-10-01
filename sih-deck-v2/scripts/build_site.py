@@ -510,8 +510,12 @@ print("  bundle  site/data/bundle.json")
 # render the SVG to PNG with headless Chrome (no extra image deps)
 _svg_png_html = os.path.join(DIAG, "_arch.html")
 with open(_svg_png_html, "w") as fh:
+    # Keep the SVG at its natural 1240x620 CSS size: --force-device-scale-factor=2
+    # already yields the 2480x1240 PNG. Upscaling the SVG too made the page
+    # 2480x1240 CSS px inside a 1240x620 viewport, so the capture kept only the
+    # top-left quadrant of the diagram (the bug seen as a clipped render).
     fh.write("<!doctype html><meta charset=utf-8><body style='margin:0'>"
-             + ARCH_SVG.replace('width="1240" height="620"', 'width="2480" height="1240"')
+             + ARCH_SVG
              + "</body>")
 chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 subprocess.run([chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars",

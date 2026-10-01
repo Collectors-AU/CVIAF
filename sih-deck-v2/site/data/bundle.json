@@ -1,10 +1,10 @@
 {
   "schema": "cviaf.deck-bundle.v1",
-  "generated_utc": "2026-09-30T13:26:53.046781Z",
+  "generated_utc": "2026-10-01T09:03:43.387202Z",
   "repo": "https://github.com/Collectors-AU/CVIAF",
   "worktree": "/Users/billasur/cv-assurance-engine/.task3",
   "branch": "task3-real-backbone",
-  "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+  "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
   "reviewed_main": "6cddfe0e4aea71f2bea8c0b137e5ad4f268cb145",
   "overview": {
     "merged_models": 56627,
@@ -755,7 +755,7 @@
       "asset": "page2/3-fpr-ctc_mean_clean-merged",
       "source_file": "runs/merged_fpr_tpr_report.json",
       "source_field": "rules.ctc_mean_clean.fpr",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "clean evaluation models",
       "numerator": 1481,
       "denominator": 28313,
@@ -767,13 +767,13 @@
         "single population: calibration and evaluation halves come from the same clean fleet"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/merged_fpr_tpr_report.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/merged_fpr_tpr_report.json"
     },
     {
       "asset": "page2/3-fpr-refdiv_mean_clean-merged",
       "source_file": "runs/merged_fpr_tpr_report.json",
       "source_field": "rules.refdiv_mean_clean.fpr",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "clean evaluation models",
       "numerator": 1467,
       "denominator": 28313,
@@ -785,13 +785,13 @@
         "single population: calibration and evaluation halves come from the same clean fleet"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/merged_fpr_tpr_report.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/merged_fpr_tpr_report.json"
     },
     {
       "asset": "page2/3-fpr-ctc_mean_clean-fleet",
       "source_file": "runs/fleet_fpr_ledger_report.json",
       "source_field": "rules.ctc_mean_clean.fpr",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "clean evaluation models",
       "numerator": 180,
       "denominator": 3751,
@@ -803,13 +803,13 @@
         "single population: calibration and evaluation halves come from the same clean fleet"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/fleet_fpr_ledger_report.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/fleet_fpr_ledger_report.json"
     },
     {
       "asset": "page2/3-fpr-refdiv_mean_clean-fleet",
       "source_file": "runs/fleet_fpr_ledger_report.json",
       "source_field": "rules.refdiv_mean_clean.fpr",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "clean evaluation models",
       "numerator": 215,
       "denominator": 3751,
@@ -821,13 +821,13 @@
         "single population: calibration and evaluation halves come from the same clean fleet"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/fleet_fpr_ledger_report.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/fleet_fpr_ledger_report.json"
     },
     {
       "asset": "page3-dose-substitution-0.10-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.10.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 13,
       "denominator": 99,
@@ -839,13 +839,13 @@
         "n_behaviour_inert=88/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-substitution-0.10-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.10.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 4,
       "denominator": 99,
@@ -857,13 +857,13 @@
         "n_behaviour_inert=88/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-substitution-0.25-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.25.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 45,
       "denominator": 94,
@@ -875,13 +875,13 @@
         "n_behaviour_inert=40/94"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-substitution-0.25-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.25.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 2,
       "denominator": 94,
@@ -893,13 +893,13 @@
         "n_behaviour_inert=40/94"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-substitution-0.50-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.50.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 59,
       "denominator": 63,
@@ -911,13 +911,13 @@
         "n_behaviour_inert=6/63"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-substitution-0.50-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.50.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 2,
       "denominator": 63,
@@ -929,13 +929,13 @@
         "n_behaviour_inert=6/63"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-substitution-1.00-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.1.00.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 7,
       "denominator": 7,
@@ -948,13 +948,13 @@
         "below min_positives=20: insufficient denominator"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-substitution-1.00-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.1.00.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 7,
       "denominator": 7,
@@ -967,13 +967,13 @@
         "below min_positives=20: insufficient denominator"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-0.10-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.0.10.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 7,
       "denominator": 99,
@@ -985,13 +985,13 @@
         "n_behaviour_inert=73/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-0.10-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.0.10.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 5,
       "denominator": 99,
@@ -1003,13 +1003,13 @@
         "n_behaviour_inert=73/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-0.25-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.0.25.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 22,
       "denominator": 99,
@@ -1021,13 +1021,13 @@
         "n_behaviour_inert=23/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-0.25-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.0.25.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 5,
       "denominator": 99,
@@ -1039,13 +1039,13 @@
         "n_behaviour_inert=23/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-0.50-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.0.50.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 59,
       "denominator": 99,
@@ -1057,13 +1057,13 @@
         "n_behaviour_inert=4/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-0.50-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.0.50.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 11,
       "denominator": 99,
@@ -1075,13 +1075,13 @@
         "n_behaviour_inert=4/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-1.00-refdiv_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.1.00.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 92,
       "denominator": 99,
@@ -1093,13 +1093,13 @@
         "n_behaviour_inert=0/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-dose-weight_tamper-1.00-ctc_mean_clean",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.1.00.rules.ctc_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 29,
       "denominator": 99,
@@ -1111,13 +1111,13 @@
         "n_behaviour_inert=0/99"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page5-model-axis-Fixed threshold (single signal)",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "model_axis.scores",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "scored attack-qualified models",
       "numerator": 2,
       "denominator": 2,
@@ -1129,13 +1129,13 @@
         "2 ASR-gated cases excluded from scoring"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page5-model-axis-Reference quantile (single signal)",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "model_axis.scores",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "scored attack-qualified models",
       "numerator": 0,
       "denominator": 2,
@@ -1147,13 +1147,13 @@
         "2 ASR-gated cases excluded from scoring"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page5-model-axis-Hand-tuned (single signal)",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "model_axis.scores",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "scored attack-qualified models",
       "numerator": 0,
       "denominator": 2,
@@ -1165,13 +1165,13 @@
         "2 ASR-gated cases excluded from scoring"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page5-model-axis-CVIAF",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "model_axis.scores",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "scored attack-qualified models",
       "numerator": 1,
       "denominator": 2,
@@ -1183,13 +1183,13 @@
         "2 ASR-gated cases excluded from scoring"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page5-asset-axis",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "data_axis.scores.baseline_tpr/fpr vs cviaf_tpr/fpr",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "poisoned / clean assets",
       "numerator": "baseline 7/7 vs CVIAF 2/7",
       "denominator": "7 poisoned, 1 clean",
@@ -1200,13 +1200,13 @@
         "1 clean asset: FPR 0/1 carries almost no information"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "supplement-item-level",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "data_axis.scores.*_item_level",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "labelled samples",
       "numerator": "baseline TP363 FP24 / CVIAF TP73 FP51",
       "denominator": "432 poisoned, 1,560 clean",
@@ -1218,13 +1218,13 @@
         "unfavourable result: must stay in the supplement"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page5-provenance-Enrolled digest manifest",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "provenance_axis",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "inference records",
       "numerator": 4,
       "denominator": 8,
@@ -1237,13 +1237,13 @@
         "not Ed25519"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page5-provenance-Internal hash consistency",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "provenance_axis",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "inference records",
       "numerator": 0,
       "denominator": 8,
@@ -1256,13 +1256,13 @@
         "not Ed25519"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page5-provenance-CVIAF provenance",
       "source_file": "runs/mvp/comparison.json",
       "source_field": "provenance_axis",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "inference records",
       "numerator": 8,
       "denominator": 8,
@@ -1275,13 +1275,13 @@
         "not Ed25519"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/mvp/comparison.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/mvp/comparison.json"
     },
     {
       "asset": "page4-export-inventory",
       "source_file": "docs/MODEL_INVENTORY.md \u00a73",
       "source_field": "[needs value from coordinator export ledger]",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "models",
       "numerator": "[needs value from ledger]",
       "denominator": 22693,
@@ -1299,7 +1299,7 @@
       "asset": "page3-tpr-headline-substitution-0.25",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.25.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 45,
       "denominator": 94,
@@ -1311,13 +1311,13 @@
         "40/94 arms behaviour-inert"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-tpr-headline-substitution-0.50",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.substitution.0.5.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 59,
       "denominator": 63,
@@ -1329,13 +1329,13 @@
         "6/63 arms behaviour-inert"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-tpr-headline-weight_tamper-1.00",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.weight_tamper.1.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 92,
       "denominator": 99,
@@ -1348,13 +1348,13 @@
         "dose units differ: standard deviation of the added noise"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "page3-tpr-headline-bias_lift-0.25",
       "source_file": "runs/tpr_ladder_at_frozen.json",
       "source_field": "cells.bias_lift.0.25.rules.refdiv_mean_clean",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": 5,
       "denominator": 99,
@@ -1367,13 +1367,13 @@
         "dose units differ: absolute logit units added to one class's output bias"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_ladder_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_ladder_at_frozen.json"
     },
     {
       "asset": "supplement-superseded-193",
       "source_file": "runs/tpr_at_frozen.json",
       "source_field": "rules.refdiv_mean_clean.per_kind",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "attacked model arms",
       "numerator": "46",
       "denominator": 94,
@@ -1384,13 +1384,13 @@
         "superseded by the 4-dose ladder; substitution 46/94 at dose 0.25 is NOT the ladder's 45/94 and the two must never be merged"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/tpr_at_frozen.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/tpr_at_frozen.json"
     },
     {
       "asset": "page3-oda-s5-findings",
       "source_file": "runs/assurance/oda_s5/assurance_report.json",
       "source_field": "findings[]",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "findings",
       "numerator": 17,
       "denominator": null,
@@ -1402,13 +1402,13 @@
         "HMAC fallback signing"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/assurance_report.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/assurance/oda_s5/assurance_report.json"
     },
     {
       "asset": "page3-oda-s5-audit",
       "source_file": "runs/assurance/oda_s5/assurance_report.json",
       "source_field": "metadata.audit_trail_length",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "hash-chained entries",
       "numerator": 7,
       "denominator": null,
@@ -1417,13 +1417,13 @@
       "exclusions": null,
       "limitations": [],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/assurance_report.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/assurance/oda_s5/assurance_report.json"
     },
     {
       "asset": "page4-oda-s5-runtime",
       "source_file": "runs/assurance/oda_s5/audit_trail.json",
       "source_field": "first/last timestamp",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "seconds",
       "numerator": 27.15,
       "denominator": null,
@@ -1434,13 +1434,13 @@
         "deck states 27.6 s; measured span is 27.1 s \u2014 use the measured value or cite the instrument that produced 27.6"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/audit_trail.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/assurance/oda_s5/audit_trail.json"
     },
     {
       "asset": "supplement-demo-assurance",
       "source_file": "runs/demo_assurance/assurance_report.json",
       "source_field": "findings[] / metadata",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "findings / seconds",
       "numerator": 15,
       "denominator": null,
@@ -1452,13 +1452,13 @@
         "white-box checks skipped"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/demo_assurance/assurance_report.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/demo_assurance/assurance_report.json"
     },
     {
       "asset": "page3-coverage",
       "source_file": "runs/coverage.json",
       "source_field": "clauses[].state",
-      "commit": "2fda6eab99dea3da40b69c10cd8b97bbf2fe315c",
+      "commit": "5866b55f89f41e6f2c23f023f7b5e4d8201467f5",
       "unit": "clauses measured",
       "numerator": 14,
       "denominator": 14,
@@ -1469,7 +1469,7 @@
         "a passing gate is not proof of universal attack detection"
       ],
       "in_repo": true,
-      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/coverage.json"
+      "repo_url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/coverage.json"
     }
   ],
   "research": {
@@ -1478,13 +1478,13 @@
         "name": "CV_INTEGRITY_ASSURANCE_2026.md",
         "path": "CV_INTEGRITY_ASSURANCE_2026.md",
         "what": "2025-26 state of the art per capability, the gap against this engine, and the action list for each module. Every source fetched against its primary page and tagged with a confidence level; the classifier-to-detector transfer gap is argued from it.",
-        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/CV_INTEGRITY_ASSURANCE_2026.md"
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/CV_INTEGRITY_ASSURANCE_2026.md"
       },
       {
         "name": "RESEARCH_CHECKPOINT_26228.md",
         "path": "RESEARCH_CHECKPOINT_26228.md",
         "what": "The verification log behind that dossier: what was checked against which primary page, and the citations dropped or downgraded when verification failed -- a withdrawn preprint, a method that could not be shown to exist.",
-        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/RESEARCH_CHECKPOINT_26228.md"
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/RESEARCH_CHECKPOINT_26228.md"
       }
     ],
     "run": [
@@ -1494,7 +1494,7 @@
         "where": "trace_ctc, trace_ftc",
         "state": "background arm only, reimplemented at MVP scale; TRACE's foreground arm is an open gap and the paper's numbers are theirs, not quoted here",
         "path": "cviaf/lab/detectors.py",
-        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/lab/detectors.py"
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/cviaf/lab/detectors.py"
       },
       {
         "method": "BadDet - OGA / RMA / GMA / ODA (ECCV 2022 workshop)",
@@ -1502,7 +1502,7 @@
         "where": "attack kinds",
         "state": "taxonomy adopted; the synthetic arms are not the paper's detectors",
         "path": "cviaf/core/types.py",
-        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/core/types.py"
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/cviaf/core/types.py"
       },
       {
         "method": "Confident-learning label screening (cleanlab family)",
@@ -1510,7 +1510,7 @@
         "where": "label screen",
         "state": "implemented in the same family; the cleanlab library is not vendored",
         "path": "cviaf/data_integrity/__init__.py",
-        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/data_integrity/__init__.py"
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/cviaf/data_integrity/__init__.py"
       },
       {
         "method": "Self-supervised copy detection (SSCD family, CVPR 2022)",
@@ -1518,7 +1518,7 @@
         "where": "near-duplicate screen",
         "state": "a deterministic frozen-conv embedding stands in; SSCD is the named scaling target, per docs/SCALING_PLAN.md",
         "path": "cviaf/lab/attribute.py",
-        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/cviaf/lab/attribute.py"
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/cviaf/lab/attribute.py"
       },
       {
         "method": "Hash-chain audit trail (AuditableLLM pattern)",
@@ -1526,7 +1526,7 @@
         "where": "metadata.audit_trail",
         "state": "chain implemented and validated in the committed run (7 entries)",
         "path": "runs/assurance/oda_s5/assurance_report.json",
-        "url": "https://github.com/Collectors-AU/CVIAF/blob/2fda6eab99dea3da40b69c10cd8b97bbf2fe315c/runs/assurance/oda_s5/assurance_report.json"
+        "url": "https://github.com/Collectors-AU/CVIAF/blob/5866b55f89f41e6f2c23f023f7b5e4d8201467f5/runs/assurance/oda_s5/assurance_report.json"
       }
     ],
     "planned": [

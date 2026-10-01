@@ -115,6 +115,6 @@
  <line x1="28" y1="494" x2="1212" y2="494" stroke="rgba(255,255,255,0.10)"/>
  <text x="28" y="522" class="sub">Trust boundary: everything inside the dashed region is computed offline from assets the team controls. The contributors (top left) are outside it.</text>
  <rect x="20" y="158" width="1200" height="246" rx="12" fill="none" stroke="#3C5A8A" stroke-width="1" stroke-dasharray="5 5"/>
- <text x="28" y="560" class="mono">source: runs/assurance/oda_s5 &#183; runs/merged_fpr_tpr_report.json &#183; runs/tpr_ladder_at_frozen.json &#183; runs/coverage.json &#183; commit 2fda6eab</text>
+ <text x="28" y="560" class="mono">source: runs/assurance/oda_s5 &#183; runs/merged_fpr_tpr_report.json &#183; runs/tpr_ladder_at_frozen.json &#183; runs/coverage.json &#183; commit 5866b55f</text>
  <text x="28" y="582" class="mono">laboratory / synthetic scope &#183; field validation pending</text>
 </svg>
