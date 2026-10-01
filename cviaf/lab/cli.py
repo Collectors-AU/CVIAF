@@ -300,12 +300,23 @@ def _cmd_assure(args) -> int:
     res = assure_model(
         corpus_dir=args.corpus, model_id=args.model, out_dir=args.out,
         access_level=args.access_level, alpha=args.alpha,
-        n_provenance=args.provenance_history, log=log)
+        n_provenance=args.provenance_history,
+        calibrated_protocol=args.calibrated_protocol,
+        drift_calibration_path=args.drift_calibration, log=log)
     rep = res["report"]
     print()
     print(f"overall      : {rep.overall_risk} / {rep.overall_disposition}")
     print(f"findings     : {len(rep.findings)}")
     print(rep.metadata.get("human_readable_summary", ""))
+    return 0
+
+
+def _cmd_assure_calibrate(args) -> int:
+    from cviaf.lab.assure_protocol import fit_protocol
+    record = fit_protocol(args.corpus, args.out, alpha=args.alpha,
+                          drift_calibration=args.drift_calibration)
+    print(f"synthetic assurance protocol: {args.out}, SHA-256 {record['sha256']}")
+    print("Synthetic generator only; held-out asset flags and abstentions:", record['heldout'])
     return 0
 
 
@@ -315,9 +326,14 @@ def _cmd_compare(args) -> int:
     def log(msg: str) -> None:
         print(msg, flush=True)
 
+    gate = gate_digest = None
+    if args.label_gate_protocol:
+        from cviaf.lab.label_gate_protocol import load_synthetic
+        gate, gate_digest = load_synthetic(args.label_gate_protocol, args.corpus, args.alpha)
     res = compare_corpus(args.corpus, alpha=args.alpha, seed=args.seed,
                          n_backgrounds=args.backgrounds,
-                         max_models=args.max_models, log=log)
+                         max_models=args.max_models, label_gate=gate,
+                         label_gate_protocol_sha256=gate_digest, log=log)
     print()
     print(render_table(res))
     print()
@@ -454,6 +470,15 @@ def _cmd_verify_report(args) -> int:
     return 0
 
 
+def _cmd_driftbench(args) -> int:
+    from cviaf.lab.driftbench import run_driftbench
+
+    out = args.out or os.path.join(args.corpus, "drift_calibration.json")
+    run_driftbench(out_path=out, alpha=args.alpha, seed=args.seed,
+                   n_ref=args.n_ref, n_op=args.n_op)
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="cviaf lab", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -547,7 +572,19 @@ def main(argv=None) -> int:
                      choices=["white-box", "black-box", "gray-box"])
     asr.add_argument("--alpha", type=float, default=0.05)
     asr.add_argument("--provenance-history", type=int, default=6)
+    asr.add_argument("--drift-calibration", default=None,
+                     help="natural drift battery JSON pinned in the calibrated protocol")
+    asr.add_argument("--calibrated-protocol", default=None,
+                     help="opt-in frozen synthetic clean reference for fail-closed REVIEW")
     asr.set_defaults(func=_cmd_assure)
+
+    af = sub.add_parser("assure-calibrate", help="freeze synthetic clean assurance protocol")
+    af.add_argument("--corpus", required=True)
+    af.add_argument("--out", required=True)
+    af.add_argument("--alpha", type=float, default=.05)
+    af.add_argument("--drift-calibration", required=True,
+                    help="independently generated natural arbiter for this batch size")
+    af.set_defaults(func=_cmd_assure_calibrate)
 
     cmp_ = sub.add_parser("compare", help="baseline vs CVIAF on the same corpus")
     cmp_.add_argument("--corpus", default="runs/mvp")
@@ -556,7 +593,15 @@ def main(argv=None) -> int:
     cmp_.add_argument("--seed", type=int, default=1)
     cmp_.add_argument("--max-models", type=int, default=None)
     cmp_.add_argument("--json", default=None, help="write the full comparison here")
+    cmp_.add_argument("--label-gate-protocol", default=None,
+                      help="opt-in synthetic clean label reference JSON from label-gate-fit")
     cmp_.set_defaults(func=_cmd_compare)
+
+    lg = sub.add_parser("label-gate-fit", help="freeze an independent synthetic clean label reference")
+    lg.add_argument("--corpus", required=True)
+    lg.add_argument("--out", required=True)
+    lg.add_argument("--alpha", type=float, default=0.05)
+    lg.set_defaults(func=_cmd_label_gate_fit)
 
     cov = sub.add_parser("coverage", help="emit the coverage statement")
     cov.add_argument("--out", default=None)
@@ -601,8 +646,59 @@ def main(argv=None) -> int:
     vr.add_argument("--max-errors", type=int, default=25)
     vr.set_defaults(func=_cmd_verify_report)
 
+    db = sub.add_parser("driftbench",
+                        help="build the natural-drift attribution calibration "
+                             "and measure the arbiter on natural/manipulation/"
+                             "confuser batteries")
+    db.add_argument("--corpus", default="runs/mvp")
+    db.add_argument("--out", default=None,
+                    help="calibration path; default <corpus>/drift_calibration.json")
+    db.add_argument("--alpha", type=float, default=0.05)
+    db.add_argument("--seed", type=int, default=7)
+    db.add_argument("--n-ref", type=int, default=120,
+                    help="reference size; match the corpus plan's n_cal")
+    db.add_argument("--n-op", type=int, default=100,
+                    help="operational size; match the corpus plan's n_train")
+    db.set_defaults(func=_cmd_driftbench)
+
     args = p.parse_args(argv)
     return args.func(args)
+
+
+def _cmd_arm_b(args) -> int:
+    from cviaf.lab.arm_b import run_u2, run_u3
+
+    if not args.skip_u2:
+        r2 = run_u2(args.out,
+                    seeds=tuple(range(args.u2_seeds)),
+                    n_train=args.n_train, alpha=args.alpha,
+                    policy_tolerance=args.tolerance)
+        rr = r2["residual_risk"]
+        print(f"\n[U2] report-level R* = {rr['report_level_r_star']} "
+              f"(unbounded={rr['r_star_unbounded']})  tolerance={args.tolerance}")
+        print(f"[U2] accept_permitted={rr['accept_permitted']}  "
+              f"forced_disposition={rr['forced_disposition']}")
+        print(f"[U2] {rr['claim']}")
+        for name, v in r2["validation"].items():
+            if v.get("r_star") is not None:
+                print(f"[U2] {name:26s} r*={v['r_star']:.4f} conservative={v['conservative']}")
+        print(f"[U2] results -> {args.out}/arm_b_u2.json")
+    if not args.skip_u3:
+        r3 = run_u3(args.out,
+                    seeds=tuple(range(args.u3_seeds)),
+                    n_train=args.n_train, alpha=args.alpha,
+                    n_bootstrap=args.bootstrap)
+        for kind, s in sorted(r3["summary"].items()):
+            a = s["acceptance"]
+            print(f"\n[U3] {kind}: loco top-1 {s['loco_top1_accuracy']:.2f} "
+                  f"(posterior {s['posterior_top1_accuracy']:.2f})  "
+                  f"mean rank {s['loco_mean_true_rank']:.2f} vs "
+                  f"{s['posterior_mean_true_rank']:.2f}  "
+                  f"false-impl/contrib {s['loco_false_implication_rate_per_clean_contributor']:.3f}  "
+                  f"runtime/contrib {s['mean_per_contributor_seconds']:.1f}s")
+            print(f"     acceptance: {a}")
+        print(f"[U3] results -> {args.out}/arm_b_u3.json")
+    return 0
 
 
 if __name__ == "__main__":

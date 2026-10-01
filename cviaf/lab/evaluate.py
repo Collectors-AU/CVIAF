@@ -99,8 +99,17 @@ ASSET_PRE_NMS_CONF = 0.35
 
 
 def train_spec_from_manifest(manifest: Dict[str, Any]) -> TrainSpec:
-    """Reconstruct the exact spec a model was trained from (needed for splits)."""
-    s = manifest["spec"]
+    """Reconstruct the exact spec a model was trained from (needed for splits).
+
+    Task 3: real-backbone manifests carry a different ``spec`` shape (backbone + CIFAR
+    dataset descriptor, no scene/attack/n_train fields) and their corpora draw eval data
+    from the CIFAR cache rather than the synthetic generator. A real-backbone manifest
+    therefore cannot yield a synthetic ``TrainSpec``; callers get ``None`` and must use
+    the real-backbone data path (``real_backbone_splits``) instead.
+    """
+    s = manifest.get("spec") or {}
+    if s.get("kind") == "real_backbone" or "backbone" in s:
+        return None
     return TrainSpec(
         model_id=s["model_id"],
         scene=SceneSpec(**s["scene"]),
@@ -110,6 +119,23 @@ def train_spec_from_manifest(manifest: Dict[str, Any]) -> TrainSpec:
         contributors=tuple(s["contributors"]),
         contributor_mode=s["contributor_mode"],
     )
+
+
+# Eval data for real-backbone corpora: the training script's exact eval recipe
+# (CIFAR classes 0/1/2, 20 per class, seed 2000) so every battery scores on the
+# same held-out split the manifests' dataset_digests name.
+_REAL_EVAL_CACHE: Dict[str, Any] = {}
+
+
+def real_backbone_eval_split(cache_dir: str = "data/cifar10", img_size: int = 64):
+    """The shared held-out CIFAR eval split for real-backbone corpora (memoised)."""
+    key = (cache_dir, img_size)
+    if key not in _REAL_EVAL_CACHE:
+        from cviaf.lab.cifar import load_cifar_subset
+        _REAL_EVAL_CACHE[key] = load_cifar_subset(n_per_class=20, seed=2000,
+                                                  cache_dir=cache_dir,
+                                                  img_size=img_size)
+    return _REAL_EVAL_CACHE[key]
 
 
 def scores_for_model(
@@ -495,6 +521,8 @@ def asset_level_detectors(
     null_mean = {s: (float(np.mean([float(c[s]) for c in clean_scores]))
                      if clean_scores else None) for s in SIGNALS}
 
+    incomparable = [r["model_id"] for r in rows
+                    if r.get("fingerprint_status") == "fingerprint_incomparable"]
     out: Dict[str, Any] = {
         "available": True,
         "reference_model": ref_id,
@@ -809,14 +837,38 @@ def _summarise(per_model: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 # --------------------------------------------------------------------------- #
 
 def load_registry(corpus_dir: str) -> List[Dict[str, Any]]:
+    """Models in a corpus, with every ``dir`` resolved to a usable absolute path.
+
+    A trainer records the path it was invoked with, which may be relative to a
+    different working directory than the reader's. The 6,800-model local shards all
+    record ``runs/clean_null_local_wN/<model>``; read from anywhere else, every path
+    fails to open and every consumer (ledger producer, compare, battery) dies on the
+    first model. Resolution happens once, here, and the recorded path is kept beside
+    it so a reader can see what the registry actually said.
+
+    Falls back to the manifests on disk when there is no registry at all, which is how
+    a corpus that has lost its registry still gets scored instead of silently empty.
+    """
+    from cviaf.lab.manifest_schema import resolve_registry_dir
+
     reg_path = os.path.join(corpus_dir, "registry.jsonl")
     out: List[Dict[str, Any]] = []
     if os.path.isfile(reg_path):
         with open(reg_path) as fh:
             for line in fh:
                 line = line.strip()
-                if line:
-                    out.append(json.loads(line))
+                if not line:
+                    continue
+                entry = json.loads(line)
+                recorded = entry.get("dir")
+                if recorded:
+                    resolved = resolve_registry_dir(recorded, corpus_dir)
+                    if resolved is None:
+                        resolved = recorded          # leave it: the loader will report
+                    if os.path.abspath(resolved) != os.path.abspath(recorded):
+                        entry["recorded_dir"] = recorded
+                    entry["dir"] = os.path.abspath(resolved)
+                out.append(entry)
         return out
     for name in sorted(os.listdir(corpus_dir)) if os.path.isdir(corpus_dir) else []:
         mpath = os.path.join(corpus_dir, name, "manifest.json")

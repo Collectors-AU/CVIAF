@@ -66,7 +66,12 @@ from cviaf.lab.detectors import (
     trace_ctc,
     trace_ftc,
 )
-from cviaf.lab.evaluate import load_registry, train_spec_from_manifest
+from cviaf.lab.evaluate import load_registry, real_backbone_eval_split, train_spec_from_manifest
+from cviaf.lab.label_flip_signal import (build_label_reference, sample_loss_scores,
+    calibrated_label_decisions, summarize_label_patterns)
+from cviaf.lab.patch_local import patch_local_scores
+from cviaf.lab.trigger_global import global_chroma_scores
+from cviaf.lab.review import OperatorCosts, plan_review, review_budget_report
 from cviaf.lab.poison import trigger_view
 from cviaf.lab.synth import SceneSpec, build_dataset
 from cviaf.lab.train import ModelArtifact, build_splits
@@ -74,7 +79,12 @@ from cviaf.lab.train import ModelArtifact, build_splits
 # Ground truth for the model axis. Data-only attacks leave the model legitimately
 # trained, so they are NEGATIVES for model integrity -- scoring them as positives
 # would credit a model-integrity detector for an impossibility.
-MODEL_ATTACK_KINDS = ("oga", "oda", "rma", "gma")
+# NOTE: compare.py's tuple deliberately did NOT include the weight-space kinds because
+# no pre-Task-3 corpus trained them here; poison.MODEL_ATTACK_KINDS owns the canonical
+# list ("substitution", "weight_tamper"). Import it so a real-backbone corpus's model
+# arms are scored as positives instead of being silently counted as 24 negatives.
+from cviaf.lab.poison import MODEL_ATTACK_KINDS as _POISON_MODEL_ATTACKS
+MODEL_ATTACK_KINDS = ("oga", "oda", "rma", "gma") + _POISON_MODEL_ATTACKS
 DATA_ATTACK_KINDS = ("oga", "oda", "rma", "gma", "clean_label",
                      "label_flip", "dup_flood", "ood_insert")
 
@@ -105,19 +115,27 @@ def model_axis(
 
     # Pass 1: raw statistics, computed once and shared by every system.
     rows: List[Dict[str, Any]] = []
-    clean_peaks: Dict[str, List[float]] = {"ctc": [], "refdiv": []}
+    clean_peaks: Dict[str, List[float]] = {"ctc": [], "refdiv": [], "ftc": []}
     for e in registry:
         m = e["manifest"]
         spec = train_spec_from_manifest(m)
-        splits = build_splits(spec)
         kind = m["ground_truth"]["kind"]
         art = ModelArtifact.load(e["dir"])
 
-        clean_imgs = splits.eval_clean.images
-        if kind in ("clean", "clean_label", "label_flip", "dup_flood", "ood_insert"):
+        if spec is None:
+            # Task 3 real-backbone corpus: no synthetic TrainSpec exists and no
+            # trigger view applies -- model attacks have no test-time trigger, so
+            # "triggered" is the same held-out CIFAR split by construction.
+            eval_ds = real_backbone_eval_split()
+            clean_imgs = eval_ds.images
             trig_imgs = clean_imgs
         else:
-            trig_imgs, _ = trigger_view(splits.eval_clean, spec.attack, seed)
+            splits = build_splits(spec)
+            clean_imgs = splits.eval_clean.images
+            if kind in ("clean", "clean_label", "label_flip", "dup_flood", "ood_insert"):
+                trig_imgs = clean_imgs
+            else:
+                trig_imgs, _ = trigger_view(splits.eval_clean, spec.attack, seed)
 
         sig: Dict[str, Dict[str, np.ndarray]] = {
             "ctc": {"clean": trace_ctc(art.model, clean_imgs, backgrounds)["score"],
@@ -140,8 +158,9 @@ def model_axis(
             "weights_digest": m["artifact"]["weights_digest"],
             "asr": m["metrics"]["attack_success_rate"]["asr"],
             "backdoor_weak": m["quality_flags"]["backdoor_weak"],
-            "applicable": bool(m["metrics"]["attack_success_rate"]["applicable"]),
+            "applicable": bool(m["metrics"]["attack_success_rate"].get("applicable", False)),
             "ground_truth_model_attacked": is_attacked,
+            "raw_asr_gate_warning": "raw manifest ASR is not null-subtracted; evaluate paired clean-model response",
             "signals": {k: {"clean": v["clean"].tolist(), "trig": v["trig"].tolist()}
                         for k, v in sig.items()},
         }
@@ -151,7 +170,7 @@ def model_axis(
             c = np.asarray(sig[k]["clean"], np.float64)
             c = c[np.isfinite(c)]
             if c.size:
-                clean_peaks[k].append(float(np.max(c)) if c.size else 0.0)
+                clean_peaks.setdefault(k, []).append(float(np.max(c)) if c.size else 0.0)
 
         # ---- CVIAF: conformal, two-sided-calibrated, fused, one p per asset
         p_clean: Dict[str, np.ndarray] = {}
@@ -175,10 +194,13 @@ def model_axis(
             row["cviaf"] = {
                 "asset_pvalue": asset_p,
                 "combination": combo,
+                "asset_rule": "legacy_image_cauchy_diagnostic_only",
+                "calibrated_model_asset_pvalue": None,
+                "abstain_reason": "independent stamped-clean model-asset null unavailable",
                 "n_signals": m_signals,
-                "reject_at_alpha": bool(asset_p <= alpha),
-                "abstain": bool(np.sum(np.isfinite(fused_trig)) == 0),
-                "attack_class_guess": "model_backdoor" if asset_p <= alpha else "",
+                "reject_at_alpha": False,
+                "abstain": True,
+                "attack_class_guess": "",
                 "per_image_p_min": float(np.nanmin(fused_trig)) if fused_trig.size else None,
             }
         else:
@@ -216,11 +238,10 @@ def model_axis(
             flagged=bool(row["cviaf"]["reject_at_alpha"]),
             abstained=bool(row["cviaf"].get("abstain", False)),
             attack_class=row["cviaf"].get("attack_class_guess", ""),
-            score=row["cviaf"]["asset_pvalue"], threshold=alpha,
-            confidence=float(1.0 - row["cviaf"]["asset_pvalue"]),
-            reason=(f"asset-level conformal p={row['cviaf']['asset_pvalue']:.3g} "
-                    f"from {row['cviaf']['n_signals']} fused signal(s); "
-                    f"{'(flagged)' if row['cviaf']['reject_at_alpha'] else '(not significant)'}"),
+            score=row["cviaf"].get("calibrated_model_asset_pvalue"), threshold=alpha,
+            confidence=None,
+            reason=("model-level stamped-clean null unavailable; legacy image-level "
+                    "p-value is diagnostic only and cannot convict a model"),
             evidence={"asset_pvalue": row["cviaf"]["asset_pvalue"],
                       "combination": row["cviaf"]["combination"],
                       "asr_gate_excluded": bool(row["backdoor_weak"])},
@@ -238,6 +259,7 @@ def build_reference_pool(
     n_per_block: int,
     blocks: int,
     seed_base: int = 900_000,
+    include_global_chroma: bool = False,
     log: Callable[[str], None] = lambda s: None,
 ) -> Dict[str, np.ndarray]:
     """A pooled clean reference: the calibration budget, derived rather than guessed.
@@ -257,29 +279,35 @@ def build_reference_pool(
     2. **Floor.** A conformal p-value cannot fall below ``1/(n_cal+1)``. An item-level
        Benjamini-Hochberg decision over ``n`` items at level ``alpha`` needs its most
        significant item below ``alpha/n``, so the calibration split must exceed
-       ``n/alpha`` items -- and, with two fused signals, twice that again, because the
+       ``n/alpha`` items -- and, with m fused signals, m times that again, because the
        Bonferroni fusion multiplies the smallest p by the number of signals.
-       For a 240-sample contribution at alpha=0.05 that is about 9,600 calibration
-       items. This is not a tuning choice; it is the information a finite calibration
+       For a 240-sample contribution at alpha=0.05 with two signals
+       that is about 9,600 calibration items. This is not a tuning choice; it is the information a finite calibration
        set has to contain for the decision to be possible at all, and the number is
        computed from that requirement below rather than picked.
     """
     from cviaf.utils import extract_features_from_images
 
-    feats, spec_scores, dup_scores = [], [], []
+    feats, spec_scores, dup_scores, patch_scores, global_scores = [], [], [], [], []
     for b in range(blocks):
         ds = build_dataset(n_per_block, scene, seed_offset=seed_base + b * 9973)
         f = extract_features_from_images(ds.images, method="pixel_stats", target_dim=64)
         feats.append(f)
         spec_scores.append(spectral_signature_scores(f, _sample_classes(ds.labels)))
         dup_scores.append(duplicate_scores(ds.images))
+        patch_scores.append(patch_local_scores(ds.images))
+        if include_global_chroma:
+            global_scores.append(global_chroma_scores(ds.images))
     pool = {
         "features": np.concatenate(feats),
         "spectral": np.concatenate(spec_scores),
         "duplicate": np.concatenate(dup_scores),
+        "patch_local": np.concatenate(patch_scores),
         "n_blocks": blocks, "n_per_block": n_per_block,
         "n_total": int(sum(len(x) for x in feats)),
     }
+    if include_global_chroma:
+        pool["global_chroma"] = np.concatenate(global_scores)
     log(f"    reference pool: {pool['n_total']} clean samples "
         f"({blocks} splits of {n_per_block}) "
         f"conformal floor {1.0/(pool['n_total']+1):.2e}")
@@ -289,12 +317,15 @@ def build_reference_pool(
 def data_axis(
     registry: List[Dict[str, Any]],
     alpha: float = 0.05,
-    n_signals: int = 2,
+    include_global_chroma: bool = False,
+    review_costs: Optional[OperatorCosts] = None,
+    review_lfdr_max: float = 0.5,
+    label_gate=None,
     log: Callable[[str], None] = lambda s: None,
 ) -> List[Dict[str, Any]]:
     """Score every data-integrity system on every contributed dataset.
 
-    Both systems consume the same two statistics over the same pooled reference, so
+    Both systems consume the same statistics over the same pooled reference, so
     any difference between their rows is a difference in decision rule. That is the
     whole point of the comparison: it is not "our detectors are better", it is
     "given the same evidence, calibration and multiplicity control change the
@@ -304,14 +335,26 @@ def data_axis(
 
     clean_entry = next((e for e in registry
                         if e["manifest"]["ground_truth"]["kind"] == "clean"), None)
+    # Task 3: a real-backbone corpus has no synthetic scene and its contributions are
+    # the CIFAR training split, so the synthetic reference pool cannot be built and
+    # every dataset row abstains by construction (declared, not silently dropped).
+    rb_corpus = clean_entry is not None and (
+        train_spec_from_manifest(clean_entry["manifest"]) is None)
+    if rb_corpus:
+        return []
     n_asset = int(clean_entry["manifest"]["spec"]["n_train"]) if clean_entry else 240
+    n_signals = 4 if include_global_chroma else 3
     # blocks so that blocks * n_asset >= 2 * n_signals * n_asset / alpha  (see docstring)
     blocks = int(np.ceil(2.0 * n_signals / alpha))
     scene_spec = (train_spec_from_manifest(clean_entry["manifest"]).scene
                   if clean_entry else None)
-    pool = (build_reference_pool(scene_spec, n_asset, blocks, log=log)
+    pool = (build_reference_pool(scene_spec, n_asset, blocks,
+                                 include_global_chroma=include_global_chroma, log=log)
             if scene_spec is not None else None)
 
+    # This lane is deliberately separate from spectral/duplicate fusion. Its
+    # trusted reference and calibration are built once per scene/asset size.
+    label_references: Dict[Tuple[str, int], Any] = {}
     rows: List[Dict[str, Any]] = []
     for e in registry:
         m = e["manifest"]
@@ -319,6 +362,12 @@ def data_axis(
         spec = train_spec_from_manifest(m)
         splits = build_splits(spec)
         ds, truth = splits.train_poisoned, splits.truth
+        # Calibration is valid only for a declared acquisition stratum. Never
+        # interpret an unrecognized shift as a trigger simply because it is rare
+        # under the enrolled clean reference. The scene declaration is trusted
+        # in this synthetic lab, not a verified claim from a real vendor.
+        scene_match = (scene_spec is not None and
+                       spec.scene.to_dict() == scene_spec.to_dict())
 
         feats = extract_features_from_images(ds.images, method="pixel_stats", target_dim=64)
         dup = duplicate_scores(ds.images)
@@ -344,7 +393,7 @@ def data_axis(
         # without multiplicity control does.
         base_flags = np.zeros(len(ds), bool)
         base_v: Optional[Dict[str, Any]] = None
-        if pool is not None:
+        if pool is not None and scene_match:
             mahal = _mahalanobis(pool["features"], feats)
             ref_mahal = _mahalanobis(pool["features"], pool["features"])
             cut = float(np.quantile(ref_mahal, 0.99))
@@ -360,17 +409,86 @@ def data_axis(
 
         # ---- CVIAF: calibrated, fused, FDR-controlled, contributor-attributed
         signals: Dict[str, Tuple[Optional[np.ndarray], Optional[np.ndarray]]] = {}
-        if pool is not None:
+        if pool is not None and scene_match:
             signals["spectral"] = (pool["spectral"], spectral)
             # duplicate_scores returns a DISTANCE: 0 means an exact duplicate, so on
             # this signal the anomaly is the low tail. Declared, not assumed.
             signals["duplicate"] = (pool["duplicate"], dup)
+            signals["patch_local"] = (pool["patch_local"], patch_local_scores(ds.images))
+            if include_global_chroma:
+                signals["global_chroma"] = (pool["global_chroma"], global_chroma_scores(ds.images))
         cviaf_v = cviaf_data_asset_verdict(
             m["model_id"], signals, alpha=alpha, contributor_labels=contributors,
-            lower_is_anomalous=("duplicate",))
+            lower_is_anomalous=("duplicate",),
+            label_gate=label_gate, dataset=ds if label_gate is not None else None)
+        if not scene_match:
+            cviaf_v.reason = "not assessed: declared acquisition stratum differs from clean reference"
+            cviaf_v.evidence["calibration_status"] = "stratum_mismatch"
 
-        cv_item_flags = _cviaf_item_flags(signals, alpha)
+        fused_p, per_sig_p = _cviaf_item_pvalues(signals)
+        cv_item_flags = _cviaf_item_flags(signals, alpha, n_items=len(ds))
+        review_block = None
+        if pool is not None and scene_match and fused_p is not None:
+            from cviaf.lab.calibrate import conformal_threshold
+            n_cal, n_items, m_sig = int(pool["n_total"]), len(ds), len(per_sig_p)
+            floor_p = m_sig / (n_cal + 1.0)
+            accept_permitted = bool(floor_p <= alpha)
+            abstain_reason = "" if accept_permitted else (
+                f"calibration floor {floor_p:.3g} > alpha {alpha}")
+            dup_dist, dup_nn = duplicate_scores(ds.images, return_neighbors=True)
+            dup_floor = conformal_threshold(pool["duplicate"], alpha=alpha / n_items,
+                                             higher_is_more_anomalous=False)
+            plan = plan_review(fused_p, costs=review_costs or OperatorCosts(),
+                               per_signal_p=per_sig_p, accept_permitted=accept_permitted,
+                               abstain_reason=abstain_reason, flagged=cv_item_flags,
+                               alpha=alpha, lfdr_max=review_lfdr_max,
+                               neighbor_index=dup_nn, neighbor_dist=dup_dist,
+                               cluster_floor_dist=float(dup_floor))
+            review_block = {"plan_summary": plan.summary(),
+                            "budget_report": review_budget_report(plan, poisoned, cv_item_flags)}
+        label_lane: Dict[str, Any]
+        try:
+            scene_key = (json.dumps(spec.scene.to_dict(), sort_keys=True), len(ds))
+            if scene_key not in label_references:
+                label_references[scene_key] = build_label_reference(
+                    spec.scene, n_per_block=len(ds), blocks=40, train_images=1200)
+            ref = label_references[scene_key]
+            if set(map(str, ds.contributors)) & (
+                    set(ref.reference_contributors) | set(ref.calibration_contributors)):
+                raise ValueError("reference/test contributor overlap")
+            label_scores, label_details = sample_loss_scores(
+                ref.model, ds.images, ds.boxes, ds.labels, return_evidence=True)
+            decision = calibrated_label_decisions(ref, label_scores, alpha=alpha)
+            if decision["status"] != "scored":
+                label_lane = decision
+            else:
+                p = decision["item_p"]
+                label_lane = {
+                    "status": "scored", "asset_p": decision["asset_p"],
+                    "asset_flag": bool(decision["asset_flag"]),
+                    "asset_statistic": decision["asset_statistic"],
+                    "asset_statistic_name": decision["asset_statistic_name"],
+                    "calibration_floor": decision["conformal_floor"],
+                    "calibration_unit": decision["calibration_unit"],
+                    "calibration_blocks": ref.calibration_blocks,
+                    "calibration_digest": ref.calibration_digest,
+                    "reference_train_digest": ref.train_digest,
+                    "item_decision_resolution_possible": decision["item_decision_resolution_possible"],
+                    "item": _item_rates(decision["item_flags"], poisoned),
+                    "rank_at_truth_k": int(poisoned[np.argsort(-label_scores)
+                        [:int(poisoned.sum())]].sum()) if poisoned.any() else None,
+                    "sample_evidence": [dict(index=i, score=(float(label_scores[i])
+                        if np.isfinite(label_scores[i]) else None), p=float(p[i]),
+                        **label_details[i]) for i in range(len(ds))],
+                    "source_patterns": summarize_label_patterns(label_details, contributors, p),
+                }
+        except Exception as exc:
+            label_lane = {"status": "unavailable", "reason": str(exc)}
         rows.append({
+            "label_flip_lane": label_lane,
+            "calibration_stratum_match": bool(scene_match),
+            "declared_scene": spec.scene.to_dict(),
+            "calibration_abstain_reason": None if scene_match else "declared acquisition stratum differs from reference",
             "model_id": m["model_id"], "kind": kind,
             "n_samples": int(len(ds)),
             "n_poisoned_ground_truth": int(poisoned.sum()),
@@ -386,6 +504,7 @@ def data_axis(
             "cviaf_item": _item_rates(cv_item_flags, poisoned),
             "cviaf_item_vs_baseline_disagreement": int(
                 np.sum(base_flags != cv_item_flags)),
+            "review_policy": review_block,
         })
         log(f"    data-axis  {m['model_id']:34s} kind={kind:11s} "
             f"poisoned={int(poisoned.sum()):4d} "
@@ -396,21 +515,11 @@ def data_axis(
     return rows
 
 
-def _cviaf_item_flags(
+def _cviaf_item_pvalues(
     signals: Dict[str, Tuple[Optional[np.ndarray], Optional[np.ndarray]]],
-    alpha: float,
-) -> np.ndarray:
-    """The item-level rejection mask CVIAF would hand an analyst as a triage list.
-
-    Benjamini-Hochberg at ``alpha`` over the fused conformal p-values. When the
-    conformal floor sits above the BH threshold the mask is empty and the report says
-    so; it never silently degrades into "flag the top few", which would look like a
-    detection and be a count of whichever items happened to rank highest.
-    """
-    from cviaf.lab.calibrate import benjamini_hochberg, conformal_pvalues
-
-    cols = []
-    n_items = 0
+) -> Tuple[Optional[np.ndarray], Dict[str, np.ndarray]]:
+    """Return Bonferroni-fused and per-signal item p-values for review."""
+    cols: Dict[str, np.ndarray] = {}
     for name, (ref, obs) in signals.items():
         if ref is None or obs is None:
             continue
@@ -419,17 +528,26 @@ def _cviaf_item_flags(
         if r.size < 5:
             continue
         o = np.asarray(obs, np.float64).ravel()
-        lower = name == "duplicate"
         with np.errstate(invalid="ignore"):
-            cols.append(np.where(np.isfinite(o),
-                                 conformal_pvalues(r, o, higher_is_more_anomalous=not lower),
-                                 1.0))
-        n_items = o.size
+            cols[name] = np.where(np.isfinite(o), conformal_pvalues(
+                r, o, higher_is_more_anomalous=(name != "duplicate")), 1.0)
     if not cols:
-        return np.zeros(n_items, bool)
-    stacked = np.stack(cols, axis=1)
-    fused = np.clip(stacked.shape[1] * stacked.min(axis=1), 0.0, 1.0)
-    return benjamini_hochberg(fused, alpha)
+        return None, {}
+    stacked = np.stack([cols[k] for k in sorted(cols)], axis=1)
+    return np.clip(stacked.shape[1] * stacked.min(axis=1), 0, 1), cols
+
+
+def _cviaf_item_flags(
+    signals: Dict[str, Tuple[Optional[np.ndarray], Optional[np.ndarray]]],
+    alpha: float,
+    n_items: int = 0,
+) -> np.ndarray:
+    """Item-level BH triage mask; no calibration means no flags."""
+    from cviaf.lab.calibrate import benjamini_hochberg
+    fused, _ = _cviaf_item_pvalues(signals)
+    return (benjamini_hochberg(fused, alpha) if fused is not None
+            else np.zeros(n_items or next((len(obs) for _, obs in signals.values()
+                                           if obs is not None), 0), bool))
 
 
 def _item_rates(flags: np.ndarray, poisoned: np.ndarray) -> Dict[str, Any]:
@@ -538,7 +656,87 @@ def _pooled_item_rates(rows: List[Dict[str, Any]], key: str) -> Dict[str, Any]:
     }
 
 
+def _score_review_policy(rows: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Aggregate the ARM J review-policy blocks across assets.
+
+    The comparison that matters, stated before any number: today's behaviour is
+    an UNORDERED flag pile -- its expected catch at budget B is linear at the
+    pile's precision. ARM J is a ranked, costed queue with co-flag clustering.
+    Both are measured on identical evidence per asset.
+    """
+    scored = [r for r in rows if r.get("review_policy")]
+    if not scored:
+        return None
+    per_asset = []
+    ledgers: Dict[str, Dict[str, float]] = {}
+    bench = None
+    for r in scored:
+        rp = r["review_policy"]
+        rep = rp["budget_report"]
+        s = rp["plan_summary"]
+        row_led = {l["policy"]: l for l in rep["ledgers"]}
+        entry = {
+            "model_id": r["model_id"], "kind": r["kind"],
+            "n_items": r["n_samples"],
+            "n_poisoned": r["n_poisoned_ground_truth"],
+            "n_flagged": r["cviaf_item"]["n_flagged"],
+            "n_review_tasks": s["n_review_tasks"],
+            "n_quarantined_items": s["n_quarantine"],
+            "n_clustered_items": s["n_clustered_items"],
+            "accept_permitted": s["accept_permitted"],
+            "budget_at_90pct": rep["budget_at_90pct"],
+            "arm_caught_total": rep["arm_j_curve"]["caught"][-1],
+            "flag_all_pile_size": rep["flag_all_curve"]["n_flagged"],
+            "flag_all_precision": rep["flag_all_curve"]["precision"],
+            "realised_cost": {k: v["realised_cost"] for k, v in row_led.items()},
+        }
+        per_asset.append(entry)
+        # the benchmark the arm was built against: the biggest co-flag pile
+        if bench is None or (r["cviaf_item"]["false_positive"]
+                             > bench["cviaf_item"]["false_positive"]):
+            bench = r
+        for name, led in row_led.items():
+            agg = ledgers.setdefault(name, {"n_review_actions": 0, "poison_caught": 0,
+                                            "clean_quarantined": 0, "poison_missed": 0,
+                                            "realised_cost": 0.0})
+            for k in agg:
+                agg[k] += led[k]
+    for agg in ledgers.values():
+        agg["realised_cost"] = round(agg["realised_cost"], 3)
+    out: Dict[str, Any] = {
+        "per_asset": per_asset,
+        "pooled_ledgers": ledgers,
+        "costs": scored[0]["review_policy"]["plan_summary"]["costs"],
+    }
+    if bench is not None:
+        out["benchmark_coflag_case"] = {
+            "model_id": bench["model_id"], "kind": bench["kind"],
+            "note": ("largest co-flag pile in the corpus: nearest-neighbour "
+                     "duplicate scoring flags the flood copies AND their "
+                     "innocent originals; this is the case the queue must "
+                     "rationalise"),
+            "flag_all_pile": bench["review_policy"]["budget_report"]["flag_all_curve"],
+            "arm_j_curve": bench["review_policy"]["budget_report"]["arm_j_curve"],
+            "budget_at_90pct": bench["review_policy"]["budget_report"]["budget_at_90pct"],
+            "ledgers": bench["review_policy"]["budget_report"]["ledgers"],
+            "plan_summary": bench["review_policy"]["plan_summary"],
+        }
+    return out
+
+
 def _score_data_axis(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    if not rows:
+        # Task 3 real-backbone corpus: the data axis is structurally inapplicable
+        # (no synthetic scene, no per-sample poison labels), so the axis is reported
+        # as abstained rather than scored 0/0 which would read as a perfect FPR.
+        return {"n_positive": 0, "n_negative": 0, "baseline_tpr": None,
+                "baseline_fpr": None, "cviaf_tpr": None, "cviaf_fpr": None,
+                "cviaf_abstained": 0,
+                "axis_status": "not_assessed: real-backbone corpus has no synthetic "
+                               "data axis (model-attack corpus; datasets are clean by "
+                               "construction)",
+                "baseline_item_level": {}, "cviaf_item_level": {},
+                "attribution": {"n_scored": 0}, "per_asset": []}
     pos = [r for r in rows if r["contributes_poison"]]
     neg = [r for r in rows if not r["contributes_poison"]]
     base_flag = [r for r in pos if r["baseline_detected_samples"] > 0]
@@ -603,6 +801,7 @@ def _score_data_axis(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
             "cviaf_item_fpr": r["cviaf_item"]["item_fpr"],
             "cviaf_attribution": r["cviaf"].get("attribution", []),
         } for r in rows],
+        "review_queue": _score_review_policy(rows),
     }
 
 
@@ -617,6 +816,9 @@ def compare_corpus(
     n_backgrounds: int = 8,
     max_models: Optional[int] = None,
     key_dir: Optional[str] = None,
+    review_costs: Optional[OperatorCosts] = None,
+    label_gate=None,
+    label_gate_protocol_sha256: Optional[str] = None,
     log: Callable[[str], None] = print,
 ) -> Dict[str, Any]:
     """Run every baseline and CVIAF over one corpus and return the comparison."""
@@ -634,7 +836,8 @@ def compare_corpus(
     log("  [1/3] model integrity axis")
     mrows = model_axis(registry, backgrounds, alpha=alpha, seed=seed, log=log)
     log("  [2/3] data integrity axis")
-    drows = data_axis(registry, alpha=alpha, log=log)
+    drows = data_axis(registry, alpha=alpha, review_costs=review_costs,
+                      label_gate=label_gate, log=log)
     log("  [3/3] inference provenance axis")
     prows = provenance_axis(log=log, key_dir=key_dir)
 
@@ -642,6 +845,9 @@ def compare_corpus(
     result: Dict[str, Any] = {
         "corpus": corpus_dir, "alpha": alpha, "n_models": len(registry),
         "seed": seed, "n_backgrounds": n_backgrounds,
+        "label_gate": {"enabled": label_gate is not None,
+                       "protocol_sha256": label_gate_protocol_sha256,
+                       "scope": "synthetic matched-declared-domain asset decision only"},
         "systems": systems,
         "model_axis": {
             "scores": {s: _score_model_axis(mrows, s) for s in
@@ -829,13 +1035,15 @@ def _capability_matrix(
             "note": "spends hindsight: the cut is tuned on this corpus's clean control",
         },
         "cviaf": {
-            "calibrated_confidence": True, "error_control_across_assets": True,
+            "calibrated_confidence": True, "error_control_across_assets": False,
             "can_abstain": True, "names_attack_class": True,
             "attributes_to_contributor": True, "detects_post_hoc_modification": True,
             "withstands_attacker_who_recomputes_hash": True,
-            "detects_poisoning_or_backdoor": True,
-            "note": "every claim above is produced by a mechanism the tests exercise, "
-                    "not asserted here",
+            "detects_poisoning_or_backdoor": False,
+            "note": "model-backdoor conviction is not established: legacy image scores are "
+                    "stamp-confounded, and the model-level rule abstains until an "
+                    "independent clean-model null has at least 44 models. Data-axis "
+                    "detection is assessed separately.",
         },
     }
 
@@ -852,26 +1060,29 @@ def _verdict(res: Dict[str, Any]) -> str:
         f"{m['cviaf']['n_asr_gated']} ASR-gated):",
         f"  hand-tuned single-signal baseline : TPR {m['hand_tuned_single_signal']['tpr']} "
         f"FPR {m['hand_tuned_single_signal']['fpr']}",
-        f"  CVIAF                             : TPR {m['cviaf']['tpr']} "
-        f"FPR {m['cviaf']['fpr']}",
+        f"  CVIAF (asset rule unavailable)    : {m['cviaf']['n_asr_gated']} ASR-gated; "
+        f"remaining models abstain without a 44+ independent clean-model null "
+        f"(diagnostic-only legacy image scores)",
         "",
         f"data integrity (n={d['n_positive']} poisoned contributions, "
         f"{d['n_negative']} clean):",
-        f"  per-sample Mahalanobis baseline   : asset TPR {d['baseline_tpr']} "
-        f"FPR {d['baseline_fpr']}, attribution undefined",
-        f"  CVIAF                             : asset TPR {d['cviaf_tpr']} "
-        f"FPR {d['cviaf_fpr']}, top-1 source accuracy "
-        f"{d['attribution']['cviaf_top1_accuracy']}, false accusations "
-        f"{d['attribution']['cviaf_false_accusation_rate']}",
-        f"  sample level, baseline            : TPR "
-        f"{d['baseline_item_level']['item_tpr']} FPR "
-        f"{d['baseline_item_level']['item_fpr']} precision "
-        f"{d['baseline_item_level']['item_precision']}",
-        f"  sample level, CVIAF (BH, FDR)     : TPR "
-        f"{d['cviaf_item_level']['item_tpr']} FPR "
-        f"{d['cviaf_item_level']['item_fpr']} precision "
-        f"{d['cviaf_item_level']['item_precision']}",
-        "",
+        *(  # real-backbone corpus: the axis abstains as a whole
+            [f"  {d.get('axis_status', 'not assessed')}"] if d.get("axis_status") else [
+            f"  per-sample Mahalanobis baseline   : asset TPR {d['baseline_tpr']} "
+            f"FPR {d['baseline_fpr']}, attribution undefined",
+            f"  CVIAF                             : asset TPR {d['cviaf_tpr']} "
+            f"FPR {d['cviaf_fpr']}, top-1 source accuracy "
+            f"{d['attribution'].get('cviaf_top1_accuracy')}, false accusations "
+            f"{d['attribution'].get('cviaf_false_accusation_rate')}",
+            f"  sample level, baseline            : TPR "
+            f"{d['baseline_item_level'].get('item_tpr')} FPR "
+            f"{d['baseline_item_level'].get('item_fpr')} precision "
+            f"{d['baseline_item_level'].get('item_precision')}",
+            f"  sample level, CVIAF (BH, FDR)     : TPR "
+            f"{d['cviaf_item_level'].get('item_tpr')} FPR "
+            f"{d['cviaf_item_level'].get('item_fpr')} precision "
+            f"{d['cviaf_item_level'].get('item_precision')}"])
+        ,
         f"inference provenance (n={p['n_attacked']} attacked, {p['n_genuine']} genuine):",
         f"  hash-only manifest baseline       : TPR {p['baseline_digest_manifest']['tpr']} "
         f"FPR {p['baseline_digest_manifest']['fpr']}",

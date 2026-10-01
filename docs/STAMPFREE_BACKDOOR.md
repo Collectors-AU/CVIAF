@@ -85,7 +85,9 @@ my tree's `AttackSpec` carries a `mechanism` field that the v4 patch's `AttackSp
 and the v4 patch adds a `scope` field mine does not have, so **neither side can reconstruct the
 other side's manifests** (`TypeError: AttackSpec.__init__() got an unexpected keyword argument
 'mechanism'`). The merged class must be the union of the two field sets. The shim added
-`mechanism` to the clone's dataclass only; nothing in this repository changed.
+`mechanism` to the clone's dataclass only; nothing in this repository changed. **That gap is now
+closed on the merged line** (`63c6ca9`: `AttackSpec` carries both fields), and the suite was
+re-run against this corpus from the merged commit **with no shim at all** — see the re-run below.
 
 **The stamp is dead in this cell.** The suite's `stamp_null` contrast (clean model, bare vs
 stamped images) is **AUROC 0.5000 for all six signal columns**, `fft` — the image-only ink
@@ -109,9 +111,36 @@ Read this as the honest version of the number, not as a detector result. `refdiv
 backdoored model above the *clean-peer* floor (0.673 vs 0.336), while `ctc` sits below chance
 (0.444) and `ftc`'s floor is below chance too, so its 0.543 is not evidence of anything. With
 three assets and a measured attack that clears the floor on one seed, no TPR@5FPR in this table
-is remotely estimable. Asset decisions are **0/3 rejected in all five cells under both fusions**
-(`with_ftc` and `without_ftc`) — the suite abstains, consistent with my gate flagging two of the
+is remotely estimable. Asset decisions are **0/3 rejected in all five cells under both fusions**(`with_ftc` and
+`without_ftc`) — the suite abstains, consistent with my gate flagging two of the
 three arms `backdoor_weak`.
+
+### Re-run on the merged line, no shim (`runs/stampfree/null_suite_merged.json`)
+
+`python -m cviaf.lab.null_suite --corpus runs/stampfree --attacks stampfree --seeds 100 101 102`
+from `63c6ca9` needs no compatibility shim (the union `AttackSpec` is what removed the need) and
+reproduces the table above **identically**: `stamp_null` 0.5000 in all six columns including
+`fft`, conditional `refdiv` 0.6730 (peer-clean floor 0.3359), `ctc` 0.4436 (floor 0.5041), `ftc`
+0.5431 (floor 0.0038), `fft` 0.5000; asset decisions **0/3 rejected under both fusions**. Both
+artifacts are kept so the shimmed pre-merge run and the shim-free merged run stay auditable.
+
+### The asset rule at n=50 against this cell (the Task 1 unlock)
+
+Same cell, scored by the merged `model_asset_rule` refdiv gate at α = .05 with the 50 clean null
+models as calibration (`runs/asset_rule_n50.json`, one shared reference model and probe set):
+
+| arm | measured net ASR (present) | paired refdiv response | gate p | rejected |
+|---|---:|---:|---:|---|
+| `stampfree_scale_s100` | 0.533 (8/15) | +0.1380 | 0.0217 (= 1/46 floor) | yes |
+| `stampfree_scale_s101` | 0.111 (6/18) | +0.1153 | 0.0217 | yes |
+| `stampfree_scale_s102` | 0.056 (1/18) | +0.1841 | 0.0870 | no |
+
+The honest reading is in `docs/V4_MERGE_VERIFICATION.md`: the rule's own clean leave-one-out
+false-positive rate at n = 50 is 5/50 = 10% (CP 95% [0.033, 0.192]), so P(X ≥ 2 | n = 3, p = .10)
+= .028 and **2/3 rejected is consistent with the rule firing on its own noise**. What is
+notable is the direction: an arm whose backdoor is too weak to clear any ASR floor (0.111) still
+lands on the p-floor, i.e. the refdiv channel responds to something the stamp-free label edit
+leaves behind, and the weakest arm does not trip it. n = 3 cannot separate those hypotheses.
 
 What the run does establish: the unstamped-backdoored cell now exists in a form the suite
 consumes directly, its stamp contrast is exactly chance, and with a *weak* backdoor inside it no

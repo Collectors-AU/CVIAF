@@ -1,0 +1,1542 @@
+{
+  "archives": [
+    {
+      "bytes": 123618181,
+      "declared": "01aee38f3c0e36da6570d6b87080b782343bfddddb767f793a4eb0b7332f9b19",
+      "declared_bytes": 123618181,
+      "digest_ok": true,
+      "n_manifests": 6250,
+      "n_models_expected": 6250,
+      "name": "fleet-all-6250.tar.gz",
+      "path": "/Users/billasur/cv-assurance-engine/fleet-all-6250.tar.gz",
+      "sha256": "01aee38f3c0e36da6570d6b87080b782343bfddddb767f793a4eb0b7332f9b19"
+    },
+    {
+      "bytes": 20924212,
+      "declared": "eceba2ce322e88fae5032371e95801ef24523c281f0ff3af364c7515492a038e",
+      "declared_bytes": 20924212,
+      "digest_ok": true,
+      "n_manifests": 1056,
+      "n_models_expected": 1056,
+      "name": "git-1056.tar.gz",
+      "path": "/Users/billasur/cv-assurance-engine/git-1056.tar.gz",
+      "sha256": "eceba2ce322e88fae5032371e95801ef24523c281f0ff3af364c7515492a038e"
+    }
+  ],
+  "collisions": [
+    {
+      "model_ids": [
+        "clean_none_fixed_s41150"
+      ],
+      "seed": 41150,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41151"
+      ],
+      "seed": 41151,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41152"
+      ],
+      "seed": 41152,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41153"
+      ],
+      "seed": 41153,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41154"
+      ],
+      "seed": 41154,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41155"
+      ],
+      "seed": 41155,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41156"
+      ],
+      "seed": 41156,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41157"
+      ],
+      "seed": 41157,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41158"
+      ],
+      "seed": 41158,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41159"
+      ],
+      "seed": 41159,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41160"
+      ],
+      "seed": 41160,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41161"
+      ],
+      "seed": 41161,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41162"
+      ],
+      "seed": 41162,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41163"
+      ],
+      "seed": 41163,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41164"
+      ],
+      "seed": 41164,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41165"
+      ],
+      "seed": 41165,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41166"
+      ],
+      "seed": 41166,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41167"
+      ],
+      "seed": 41167,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41168"
+      ],
+      "seed": 41168,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41169"
+      ],
+      "seed": 41169,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41170"
+      ],
+      "seed": 41170,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41171"
+      ],
+      "seed": 41171,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41172"
+      ],
+      "seed": 41172,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41173"
+      ],
+      "seed": 41173,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    },
+    {
+      "model_ids": [
+        "clean_none_fixed_s41174"
+      ],
+      "seed": 41174,
+      "selected_sources": [
+        "runs/clean_null_win_w1"
+      ],
+      "sources": [
+        "models_results/laptop models",
+        "runs/clean_null_win_w1"
+      ],
+      "verdict": "not_compared",
+      "weights_sha256": {
+        "runs/clean_null_win_w1": null
+      }
+    }
+  ],
+  "collisions_fatal": [],
+  "collisions_truncated": 37661,
+  "exit_code": 0,
+  "gaps": [
+    {
+      "what": "lab box 2 (seeds 65152..70151)",
+      "why": "no matching box plan in models_results/cviaf"
+    },
+    {
+      "what": "full-results5",
+      "why": "no results_seed_*.npz (box not scored here)"
+    }
+  ],
+  "lab_seed_range": [
+    60152,
+    100151
+  ],
+  "n_collisions": 37686,
+  "ok": true,
+  "problems": [],
+  "schema": "cviaf.integration-census.v1",
+  "selected": [
+    "fleet-all-6250",
+    "git-1056",
+    "box1-corpus-v1",
+    "box1-corpus-v2",
+    "box3-corpus",
+    "box4-corpus",
+    "box5-corpus",
+    "box6-corpus",
+    "box7-corpus",
+    "box8-analysis",
+    "runs/clean_null_local_w1",
+    "runs/clean_null_local_w2",
+    "runs/clean_null_local_w3",
+    "runs/clean_null_local_w4",
+    "runs/clean_null_local_w5",
+    "runs/clean_null_local_w6",
+    "runs/clean_null_win_w1",
+    "runs/clean_null_win_w2",
+    "runs/clean_null_win_w3",
+    "runs/clean_null_win_w4"
+  ],
+  "sources": [
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "fleet-all-6250.tar.gz",
+      "id": "fleet-all-6250",
+      "kind": "root_archive",
+      "kinds": {
+        "unknown": 6250
+      },
+      "n_missing_weights": 0,
+      "n_models": 6250,
+      "n_seeded": 6250,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/fleet-all-6250.tar.gz",
+      "role": "input",
+      "seed_max": 9249,
+      "seed_min": 150,
+      "seed_ranges": [
+        [
+          150,
+          1349
+        ],
+        [
+          1650,
+          2549
+        ],
+        [
+          2650,
+          3099
+        ],
+        [
+          3150,
+          3499
+        ],
+        [
+          3650,
+          3849
+        ],
+        [
+          3900,
+          4349
+        ],
+        [
+          4650,
+          4999
+        ],
+        [
+          5150,
+          5349
+        ],
+        [
+          5650,
+          5849
+        ],
+        [
+          6150,
+          6449
+        ],
+        [
+          6650,
+          6899
+        ],
+        [
+          7150,
+          7949
+        ],
+        [
+          8150,
+          8349
+        ],
+        [
+          8400,
+          8549
+        ],
+        [
+          8650,
+          8699
+        ],
+        [
+          8900,
+          8999
+        ],
+        [
+          9150,
+          9249
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "git-1056.tar.gz",
+      "id": "git-1056",
+      "kind": "root_archive",
+      "kinds": {
+        "unknown": 1056
+      },
+      "n_missing_weights": 0,
+      "n_models": 1056,
+      "n_seeded": 1056,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/git-1056.tar.gz",
+      "role": "input",
+      "seed_max": 28385,
+      "seed_min": 10150,
+      "seed_ranges": [
+        [
+          10150,
+          10249
+        ],
+        [
+          25150,
+          25389
+        ],
+        [
+          26150,
+          26386
+        ],
+        [
+          27150,
+          27392
+        ],
+        [
+          28150,
+          28385
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box1-corpus-v1.tar.gz",
+      "id": "box1-corpus-v1",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box1-corpus-v1.tar.gz",
+      "role": "input",
+      "seed_max": 65151,
+      "seed_min": 60152,
+      "seed_ranges": [
+        [
+          60152,
+          65151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box1-corpus-v2.tar.gz",
+      "id": "box1-corpus-v2",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box1-corpus-v2.tar.gz",
+      "role": "input",
+      "seed_max": 65151,
+      "seed_min": 60152,
+      "seed_ranges": [
+        [
+          60152,
+          65151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box3-corpus.tar.gz",
+      "id": "box3-corpus",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box3-corpus.tar.gz",
+      "role": "input",
+      "seed_max": 75151,
+      "seed_min": 70152,
+      "seed_ranges": [
+        [
+          70152,
+          75151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box4-corpus.tar.gz",
+      "id": "box4-corpus",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box4-corpus.tar.gz",
+      "role": "input",
+      "seed_max": 80151,
+      "seed_min": 75152,
+      "seed_ranges": [
+        [
+          75152,
+          80151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box5-corpus.tar.gz",
+      "id": "box5-corpus",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box5-corpus.tar.gz",
+      "role": "input",
+      "seed_max": 85151,
+      "seed_min": 80152,
+      "seed_ranges": [
+        [
+          80152,
+          85151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box6-corpus.tar.gz",
+      "id": "box6-corpus",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box6-corpus.tar.gz",
+      "role": "input",
+      "seed_max": 90151,
+      "seed_min": 85152,
+      "seed_ranges": [
+        [
+          85152,
+          90151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box7-corpus.tar.gz",
+      "id": "box7-corpus",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box7-corpus.tar.gz",
+      "role": "input",
+      "seed_max": 95151,
+      "seed_min": 90152,
+      "seed_ranges": [
+        [
+          90152,
+          95151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "from_archive": "box8-analysis.tar.gz",
+      "id": "box8-analysis",
+      "kind": "lab_corpus",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box8-analysis.tar.gz",
+      "role": "input",
+      "seed_max": 100151,
+      "seed_min": 95152,
+      "seed_ranges": [
+        [
+          95152,
+          100151
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan-1v2",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan-1v2",
+      "role": "derived",
+      "seed_max": 65151,
+      "seed_min": 60152,
+      "seed_ranges": [
+        [
+          60152,
+          65151
+        ]
+      ],
+      "shards": [
+        "seed_60152_65151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan1v1",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan1v1",
+      "role": "derived",
+      "seed_max": 65151,
+      "seed_min": 60152,
+      "seed_ranges": [
+        [
+          60152,
+          65151
+        ]
+      ],
+      "shards": [
+        "seed_60152_65151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan3",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan3",
+      "role": "derived",
+      "seed_max": 75151,
+      "seed_min": 70152,
+      "seed_ranges": [
+        [
+          70152,
+          75151
+        ]
+      ],
+      "shards": [
+        "seed_70152_75151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan4",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan4",
+      "role": "derived",
+      "seed_max": 80151,
+      "seed_min": 75152,
+      "seed_ranges": [
+        [
+          75152,
+          80151
+        ]
+      ],
+      "shards": [
+        "seed_75152_80151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan5",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan5",
+      "role": "derived",
+      "seed_max": 85151,
+      "seed_min": 80152,
+      "seed_ranges": [
+        [
+          80152,
+          85151
+        ]
+      ],
+      "shards": [
+        "seed_80152_85151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan6",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan6",
+      "role": "derived",
+      "seed_max": 90151,
+      "seed_min": 85152,
+      "seed_ranges": [
+        [
+          85152,
+          90151
+        ]
+      ],
+      "shards": [
+        "seed_85152_90151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan7",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 10000
+      },
+      "n_missing_weights": 0,
+      "n_models": 10000,
+      "n_seeded": 10000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan7",
+      "role": "derived",
+      "seed_max": 100151,
+      "seed_min": 90152,
+      "seed_ranges": [
+        [
+          90152,
+          100151
+        ]
+      ],
+      "shards": [
+        "seed_90152_95151.json",
+        "seed_95152_100151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "box-plan8",
+      "kind": "lab_plan",
+      "kinds": {
+        "unknown": 5000
+      },
+      "n_missing_weights": 0,
+      "n_models": 5000,
+      "n_seeded": 5000,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/box-plan8",
+      "role": "derived",
+      "seed_max": 100151,
+      "seed_min": 95152,
+      "seed_ranges": [
+        [
+          95152,
+          100151
+        ]
+      ],
+      "shards": [
+        "seed_95152_100151.json"
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": true,
+      "has_report": true,
+      "id": "full-results-1v2",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-results-1v2",
+      "result_files": [
+        "results_seed_60152_65151.npz"
+      ],
+      "result_seed_ranges": [
+        [
+          60152,
+          65151
+        ]
+      ],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": true,
+      "has_report": true,
+      "id": "full-results3",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-results3",
+      "result_files": [
+        "results_seed_70152_75151.npz"
+      ],
+      "result_seed_ranges": [
+        [
+          70152,
+          75151
+        ]
+      ],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": true,
+      "has_report": true,
+      "id": "full-results4",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-results4",
+      "result_files": [
+        "results_seed_75152_80151.npz"
+      ],
+      "result_seed_ranges": [
+        [
+          75152,
+          80151
+        ]
+      ],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": false,
+      "has_report": false,
+      "id": "full-results5",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-results5",
+      "result_files": [],
+      "result_seed_ranges": [],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": true,
+      "has_report": true,
+      "id": "full-results6",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-results6",
+      "result_files": [
+        "results_seed_85152_90151.npz"
+      ],
+      "result_seed_ranges": [
+        [
+          85152,
+          90151
+        ]
+      ],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": true,
+      "has_report": true,
+      "id": "full-results7",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-results7",
+      "result_files": [
+        "results_seed_90152_95151.npz",
+        "results_seed_95152_100151.npz"
+      ],
+      "result_seed_ranges": [
+        [
+          90152,
+          95151
+        ],
+        [
+          95152,
+          100151
+        ]
+      ],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": true,
+      "has_report": true,
+      "id": "full-results8",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-results8",
+      "result_files": [
+        "results_seed_95152_100151.npz"
+      ],
+      "result_seed_ranges": [
+        [
+          95152,
+          100151
+        ]
+      ],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "has_meta": true,
+      "has_npz": true,
+      "has_report": true,
+      "id": "full-resultsv1",
+      "kind": "lab_results",
+      "kinds": {},
+      "n_missing_weights": 0,
+      "n_models": 0,
+      "n_seeded": 0,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/full-resultsv1",
+      "result_files": [
+        "results_seed_60152_65151.npz"
+      ],
+      "result_seed_ranges": [
+        [
+          60152,
+          65151
+        ]
+      ],
+      "role": "derived",
+      "seed_max": null,
+      "seed_min": null,
+      "seed_ranges": []
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_local_w1",
+      "kind": "mac_local",
+      "kinds": {
+        "clean": 1934
+      },
+      "n_missing_weights": 0,
+      "n_models": 1934,
+      "n_seeded": 1934,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_local_w1",
+      "role": "input",
+      "seed_max": 12197,
+      "seed_min": 10264,
+      "seed_ranges": [
+        [
+          10264,
+          12197
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_local_w2",
+      "kind": "mac_local",
+      "kinds": {
+        "clean": 1946
+      },
+      "n_missing_weights": 0,
+      "n_models": 1946,
+      "n_seeded": 1946,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_local_w2",
+      "role": "input",
+      "seed_max": 14690,
+      "seed_min": 12745,
+      "seed_ranges": [
+        [
+          12745,
+          14690
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_local_w3",
+      "kind": "mac_local",
+      "kinds": {
+        "clean": 1937
+      },
+      "n_missing_weights": 0,
+      "n_models": 1937,
+      "n_seeded": 1937,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_local_w3",
+      "role": "input",
+      "seed_max": 17162,
+      "seed_min": 15226,
+      "seed_ranges": [
+        [
+          15226,
+          17162
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_local_w4",
+      "kind": "mac_local",
+      "kinds": {
+        "clean": 1935
+      },
+      "n_missing_weights": 0,
+      "n_models": 1935,
+      "n_seeded": 1935,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_local_w4",
+      "role": "input",
+      "seed_max": 19641,
+      "seed_min": 17707,
+      "seed_ranges": [
+        [
+          17707,
+          19641
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_local_w5",
+      "kind": "mac_local",
+      "kinds": {
+        "clean": 1946
+      },
+      "n_missing_weights": 0,
+      "n_models": 1946,
+      "n_seeded": 1946,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_local_w5",
+      "role": "input",
+      "seed_max": 22133,
+      "seed_min": 20188,
+      "seed_ranges": [
+        [
+          20188,
+          22133
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_local_w6",
+      "kind": "mac_local",
+      "kinds": {
+        "clean": 1939
+      },
+      "n_missing_weights": 0,
+      "n_models": 1939,
+      "n_seeded": 1939,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_local_w6",
+      "role": "input",
+      "seed_max": 24607,
+      "seed_min": 22669,
+      "seed_ranges": [
+        [
+          22669,
+          24607
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_win_w1",
+      "kind": "laptop",
+      "kinds": {
+        "clean": 668
+      },
+      "n_missing_weights": 0,
+      "n_models": 668,
+      "n_seeded": 668,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_win_w1",
+      "role": "input",
+      "seed_max": 41817,
+      "seed_min": 41150,
+      "seed_ranges": [
+        [
+          41150,
+          41817
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_win_w2",
+      "kind": "laptop",
+      "kinds": {
+        "clean": 671
+      },
+      "n_missing_weights": 0,
+      "n_models": 671,
+      "n_seeded": 671,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_win_w2",
+      "role": "input",
+      "seed_max": 44071,
+      "seed_min": 43401,
+      "seed_ranges": [
+        [
+          43401,
+          44071
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_win_w3",
+      "kind": "laptop",
+      "kinds": {
+        "clean": 675
+      },
+      "n_missing_weights": 0,
+      "n_models": 675,
+      "n_seeded": 675,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_win_w3",
+      "role": "input",
+      "seed_max": 55826,
+      "seed_min": 55152,
+      "seed_ranges": [
+        [
+          55152,
+          55826
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "runs/clean_null_win_w4",
+      "kind": "laptop",
+      "kinds": {
+        "clean": 672
+      },
+      "n_missing_weights": 0,
+      "n_models": 672,
+      "n_seeded": 672,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/runs/clean_null_win_w4",
+      "role": "input",
+      "seed_max": 58323,
+      "seed_min": 57652,
+      "seed_ranges": [
+        [
+          57652,
+          58323
+        ]
+      ]
+    },
+    {
+      "duplicate_model_ids": [],
+      "duplicate_seeds": [],
+      "id": "models_results/laptop models",
+      "kind": "laptop_copy",
+      "kinds": {
+        "clean": 2686
+      },
+      "n_missing_weights": 0,
+      "n_models": 2686,
+      "n_seeded": 2686,
+      "n_unparsed_seeds": 0,
+      "path": "/Users/billasur/cv-assurance-engine/models_results/cviaf/laptop models",
+      "role": "derived",
+      "seed_max": 58323,
+      "seed_min": 41150,
+      "seed_ranges": [
+        [
+          41150,
+          41817
+        ],
+        [
+          43401,
+          44071
+        ],
+        [
+          55152,
+          55826
+        ],
+        [
+          57652,
+          58323
+        ]
+      ]
+    }
+  ],
+  "stop_on_lab_overlap": false,
+  "warnings": [
+    "seed 41150 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41151 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41152 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41153 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41154 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41155 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41156 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41157 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41158 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41159 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41160 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41161 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41162 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41163 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41164 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41165 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41166 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41167 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41168 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41169 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41170 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41171 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41172 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41173 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged",
+    "seed 41174 claimed by ['models_results/laptop models', 'runs/clean_null_win_w1'] (only ['runs/clean_null_win_w1'] selected): stale copy, not merged"
+  ]
+}

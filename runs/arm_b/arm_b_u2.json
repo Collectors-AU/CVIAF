@@ -1,0 +1,785 @@
+{
+ "experiment": "arm_b.U2",
+ "alpha": 0.05,
+ "target_power": 0.8,
+ "n_train": 240,
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7
+ ],
+ "val_seeds": [
+  100,
+  101,
+  102,
+  103,
+  104,
+  105,
+  106,
+  107
+ ],
+ "pool_n_total": 4800,
+ "per_module": {
+  "data.label_flip": {
+   "points": [
+    {
+     "rate_requested": 0.0,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.005,
+     "rate_actual": 0.004166666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.01,
+     "rate_actual": 0.008333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.02,
+     "rate_actual": 0.020833333333333332,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.05,
+     "rate_actual": 0.05,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.1,
+     "rate_actual": 0.1,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.2,
+     "rate_actual": 0.2,
+     "power": 0.0,
+     "n_seeds": 8
+    }
+   ],
+   "inversion": {
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.2,
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.020833333333333332,
+      "power": 0.0
+     },
+     {
+      "rate": 0.05,
+      "power": 0.0
+     },
+     {
+      "rate": 0.1,
+      "power": 0.0
+     },
+     {
+      "rate": 0.2,
+      "power": 0.0
+     }
+    ],
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 20.0% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness."
+   },
+   "clean_fpr": 0.0
+  },
+  "data.dup_flood": {
+   "points": [
+    {
+     "rate_requested": 0.0,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.005,
+     "rate_actual": 0.004166666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.01,
+     "rate_actual": 0.008333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.02,
+     "rate_actual": 0.020833333333333332,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.05,
+     "rate_actual": 0.05,
+     "power": 1.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.1,
+     "rate_actual": 0.1,
+     "power": 1.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.2,
+     "rate_actual": 0.2,
+     "power": 1.0,
+     "n_seeds": 8
+    }
+   ],
+   "inversion": {
+    "r_star": 0.05,
+    "target_power": 0.8,
+    "max_rate_tested": 0.2,
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.020833333333333332,
+      "power": 0.0
+     },
+     {
+      "rate": 0.05,
+      "power": 1.0
+     },
+     {
+      "rate": 0.1,
+      "power": 1.0
+     },
+     {
+      "rate": 0.2,
+      "power": 1.0
+     }
+    ],
+    "claim": "Poisoning at rate >= 5.00% would have been detected with probability >= 0.80; this assessment provides no power below 5.00%, which must not be reported as 'clean'."
+   },
+   "clean_fpr": 0.0
+  },
+  "data.ood_insert": {
+   "points": [
+    {
+     "rate_requested": 0.0,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.005,
+     "rate_actual": 0.004166666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.01,
+     "rate_actual": 0.008333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.02,
+     "rate_actual": 0.020833333333333332,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.05,
+     "rate_actual": 0.05,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.1,
+     "rate_actual": 0.1,
+     "power": 1.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.2,
+     "rate_actual": 0.2,
+     "power": 1.0,
+     "n_seeds": 8
+    }
+   ],
+   "inversion": {
+    "r_star": 0.1,
+    "target_power": 0.8,
+    "max_rate_tested": 0.2,
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.020833333333333332,
+      "power": 0.0
+     },
+     {
+      "rate": 0.05,
+      "power": 0.0
+     },
+     {
+      "rate": 0.1,
+      "power": 1.0
+     },
+     {
+      "rate": 0.2,
+      "power": 1.0
+     }
+    ],
+    "claim": "Poisoning at rate >= 10.00% would have been detected with probability >= 0.80; this assessment provides no power below 10.00%, which must not be reported as 'clean'."
+   },
+   "clean_fpr": 0.0
+  },
+  "data.trigger.rma": {
+   "points": [
+    {
+     "rate_requested": 0.0,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.005,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.01,
+     "rate_actual": 0.004166666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.02,
+     "rate_actual": 0.008333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.05,
+     "rate_actual": 0.016666666666666666,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.1,
+     "rate_actual": 0.03333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.2,
+     "rate_actual": 0.06666666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    }
+   ],
+   "inversion": {
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.06666666666666667,
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.016666666666666666,
+      "power": 0.0
+     },
+     {
+      "rate": 0.03333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.06666666666666667,
+      "power": 0.0
+     }
+    ],
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 6.7% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness."
+   },
+   "clean_fpr": 0.0
+  },
+  "data.trigger.clean_label": {
+   "points": [
+    {
+     "rate_requested": 0.0,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.005,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.01,
+     "rate_actual": 0.004166666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.02,
+     "rate_actual": 0.008333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.05,
+     "rate_actual": 0.016666666666666666,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.1,
+     "rate_actual": 0.03333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.2,
+     "rate_actual": 0.06666666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    }
+   ],
+   "inversion": {
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.06666666666666667,
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.016666666666666666,
+      "power": 0.0
+     },
+     {
+      "rate": 0.03333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.06666666666666667,
+      "power": 0.0
+     }
+    ],
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 6.7% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness."
+   },
+   "clean_fpr": 0.0
+  },
+  "data.trigger.oda_frame": {
+   "points": [
+    {
+     "rate_requested": 0.0,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.005,
+     "rate_actual": 0.0,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.01,
+     "rate_actual": 0.004166666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.02,
+     "rate_actual": 0.008333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.05,
+     "rate_actual": 0.016666666666666666,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.1,
+     "rate_actual": 0.03333333333333333,
+     "power": 0.0,
+     "n_seeds": 8
+    },
+    {
+     "rate_requested": 0.2,
+     "rate_actual": 0.06666666666666667,
+     "power": 0.0,
+     "n_seeds": 8
+    }
+   ],
+   "inversion": {
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.06666666666666667,
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.016666666666666666,
+      "power": 0.0
+     },
+     {
+      "rate": 0.03333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.06666666666666667,
+      "power": 0.0
+     }
+    ],
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 6.7% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness."
+   },
+   "clean_fpr": 0.0
+  }
+ },
+ "residual_risk": {
+  "per_module": [
+   {
+    "module": "data.dup_flood",
+    "applicable": true,
+    "r_star": 0.05,
+    "target_power": 0.8,
+    "max_rate_tested": 0.2,
+    "claim": "Poisoning at rate >= 5.00% would have been detected with probability >= 0.80; this assessment provides no power below 5.00%, which must not be reported as 'clean'.",
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.020833333333333332,
+      "power": 0.0
+     },
+     {
+      "rate": 0.05,
+      "power": 1.0
+     },
+     {
+      "rate": 0.1,
+      "power": 1.0
+     },
+     {
+      "rate": 0.2,
+      "power": 1.0
+     }
+    ]
+   },
+   {
+    "module": "data.label_flip",
+    "applicable": true,
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.2,
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 20.0% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness.",
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.020833333333333332,
+      "power": 0.0
+     },
+     {
+      "rate": 0.05,
+      "power": 0.0
+     },
+     {
+      "rate": 0.1,
+      "power": 0.0
+     },
+     {
+      "rate": 0.2,
+      "power": 0.0
+     }
+    ]
+   },
+   {
+    "module": "data.ood_insert",
+    "applicable": true,
+    "r_star": 0.1,
+    "target_power": 0.8,
+    "max_rate_tested": 0.2,
+    "claim": "Poisoning at rate >= 10.00% would have been detected with probability >= 0.80; this assessment provides no power below 10.00%, which must not be reported as 'clean'.",
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.020833333333333332,
+      "power": 0.0
+     },
+     {
+      "rate": 0.05,
+      "power": 0.0
+     },
+     {
+      "rate": 0.1,
+      "power": 1.0
+     },
+     {
+      "rate": 0.2,
+      "power": 1.0
+     }
+    ]
+   },
+   {
+    "module": "data.trigger.clean_label",
+    "applicable": true,
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.06666666666666667,
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 6.7% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness.",
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.016666666666666666,
+      "power": 0.0
+     },
+     {
+      "rate": 0.03333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.06666666666666667,
+      "power": 0.0
+     }
+    ]
+   },
+   {
+    "module": "data.trigger.oda_frame",
+    "applicable": true,
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.06666666666666667,
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 6.7% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness.",
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.016666666666666666,
+      "power": 0.0
+     },
+     {
+      "rate": 0.03333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.06666666666666667,
+      "power": 0.0
+     }
+    ]
+   },
+   {
+    "module": "data.trigger.rma",
+    "applicable": true,
+    "r_star": null,
+    "target_power": 0.8,
+    "max_rate_tested": 0.06666666666666667,
+    "claim": "INSUFFICIENT POWER: no tested poisoning rate up to 6.7% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness.",
+    "curve": [
+     {
+      "rate": 0.004166666666666667,
+      "power": 0.0
+     },
+     {
+      "rate": 0.008333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.016666666666666666,
+      "power": 0.0
+     },
+     {
+      "rate": 0.03333333333333333,
+      "power": 0.0
+     },
+     {
+      "rate": 0.06666666666666667,
+      "power": 0.0
+     }
+    ]
+   }
+  ],
+  "report_level_r_star": null,
+  "r_star_unbounded": true,
+  "prevalence_upper_bound": 0.012404638050409016,
+  "cp_confidence": 0.95,
+  "n_samples": 240,
+  "n_flagged": 0,
+  "policy": {
+   "tolerance": 0.02,
+   "target_power": 0.8,
+   "alpha": 0.05
+  },
+  "accept_permitted": false,
+  "forced_disposition": "review",
+  "claim": "RESIDUAL RISK UNBOUNDED: module(s) data.label_flip, data.trigger.clean_label, data.trigger.oda_frame, data.trigger.rma had no detection power at any tested rate. This assessment cannot exclude poisoning at any tested prevalence; disposition forced to review."
+ },
+ "validation": {
+  "data.label_flip": {
+   "r_star": null,
+   "note": "no power at any tested rate; nothing to validate -- the module reports INSUFFICIENT POWER and forces review"
+  },
+  "data.dup_flood": {
+   "r_star": 0.05,
+   "checks": [
+    {
+     "spike": "0.5*r*",
+     "target_prevalence": 0.025,
+     "realised_prevalence": 0.025,
+     "power": 0.0,
+     "power_cp_lower": 0.0
+    },
+    {
+     "spike": "r*",
+     "target_prevalence": 0.05,
+     "realised_prevalence": 0.05,
+     "power": 1.0,
+     "power_cp_lower": 0.6876560219336322
+    },
+    {
+     "spike": "2*r*",
+     "target_prevalence": 0.1,
+     "realised_prevalence": 0.1,
+     "power": 1.0,
+     "power_cp_lower": 0.6876560219336322
+    }
+   ],
+   "conservative": true,
+   "criterion": "power at r* on 8 fresh seeds >= 0.8; the stated bound is conservative iff the promised detection probability materialises"
+  },
+  "data.ood_insert": {
+   "r_star": 0.1,
+   "checks": [
+    {
+     "spike": "0.5*r*",
+     "target_prevalence": 0.05,
+     "realised_prevalence": 0.05,
+     "power": 0.0,
+     "power_cp_lower": 0.0
+    },
+    {
+     "spike": "r*",
+     "target_prevalence": 0.1,
+     "realised_prevalence": 0.1,
+     "power": 1.0,
+     "power_cp_lower": 0.6876560219336322
+    },
+    {
+     "spike": "2*r*",
+     "target_prevalence": 0.2,
+     "realised_prevalence": 0.2,
+     "power": 1.0,
+     "power_cp_lower": 0.6876560219336322
+    }
+   ],
+   "conservative": true,
+   "criterion": "power at r* on 8 fresh seeds >= 0.8; the stated bound is conservative iff the promised detection probability materialises"
+  },
+  "data.trigger.rma": {
+   "r_star": null,
+   "note": "no power at any tested rate; nothing to validate -- the module reports INSUFFICIENT POWER and forces review"
+  },
+  "data.trigger.clean_label": {
+   "r_star": null,
+   "note": "no power at any tested rate; nothing to validate -- the module reports INSUFFICIENT POWER and forces review"
+  },
+  "data.trigger.oda_frame": {
+   "r_star": null,
+   "note": "no power at any tested rate; nothing to validate -- the module reports INSUFFICIENT POWER and forces review"
+  }
+ },
+ "small_case_200_1pct": {
+  "n": 200,
+  "rate": 0.01,
+  "seeds": 8,
+  "measured_power": 0.0,
+  "sentence": "INSUFFICIENT POWER: no tested poisoning rate up to 20.0% was detected with probability >= 0.80. This module excludes nothing; a clean verdict from it must not be read as evidence of cleanliness.",
+  "cp_upper_on_zero_findings": 0.014867039231272056,
+  "forced_disposition": "review"
+ },
+ "runtime_seconds": 190.0
+}

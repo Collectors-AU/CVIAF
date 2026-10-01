@@ -1,0 +1,113 @@
+{
+ "schema": "cviaf.attack-sweep-plan.v1",
+ "config": "runs/real_cifar_sweep",
+ "mode": "full",
+ "clean_reference": "runs/real_cifar/realcifar_clean_s10264",
+ "cells": [
+  {
+   "kind": "substitution",
+   "dose": 0.05,
+   "param": "frac",
+   "builder": "RealBackboneDetector.tamper_prune",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "substitution",
+   "dose": 0.1,
+   "param": "frac",
+   "builder": "RealBackboneDetector.tamper_prune",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "substitution",
+   "dose": 0.25,
+   "param": "frac",
+   "builder": "RealBackboneDetector.tamper_prune",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "substitution",
+   "dose": 0.5,
+   "param": "frac",
+   "builder": "RealBackboneDetector.tamper_prune",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "weight_tamper",
+   "dose": 0.05,
+   "param": "scale",
+   "builder": "RealBackboneDetector.tamper_head",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "weight_tamper",
+   "dose": 0.1,
+   "param": "scale",
+   "builder": "RealBackboneDetector.tamper_head",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "weight_tamper",
+   "dose": 0.25,
+   "param": "scale",
+   "builder": "RealBackboneDetector.tamper_head",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "weight_tamper",
+   "dose": 0.5,
+   "param": "scale",
+   "builder": "RealBackboneDetector.tamper_head",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  },
+  {
+   "kind": "weight_tamper",
+   "dose": 1.0,
+   "param": "scale",
+   "builder": "RealBackboneDetector.tamper_head",
+   "pilot_seeds": 3,
+   "pilot_arms": 3,
+   "sweep_seeds": null
+  }
+ ],
+ "n_cells": 9,
+ "pilot_arms": 27,
+ "pilot_minutes": 11.2,
+ "full_arms": 432,
+ "full_minutes": 180.0,
+ "denominator": {
+  "baseline_recall": 0.1458,
+  "baseline_basis": "the existing battery's 7/48; itself only an estimate",
+  "delta": 0.05,
+  "half_width": 0.1,
+  "alpha": 0.05,
+  "power": 0.8,
+  "per_cell_to_detect": 352,
+  "per_cell_to_measure": 48,
+  "cells": 9,
+  "sweep_arms_to_detect": 3168,
+  "sweep_arms_to_measure": 432,
+  "reading": "'to detect' answers \"is this dose different from the corpus baseline\"; 'to measure' answers \"what is this cell's recall\". The ladder needs the second at every rung; the first only at the knee, so quoting one number for the whole sweep overspends."
+ },
+ "seconds_per_arm": 25.0,
+ "cost_basis": "derived arms are post-hoc weight edits, so cost is derivation + evaluation, not training; the pilot measures the real seconds-per-arm and this plan must be recomputed with it",
+ "ladder_note": "the ladder is geometric so it does not spend its arms past the knee; the pilot's first job is to find the knee",
+ "no_training": "no clean detector is trained or retrained by this sweep: the arms are derived from detectors that already exist",
+ "plan_digest": "ae93deefc997523482130cbcb3c48ceff3e5c4f023a9dda164082d039c48ad9a"
+}

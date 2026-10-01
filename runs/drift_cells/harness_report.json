@@ -1,0 +1,823 @@
+{
+ "schema": "cviaf.drift-harness.v1",
+ "status": "skeleton",
+ "corpus": "runs/drift_cells",
+ "alpha": 0.05,
+ "seed": 20260928,
+ "n_permutations": 200,
+ "max_images_per_cell": 160,
+ "reference_cell": "reference_desert_summer_clean",
+ "metric_definitions": {
+  "mmd2_rbf": {
+   "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+   "direction": "higher_is_more_shift",
+   "formula": "unbiased MMD^2 with RBF kernel, bandwidth = median pairwise distance of the pooled sample",
+   "minimum_n": 50,
+   "p_value": "label-permutation over the pooled reference and operational features, shared scheme",
+   "supports": [
+    "a difference in distribution between two image sets"
+   ],
+   "cannot": [
+    "the cause of the difference",
+    "which feature moved",
+    "a threshold that generalises across corpora: MMD^2 has no units"
+   ]
+  },
+  "wasserstein_1_mean": {
+   "unit": "mean pixel-statistic units, averaged over feature dimensions",
+   "direction": "higher_is_more_shift",
+   "formula": "mean over feature dimensions of the 1-Wasserstein distance between sorted samples (quantile interpolation)",
+   "minimum_n": 30,
+   "p_value": "same permutation scheme",
+   "supports": [
+    "how far the marginal distributions moved, in feature units"
+   ],
+   "cannot": [
+    "correlation or joint-structure changes",
+    "compare across feature extractors"
+   ]
+  },
+  "ks_max": {
+   "unit": "supremum of |F_ref - F_op| over one feature dimension",
+   "direction": "higher_is_more_shift",
+   "formula": "max over feature dimensions of the two-sample Kolmogorov-Smirnov statistic",
+   "minimum_n": 30,
+   "p_value": "same permutation scheme",
+   "supports": [
+    "that some single dimension moved, and by how much"
+   ],
+   "cannot": [
+    "that the moved dimension is the declared axis -- brightness, blur and terrain all move pixel statistics"
+   ]
+  },
+  "feature_mean_z": {
+   "unit": "pooled standard deviations",
+   "direction": "higher_is_more_shift",
+   "formula": "max over feature dimensions of |mean_ref - mean_op| divided by the pooled standard deviation",
+   "minimum_n": 30,
+   "p_value": "same permutation scheme",
+   "supports": [
+    "a scale-free mean shift per dimension"
+   ],
+   "cannot": [
+    "variance or shape changes",
+    "multi-modal or small shifts"
+   ]
+  }
+ },
+ "null_definition": "noise_floor is the larger of two nulls measured with the SAME metric: the control_value (the cell's declared no-shift resample against the same reference, role no_shift_control) and the self_null (the reference split in half against itself, which is the metric's own noise scale at this sample size). A shift is called drift only when it clears alpha AND exceeds the noise floor; otherwise the decision is under_determined. The second null matters: on rendered scenes, resample noise and the declared axis are often within a fraction of a percent of each other, and against the control alone a difference of that size looks like a finding.",
+ "cells": [
+  {
+   "cell_id": "reference_desert_summer_clean",
+   "role": "reference",
+   "digest": "4e3cf582f508bca4be742b84df1f519b0b820a6e89d62d585f1ec8c3daa074b2",
+   "paired_cell": null
+  },
+  {
+   "cell_id": "forest_summer_clean",
+   "role": "shifted",
+   "digest": "b40af1f54a6ad8bf322dc8144909e8a995cd30b7272651e15d6d4f9b606fa6dc",
+   "paired_cell": "forest_summer_clean_resample"
+  },
+  {
+   "cell_id": "forest_summer_clean_resample",
+   "role": "no_shift_control",
+   "digest": "02202c97c19b0f6ed89e2dfa1f28c018696eb18924d4762a48b011dfcb5c626b",
+   "paired_cell": "forest_summer_clean"
+  },
+  {
+   "cell_id": "urban_autumn_clean",
+   "role": "shifted",
+   "digest": "4e1bf8fa1ced0a2e8e8132819b21b90653cb23e7006688db72e913b41ca84688",
+   "paired_cell": "urban_autumn_clean_resample"
+  },
+  {
+   "cell_id": "urban_autumn_clean_resample",
+   "role": "no_shift_control",
+   "digest": "c8b664a733a3163bf0a3128d35ec6a7b34f62ec96cbfcb0e7d961726c3111ca8",
+   "paired_cell": "urban_autumn_clean"
+  },
+  {
+   "cell_id": "desert_winter_noisy",
+   "role": "shifted",
+   "digest": "81ade4b421b2ee1586255268854ec6178b0077f317f4abd9212f7470290e9df1",
+   "paired_cell": "desert_winter_noisy_resample"
+  },
+  {
+   "cell_id": "desert_winter_noisy_resample",
+   "role": "no_shift_control",
+   "digest": "19b20eef327eca477d4bc720c72351667e064ba7a574e9986be398b6fb6efc88",
+   "paired_cell": "desert_winter_noisy"
+  },
+  {
+   "cell_id": "desert_summer_blurred",
+   "role": "shifted",
+   "digest": "f7182453ddb8d1a8fb1fc24cf60caefa1459cad6599e9baa4c76c4f78953672b",
+   "paired_cell": "desert_summer_blurred_resample"
+  },
+  {
+   "cell_id": "desert_summer_blurred_resample",
+   "role": "no_shift_control",
+   "digest": "e5cb16ca4432ae199f9cc498ae851359f0de8cd3cf9c1c96cc47185a7ae84282",
+   "paired_cell": "desert_summer_blurred"
+  },
+  {
+   "cell_id": "snow_winter_dim",
+   "role": "shifted",
+   "digest": "84b2de4f1edd992d5d3b31135f7879c7bc309be9c0cdbd313dd4ee5958a6c719",
+   "paired_cell": "snow_winter_dim_resample"
+  },
+  {
+   "cell_id": "snow_winter_dim_resample",
+   "role": "no_shift_control",
+   "digest": "512ffffc17936657c9ce6ceb7235fa18224aec80e19a5fe783e242127801b8ef",
+   "paired_cell": "snow_winter_dim"
+  }
+ ],
+ "per_cell": {
+  "forest_summer_clean": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 160,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.824281982952618,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.822148775223204,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": 0.822148775223204,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "margin_over_floor": 0.0025946736085995063,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 0.8243 exceeds the noise floor 0.8221 (control 0.8221, self-null -0.005165) by 0.26%"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.1476601076095381,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.14767470306131325,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.14767470306131325,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 0.1477 against a noise floor of 0.1477 (control 0.1477, self-null 0.002708) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 1.0,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 1.0,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 1 against a noise floor of 1 (control 1, self-null 0.2125) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 34.416796612086266,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 34.94857930888958,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 34.94857930888958,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 34.42 against a noise floor of 34.95 (control 34.95, self-null 0.3718) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis"
+    }
+   },
+   "role": "shifted",
+   "declared_axes_moved": {
+    "terrain": "forest"
+   },
+   "control_cell": "forest_summer_clean_resample"
+  },
+  "forest_summer_clean_resample": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 0,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.822148775223204,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": -0.0051651546858022535,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.14767470306131325,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.0027076620416165943,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 0.21250000000000002,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 34.94857930888958,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 0.3717662586147565,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    }
+   },
+   "role": "no_shift_control",
+   "declared_axes_moved": {},
+   "control_cell": null
+  },
+  "urban_autumn_clean": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 160,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.8305778662341594,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.8293133766636098,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": 0.8293133766636098,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "margin_over_floor": 0.001524742764474298,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 0.8306 exceeds the noise floor 0.8293 (control 0.8293, self-null -0.005165) by 0.15%"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.09952633650253048,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.09974566547784178,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.09974566547784178,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 0.09953 against a noise floor of 0.09975 (control 0.09975, self-null 0.002708) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 1.0,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 1.0,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 1 against a noise floor of 1 (control 1, self-null 0.2125) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 14.270556316026719,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 15.273969072438167,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 15.273969072438167,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 14.27 against a noise floor of 15.27 (control 15.27, self-null 0.3718) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis"
+    }
+   },
+   "role": "shifted",
+   "declared_axes_moved": {
+    "terrain": "urban",
+    "season": "autumn"
+   },
+   "control_cell": "urban_autumn_clean_resample"
+  },
+  "urban_autumn_clean_resample": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 0,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.8293133766636098,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": -0.0051651546858022535,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.09974566547784178,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.0027076620416165943,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 0.21250000000000002,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 15.273969072438167,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 0.3717662586147565,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    }
+   },
+   "role": "no_shift_control",
+   "declared_axes_moved": {},
+   "control_cell": null
+  },
+  "desert_winter_noisy": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 160,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.7805659764432491,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.7719270793639398,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": 0.7719270793639398,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "margin_over_floor": 0.011191338288621356,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 0.7806 exceeds the noise floor 0.7719 (control 0.7719, self-null -0.005165) by 1.12%"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.05173603060919535,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.05103136803680802,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.05103136803680802,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "margin_over_floor": 0.013808420183426517,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 0.05174 exceeds the noise floor 0.05103 (control 0.05103, self-null 0.002708) by 1.38%"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 1.0,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 1.0,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 1 against a noise floor of 1 (control 1, self-null 0.2125) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 15.507492872167164,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 15.59888048896087,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 15.59888048896087,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 15.51 against a noise floor of 15.6 (control 15.6, self-null 0.3718) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis"
+    }
+   },
+   "role": "shifted",
+   "declared_axes_moved": {
+    "season": "winter",
+    "sensor_noise": 0.08
+   },
+   "control_cell": "desert_winter_noisy_resample"
+  },
+  "desert_winter_noisy_resample": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 0,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.7719270793639398,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": -0.0051651546858022535,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.05103136803680802,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.0027076620416165943,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 0.21250000000000002,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 15.59888048896087,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 0.3717662586147565,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    }
+   },
+   "role": "no_shift_control",
+   "declared_axes_moved": {},
+   "control_cell": null
+  },
+  "desert_summer_blurred": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 160,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.578180246572612,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.5769132811902606,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": 0.5769132811902606,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "margin_over_floor": 0.002196110617764662,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 0.5782 exceeds the noise floor 0.5769 (control 0.5769, self-null -0.005165) by 0.22%"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.030748135058528005,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.030577735894571155,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.030577735894571155,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "margin_over_floor": 0.005572654710092607,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 0.03075 exceeds the noise floor 0.03058 (control 0.03058, self-null 0.002708) by 0.56%"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 1.0,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 1.0,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 1 against a noise floor of 1 (control 1, self-null 0.2125) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 18.39568206993999,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 17.484223341865043,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 17.484223341865043,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "margin_over_floor": 0.052130352618666685,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 18.4 exceeds the noise floor 17.48 (control 17.48, self-null 0.3718) by 5.21%"
+    }
+   },
+   "role": "shifted",
+   "declared_axes_moved": {
+    "sensor_blur": 3
+   },
+   "control_cell": "desert_summer_blurred_resample"
+  },
+  "desert_summer_blurred_resample": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 0,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.5769132811902606,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": -0.0051651546858022535,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.030577735894571155,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.0027076620416165943,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 0.21250000000000002,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 17.484223341865043,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 0.3717662586147565,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    }
+   },
+   "role": "no_shift_control",
+   "declared_axes_moved": {},
+   "control_cell": null
+  },
+  "snow_winter_dim": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 160,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.825116162518885,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.8256340248064558,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": 0.8256340248064558,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 0.8251 against a noise floor of 0.8256 (control 0.8256, self-null -0.005165) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.08709944117462175,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 0.08678105092537416,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.08678105092537416,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "margin_over_floor": 0.00366889137493134,
+     "decision": "drift",
+     "reason": "p=0.004975 <= 0.05 and value 0.0871 exceeds the noise floor 0.08678 (control 0.08678, self-null 0.002708) by 0.37%"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 1.0,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 1.0,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 1 against a noise floor of 1 (control 1, self-null 0.2125) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 34.855415949802826,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": 34.93827448197143,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 34.93827448197143,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "contradictory evidence: p=0.004975 (alpha 0.05) with value 34.86 against a noise floor of 34.94 (control 34.94, self-null 0.3718) -- the metric fires, but it fires at least as hard on a no-shift sample of the same data, so it is not reading the declared axis"
+    }
+   },
+   "role": "shifted",
+   "declared_axes_moved": {
+    "terrain": "snow",
+    "season": "winter",
+    "illumination": 0.7
+   },
+   "control_cell": "snow_winter_dim_resample"
+  },
+  "snow_winter_dim_resample": {
+   "n_reference": 160,
+   "n_operational": 160,
+   "n_control": 0,
+   "metrics": {
+    "mmd2_rbf": {
+     "value": 0.8256340248064558,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": -0.0051651546858022535,
+     "noise_floor": -0.0051651546858022535,
+     "unit": "squared distance in RBF reproducing-kernel Hilbert space",
+     "minimum_n": 50,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "wasserstein_1_mean": {
+     "value": 0.08678105092537416,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.0027076620416165943,
+     "noise_floor": 0.0027076620416165943,
+     "unit": "mean pixel-statistic units, averaged over feature dimensions",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    },
+    "ks_max": {
+     "value": 1.0,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.21250000000000002,
+     "noise_floor": 0.21250000000000002,
+     "unit": "supremum of |F_ref - F_op| over one feature dimension",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis",
+     "saturated": true,
+     "saturation_note": "the statistic is at its maximum for every contrast in this corpus, including the no-shift ones, so it cannot discriminate: two different image sets are always perfectly separable by this dimension-wise statistic"
+    },
+    "feature_mean_z": {
+     "value": 34.93827448197143,
+     "p_value": 0.004975124378109453,
+     "direction": "higher_is_more_shift",
+     "control_value": null,
+     "self_null_value": 0.3717662586147565,
+     "noise_floor": 0.3717662586147565,
+     "unit": "pooled standard deviations",
+     "minimum_n": 30,
+     "decision": "under_determined",
+     "reason": "no no-shift control for this cell, so a significant difference cannot be attributed to the declared axis"
+    }
+   },
+   "role": "no_shift_control",
+   "declared_axes_moved": {},
+   "control_cell": null
+  }
+ },
+ "summary": {
+  "mmd2_rbf": {
+   "drift": 4,
+   "no_drift": 0,
+   "under_determined": 6,
+   "insufficient_n": 0
+  },
+  "wasserstein_1_mean": {
+   "drift": 3,
+   "no_drift": 0,
+   "under_determined": 7,
+   "insufficient_n": 0
+  },
+  "ks_max": {
+   "drift": 0,
+   "no_drift": 0,
+   "under_determined": 10,
+   "insufficient_n": 0
+  },
+  "feature_mean_z": {
+   "drift": 1,
+   "no_drift": 0,
+   "under_determined": 9,
+   "insufficient_n": 0
+  }
+ },
+ "metric_diagnostics": {
+  "mmd2_rbf": {
+   "n_cells": 10,
+   "saturated": false,
+   "max_margin_over_floor": 0.011191338288621356,
+   "median_margin_over_floor": 0.002395392113182084
+  },
+  "wasserstein_1_mean": {
+   "n_cells": 10,
+   "saturated": false,
+   "max_margin_over_floor": 0.013808420183426517,
+   "median_margin_over_floor": 0.005572654710092607
+  },
+  "ks_max": {
+   "n_cells": 10,
+   "saturated": true,
+   "max_margin_over_floor": null,
+   "median_margin_over_floor": null
+  },
+  "feature_mean_z": {
+   "n_cells": 10,
+   "saturated": false,
+   "max_margin_over_floor": 0.052130352618666685,
+   "median_margin_over_floor": 0.052130352618666685
+  }
+ },
+ "attribution": {
+  "verdict": "under_determined",
+  "why": "this harness distinguishes a declared drift from resampling noise; it receives no manipulation signal, and a poisoning shift and a seasonal shift are both 'a shift'. Attribution needs the arbiter in driftbench (natural calibration + contributor concentration) or a manipulation battery supplied alongside the cells."
+ },
+ "limitations": [
+  "skeleton: the metric values are real, but the null is one resample per cell, so this is not a calibrated false-positive rate.",
+  "pixel-statistic features only; a drift in detector behaviour with unchanged pixel statistics is invisible here.",
+  "each cell has one seed_offset, so cell-to-cell differences include scene sampling noise that a multi-seed null would separate.",
+  "no attribution: every cell reports under_determined, by design."
+ ]
+}

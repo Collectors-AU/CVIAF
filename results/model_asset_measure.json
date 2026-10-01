@@ -1,0 +1,202 @@
+{
+  "schema": "cviaf.model-asset-measure.v1",
+  "source": "results/null_suite_day1_s5-s7.json",
+  "base_commit": "c17141f0f58f4a5f6f0afce8e0f5719c61fcdd46",
+  "rule": "paired stamp response; conformal clean-model asset null; Bonferroni over CTC/refdiv; minimum 44 independent clean calibration assets (5 center fit + 39 rank null) at alpha=.05",
+  "alpha": 0.05,
+  "independent_clean_model_null_assets_per_recipe": 3,
+  "available_clean_model_assets_total": 11,
+  "required_clean_model_assets": 44,
+  "held_out_seeds": [
+    5,
+    6,
+    7
+  ],
+  "rows": [
+    {
+      "seed": 5,
+      "attack": "oga",
+      "net_asr": 0.0,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.8958333333333334,
+      "conditional_ctc_auroc": 0.5,
+      "conditional_refdiv_auroc": 0.5434027777777778,
+      "peer_clean_ctc_auroc": 0.2916666666666667,
+      "legacy_p": 0.9999999999981539,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 5,
+      "attack": "oda",
+      "net_asr": 0.08695652173913049,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.8958333333333334,
+      "conditional_ctc_auroc": 0.0,
+      "conditional_refdiv_auroc": 0.5703125,
+      "peer_clean_ctc_auroc": 0.20833333333333334,
+      "legacy_p": 0.999999999999,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 5,
+      "attack": "rma",
+      "net_asr": 0.5333333333333334,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.8958333333333334,
+      "conditional_ctc_auroc": 0.14583333333333334,
+      "conditional_refdiv_auroc": 0.5399305555555556,
+      "peer_clean_ctc_auroc": 0.20833333333333334,
+      "legacy_p": 0.999999999999,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 6,
+      "attack": "oga",
+      "net_asr": 1.0,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.8810763888888888,
+      "conditional_ctc_auroc": 0.9782986111111112,
+      "conditional_refdiv_auroc": 0.6527777777777778,
+      "peer_clean_ctc_auroc": 0.9696180555555556,
+      "legacy_p": 0.06060606060606061,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 6,
+      "attack": "oda",
+      "net_asr": 0.03749999999999998,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.7855902777777778,
+      "conditional_ctc_auroc": 0.25,
+      "conditional_refdiv_auroc": 0.5425347222222222,
+      "peer_clean_ctc_auroc": 0.7170138888888888,
+      "legacy_p": 0.9999999999976,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 6,
+      "attack": "rma",
+      "net_asr": 1.0,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.7855902777777778,
+      "conditional_ctc_auroc": 0.4010416666666667,
+      "conditional_refdiv_auroc": 0.5520833333333334,
+      "peer_clean_ctc_auroc": 0.7170138888888888,
+      "legacy_p": 0.9999999999952001,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 7,
+      "attack": "oga",
+      "net_asr": 0.375,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.9861111111111112,
+      "conditional_ctc_auroc": 0.03993055555555555,
+      "conditional_refdiv_auroc": 0.3211805555555556,
+      "peer_clean_ctc_auroc": 0.6875,
+      "legacy_p": 0.9999999999987369,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 7,
+      "attack": "oda",
+      "net_asr": 0.2131578947368421,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.9079861111111112,
+      "conditional_ctc_auroc": 0.07196969696969698,
+      "conditional_refdiv_auroc": 0.4826388888888889,
+      "peer_clean_ctc_auroc": 0.4305555555555556,
+      "legacy_p": 0.9999999999985882,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    },
+    {
+      "seed": 7,
+      "attack": "rma",
+      "net_asr": 0.6230769230769231,
+      "manifest_weak": false,
+      "stamp_null_ctc_auroc": 0.9079861111111112,
+      "conditional_ctc_auroc": 0.2569444444444444,
+      "conditional_refdiv_auroc": 0.5086805555555556,
+      "peer_clean_ctc_auroc": 0.4305555555555556,
+      "legacy_p": 0.9999999999986667,
+      "proposed_asset_decision": {
+        "abstain": true,
+        "reject_at_alpha": false,
+        "asset_pvalue": null,
+        "reason": "only three independent clean-model null assets per recipe; model-level stamp-response arrays not exported"
+      }
+    }
+  ],
+  "per_class": {
+    "oga": {
+      "tested": 3,
+      "net_asr_ge_0_5": 1,
+      "convicted": 0,
+      "abstained": 3
+    },
+    "oda": {
+      "tested": 3,
+      "net_asr_ge_0_5": 0,
+      "convicted": 0,
+      "abstained": 3
+    },
+    "rma": {
+      "tested": 3,
+      "net_asr_ge_0_5": 3,
+      "convicted": 0,
+      "abstained": 3
+    }
+  },
+  "clean_assets": {
+    "tested_independent_clean_models": 3,
+    "false_convictions": 0,
+    "measured_fpr": null,
+    "reason": "all abstain; 0/3 is not a validated <=5% FPR estimate"
+  },
+  "limitations": [
+    "Raw manifest ASR does not subtract clean-model stamp behavior",
+    "Conditional detectors fail clean-peer comparison",
+    "No image-level pseudo-replication, no attack-set threshold tuning",
+    "The assay requires an independent model-level clean null and held-out seeds before operational rejection"
+  ]
+}

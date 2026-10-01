@@ -95,10 +95,33 @@ merged dataclass must carry the union or every committed corpus breaks on one of
 
 ## TASK 4 — merge test (PREP ONLY until the v4 package lands)
 
-- [ ] Step 4.1 write `docs/LAB_EDIT_INVENTORY.md`: every uncommitted lab edit as `file:hunk`, with
-      semantic-overlap flags. Do NOT commit those edits.
-- [ ] Step 4.2 (blocked on the user's consolidated v4 patch) clean `c17141f` clone → `git apply`
-      → full suite → merge my lab edits → report every conflict as `file:hunk`, no solo resolution.
+- [x] Step 4.1 `docs/LAB_EDIT_INVENTORY.md`: every uncommitted lab edit as `file:hunk` (evaluate 41,
+      train 20, corpus 20, poison 15, cli 7, detectors 3, tamper_probe 3, README 1). Those edits
+      remain UNCOMMITTED, as instructed.
+- [x] Step 4.2 EXECUTED. Clean `c17141f` clone → consolidated patch + label-gate follow-up applied
+      clean → suite → my pushed work merged → two mandated changes → one merge commit
+      **`63c6ca9`** (parents `c17141f`, `8c6bc3b`) pushed to `origin/main`.
+- [x] Step 4.3 verification addendum: `docs/V4_MERGE_VERIFICATION.md` + refreshed
+      `runs/stampfree/null_suite_merged.json` + the n=50 asset verdicts.
+
+MEASURED (Phase 3, see `docs/V4_MERGE_VERIFICATION.md` for the full record):
+- Patched base suite **153 passed / 1 xfailed** on a fresh `c17141f` clone with both patches
+  (handover said 152: +1 is the follow-up patch's 4 tests on top of the package's own 149).
+  Without `cryptography` the same tree reports 21 failed / 123 passed / 2 skipped / 1 xfailed.
+- Merged line suite: **164 passed / 1 xfailed / 0 skipped**.
+- Conflicts: **zero textual**. The predicted semantic overlap (poison `AttackSpec`) resolved as the
+  union (`mechanism` + `scope`, `mechanism` last); verified live because the n=50 script rebuilds a
+  probe spec from a pre-merge manifest.
+- Mandated: FTC out (`DETECTOR_NAMES = ("ctc","refdiv")`); gate on refdiv
+  (`DEFAULT_SIGNALS=("refdiv",)`, ctc diagnostic-only) → requirement 44 → 24 models, p-floor
+  1/46 = 2.17%.
+- n=50 verdicts: clean leave-one-out **5/50 = 10%** (CP [0.033, 0.192]); day1 attacked **13/72**
+  (Fisher vs clean p = .301, not separable); stamp-free arms **2/3** rejected at the p-floor
+  (weakest arm, net ASR 0.056, not rejected; P(X>=2 | n=3, p=.10) = .028).
+- `cviaf/lab/null_suite.py` asset fusion abstains **0/3** on the same stamp-free arms while
+  `model_asset_rule` rejects **2/3** — flagged as an open inconsistency, not resolved solo.
+- Not done (not in the spec, needs the owning lane): the calibrated-protocol patch
+  (`~/Downloads/CVIAF_V4_CALIBRATED_ASSURE.txt`) — dry-run says it **applies clean** on `63c6ca9`.
 
 ## TASK 5 — corpus scale-up for the drift battery
 
@@ -119,10 +142,27 @@ Measured: `.venv` (Python 3.11.16) has **no** torch / onnx / onnxruntime.
 onnxruntime **1.30.0**, numpy and PIL — but **no scipy and no scikit-learn**, which the repo's
 lab/eval path imports. So Task 3 needs either extra packages in the torch interpreter or torch
 in the repo venv; both are installs, and the STEER says ask first. No install has been run.
+
+BOTH INSTALLS APPROVED AND DONE (this blocker is cleared):
+- `.venv` (3.11.16) gained **cryptography 50.0.1** — the whole repo suite now runs green.
+- `~/.venvs/cviaf-torch` (3.12.14, built with `--system-site-packages`) reuses brew's torch:
+  **torch 2.14.0 (MPS available)**, **onnx 1.23.0**, **onnxruntime 1.30.0**, numpy, scipy,
+  scikit-learn, Pillow, **torchvision** — everything the Task 3 parity gate needs. It does NOT
+  have `cryptography`; the parity gate calls `ModelIntegrityAssessor` directly and never builds
+  the provenance engine, so that does not block Task 3 — but a full product pipeline run from
+  that interpreter needs `cryptography` first, because the v4 provenance code refuses the
+  symmetric fallback.
 Sequence when unblocked: export parity gate **first** (benign re-export → zero substitution
 findings), then the backdoored model + eval + null suite.
 
 ---
+---
 ## Phase log
 - P1 plan: this file.
-- P2 execute: Task 1 training done (358.8s). Verification next.
+- P2 execute: Task 1 training done (358.8s).
+- P4 report: Tasks 1, 2, 5 pushed (`3c9d005`, `4aef427`, `76c14d2`, `caa18ce`); Task 4 prep pushed
+  (`747493c`).
+- P4 report: Task 4 merge test executed → **`63c6ca9`** on `origin/main` (merge commit, two mandated
+  signal changes). Post-merge verification addendum added on top of it.
+- Note on local state: this checkout's `main` is still `8c6bc3b` because the uncommitted lab edits
+  overlap files the merge touches; `origin/main` is the merged line.

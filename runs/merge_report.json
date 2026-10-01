@@ -1,0 +1,136 @@
+{
+  "alpha": 0.05,
+  "denominators": {
+    "calibration_negatives": 28314,
+    "evaluation_negatives": 28313,
+    "evaluation_positives": 0
+  },
+  "fpr_measured": true,
+  "headline": "FPR measured on 28313 clean assets; TPR not measurable (no attacked assets in this ledger)",
+  "ledger_schema": "cviaf.fpr-tpr-ledger.v1",
+  "merge": {
+    "count": 56627,
+    "evaluator_exit": 0,
+    "fpr_tpr": "read native report, respect denominator refusals and clean-null-only TPR absence",
+    "ledger": "/Users/billasur/cviaf-analysis/merged-out/analysis_rows.jsonl",
+    "mode": "adapter",
+    "native_ledger": "/Users/billasur/cviaf-analysis/merged-out/fpr_tpr_ledger.json",
+    "native_report": "/Users/billasur/cviaf-analysis/merged-out/fpr_tpr_report.json",
+    "status": "EVALUATED"
+  },
+  "min_negatives": 20,
+  "positive_kinds": [
+    "clean_label",
+    "dup_flood",
+    "gma",
+    "label_flip",
+    "oda",
+    "oga",
+    "ood_insert",
+    "rma",
+    "stampfree",
+    "substitution",
+    "weight_tamper"
+  ],
+  "positives_measured": false,
+  "rules": {
+    "ctc_mean_clean": {
+      "fpr": {
+        "ci95_wilson": [
+          0.0498,
+          0.055
+        ],
+        "denominator": 28313,
+        "exact_upper_bound_95": 1.0,
+        "numerator": 1481,
+        "point_estimate": 0.0523,
+        "status": "measured"
+      },
+      "status": "fpr_only",
+      "threshold": 0.9845092069058692,
+      "tpr": {
+        "ci95_wilson": null,
+        "denominator": 0,
+        "exact_upper_bound_95": null,
+        "numerator": 0,
+        "point_estimate": null,
+        "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate",
+        "status": "insufficient_denominator"
+      }
+    },
+    "ctc_peak_clean": {
+      "fpr": {
+        "ci95_wilson": [
+          0.0,
+          0.0001
+        ],
+        "denominator": 28313,
+        "exact_upper_bound_95": 0.0001,
+        "numerator": 0,
+        "point_estimate": 0.0,
+        "status": "measured"
+      },
+      "status": "fpr_only",
+      "threshold": 1.0,
+      "tpr": {
+        "ci95_wilson": null,
+        "denominator": 0,
+        "exact_upper_bound_95": null,
+        "numerator": 0,
+        "point_estimate": null,
+        "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate",
+        "status": "insufficient_denominator"
+      }
+    },
+    "ctc_q95_clean": {
+      "fpr": {
+        "ci95_wilson": [
+          0.0,
+          0.0001
+        ],
+        "denominator": 28313,
+        "exact_upper_bound_95": 0.0001,
+        "numerator": 0,
+        "point_estimate": 0.0,
+        "status": "measured"
+      },
+      "status": "fpr_only",
+      "threshold": 1.0,
+      "tpr": {
+        "ci95_wilson": null,
+        "denominator": 0,
+        "exact_upper_bound_95": null,
+        "numerator": 0,
+        "point_estimate": null,
+        "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate",
+        "status": "insufficient_denominator"
+      }
+    },
+    "refdiv_mean_clean": {
+      "fpr": {
+        "ci95_wilson": [
+          0.0493,
+          0.0545
+        ],
+        "denominator": 28313,
+        "exact_upper_bound_95": 1.0,
+        "numerator": 1467,
+        "point_estimate": 0.0518,
+        "status": "measured"
+      },
+      "status": "fpr_only",
+      "threshold": 0.7276592261904761,
+      "tpr": {
+        "ci95_wilson": null,
+        "denominator": 0,
+        "exact_upper_bound_95": null,
+        "numerator": 0,
+        "point_estimate": null,
+        "refusal": "n=0 < min_negatives=1; report the exact upper bound None instead of a rate",
+        "status": "insufficient_denominator"
+      }
+    }
+  },
+  "schema": "cviaf.integration-merge.v1",
+  "tpr": "not measurable: this population carries clean nulls only, so no rule has an attacked positive to detect. Any TPR column here would be fabricated."
+}

@@ -35,8 +35,10 @@ cite them as theirs and publish ours separately. See docs/SCALING_PLAN.md.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -55,6 +57,93 @@ from cviaf.lab.synth import (
 
 DEFAULT_SCORE_THRESH = 0.30
 DEFAULT_MATCH_IOU = 0.30
+
+BATTERY_DIGEST_SCHEMA = "cviaf.battery-digest.v1"
+FINGERPRINT_STATES = ("comparable", "fingerprint_incomparable")
+
+
+def probe_array_digest(probe_images: np.ndarray) -> str:
+    """Content digest of the probe set: dtype, shape and exact bytes.
+
+    Shape and dtype are hashed too, not just the pixel bytes, so a battery re-saved
+    at a different resolution cannot collide with the original.
+    """
+    arr = np.ascontiguousarray(np.asarray(probe_images))
+    h = hashlib.sha256()
+    h.update(str(arr.dtype).encode())
+    h.update(str(arr.shape).encode())
+    h.update(arr.tobytes())
+    return h.hexdigest()
+
+
+def battery_digest(probe_images: np.ndarray, score_thresh: float = DEFAULT_SCORE_THRESH,
+                   iou_thr: Optional[float] = None, n_classes: int = NUM_CLASSES,
+                   transform_families: Sequence[str] = (),
+                   extra: Optional[Mapping[str, Any]] = None) -> str:
+    """SHA-256 of the canonical battery definition a fingerprint is conditioned on.
+
+    A behavioural fingerprint is a function of the battery, not only of the model: the
+    same weights scored on a different probe set, threshold or class list produce a
+    different vector, and a distance between two such vectors is a number with no
+    meaning. Until this existed, nothing stopped exactly that comparison; the problem
+    statement asks for a refusal instead (clause 3.5).
+    """
+    definition = {
+        "schema": BATTERY_DIGEST_SCHEMA,
+        "probe_digest": probe_array_digest(probe_images),
+        "n_probes": int(len(probe_images)),
+        "score_thresh": float(score_thresh),
+        "iou_thr": None if iou_thr is None else float(iou_thr),
+        "n_classes": int(n_classes),
+        "transform_families": sorted(str(t) for t in transform_families),
+        "extra": dict(extra or {}),
+    }
+    blob = json.dumps(definition, sort_keys=True, separators=(",", ":"),
+                      allow_nan=False).encode()
+    return hashlib.sha256(b"CVIAF battery v1\x00" + blob).hexdigest()
+
+
+def fingerprint_record(value: np.ndarray, battery: str, model_id: Optional[str] = None,
+                       extra: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
+    """A fingerprint that carries the battery it was measured on."""
+    if not isinstance(battery, str) or not battery:
+        raise ValueError("fingerprint_record requires a non-empty battery digest")
+    return {"fingerprint": np.asarray(value, np.float64).tolist(),
+            "battery_digest": battery, "model_id": model_id,
+            "n_dims": int(np.asarray(value).size), "extra": dict(extra or {})}
+
+
+def compare_fingerprints(a: Mapping[str, Any], b: Mapping[str, Any],
+                         scale: Optional[np.ndarray] = None) -> Dict[str, Any]:
+    """Compare two fingerprint records, REFUSING across differing battery digests.
+
+    Returns ``status == "fingerprint_incomparable"`` with both digests when they
+    differ, and also when either record carries no digest at all -- an unconditioned
+    fingerprint cannot be compared to anything, and guessing that the two batteries
+    were the same is precisely the silent passing this framework is built to avoid.
+    Otherwise the scaled L2 distance, as ``fingerprint_distance``.
+    """
+    da, db = a.get("battery_digest"), b.get("battery_digest")
+    missing = [name for name, d in (("a", da), ("b", db))
+               if not isinstance(d, str) or not d]
+    if missing:
+        return {"status": "fingerprint_incomparable",
+                "reason": f"record(s) {missing} carry no battery digest, so the two "
+                          f"fingerprints are not conditioned on a known battery; "
+                          f"re-enrol the reference against this battery",
+                "a_battery_digest": da, "b_battery_digest": db}
+    if da != db:
+        return {"status": "fingerprint_incomparable",
+                "reason": "different probe batteries; a distance between these two "
+                          "fingerprints would compare the batteries, not the models",
+                "a_battery_digest": da, "b_battery_digest": db}
+    return {"status": "comparable",
+            "distance": fingerprint_distance(np.asarray(a["fingerprint"], np.float64),
+                                             np.asarray(b["fingerprint"], np.float64),
+                                             scale),
+            "scale_used": scale is not None,
+            "battery_digest": da,
+            "n_dims": int(np.asarray(a["fingerprint"]).size)}
 
 
 # --------------------------------------------------------------------------- #
@@ -895,15 +984,22 @@ def spectral_signature_scores(
     return out
 
 
-def duplicate_scores(images: np.ndarray, small: int = 12) -> np.ndarray:
+def duplicate_scores(images: np.ndarray, small: int = 12,
+                     return_neighbors: bool = False):
     """Nearest-neighbour distance on average-hash descriptors. Low = duplicate.
 
     Deliberately cheap: this is the first pass. The scaling plan swaps in SSCD
     embeddings, which survive the augmentations that defeat a hash.
+
+    ``return_neighbors`` also returns the argmax neighbour index per image -- the
+    nearest-neighbour graph the review policy clusters co-flagged pairs on
+    (the flood copy and its innocent original are each other's nearest
+    neighbour, which is exactly why both flag).
     """
     n = len(images)
     if n == 0:
-        return np.zeros(0)
+        empty = np.zeros(0)
+        return (empty, np.zeros(0, np.int64)) if return_neighbors else empty
     # box-average down to `small` x `small` grayscale, then mean-centre
     H, W, _ = images.shape[1:]
     fy, fx = H // small, W // small
@@ -915,8 +1011,12 @@ def duplicate_scores(images: np.ndarray, small: int = 12) -> np.ndarray:
     unit = desc / norms
     sim = unit @ unit.T
     np.fill_diagonal(sim, -np.inf)
-    nearest = sim.max(axis=1)                       # cosine similarity to nearest neighbour
-    return 1.0 - nearest                            # distance: 0 == exact duplicate
+    nn = sim.argmax(axis=1)
+    nearest = sim[np.arange(n), nn]                 # cosine similarity to nearest neighbour
+    dist = 1.0 - nearest                            # distance: 0 == exact duplicate
+    if return_neighbors:
+        return dist, nn
+    return dist
 
 
 def contributor_risk(

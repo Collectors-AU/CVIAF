@@ -1,0 +1,209 @@
+{
+ "schema": "cviaf-coverage-statement/1.0",
+ "generated_utc": "2026-09-28T21:03:25.090704+00:00",
+ "supported_attack_classes": [
+  {
+   "class": "trigger_injection",
+   "description": "Pixel-patch, blended, and frequency-domain trigger patterns injected into training images",
+   "detection_methods": [
+    "pixel_variance_analysis",
+    "fft_analysis",
+    "spectral_signatures"
+   ],
+   "access_required": "dataset",
+   "known_limitations": [
+    "Clean-label attacks with imperceptible triggers may evade pixel-level detection",
+    "WaNet (warping-based) triggers require flow-field analysis which is computationally expensive"
+   ]
+  },
+  {
+   "class": "label_flipping",
+   "description": "Deliberate or accidental label changes in training data",
+   "detection_methods": [
+    "confident_learning",
+    "cross_validation_disagreement"
+   ],
+   "access_required": "dataset + any classifier",
+   "known_limitations": [
+    "Requires sufficient samples per class (min ~50) for reliable detection",
+    "May flag genuinely ambiguous samples as mislabeled"
+   ]
+  },
+  {
+   "class": "systematic_mislabeling",
+   "description": "Coordinated mislabeling from a single contributor/source",
+   "detection_methods": [
+    "contributor_aggregation",
+    "pattern_analysis"
+   ],
+   "access_required": "dataset with contributor metadata",
+   "known_limitations": [
+    "Requires contributor/source metadata to attribute patterns",
+    "Small-scale mislabeling (<2% of samples) may not reach detection threshold"
+   ]
+  },
+  {
+   "class": "near_duplicate_flooding",
+   "description": "Near-duplicate images flooding the dataset to bias the model",
+   "detection_methods": [
+    "perceptual_hashing",
+    "cosine_similarity_clustering"
+   ],
+   "access_required": "dataset",
+   "known_limitations": [
+    "Subtle augmentation variants (rotations, crops) may not cluster as duplicates",
+    "Threshold sensitivity: too low catches legitimate similar images, too high misses near-duplicates"
+   ]
+  },
+  {
+   "class": "ood_insertion",
+   "description": "Out-of-distribution samples inserted into training data",
+   "detection_methods": [
+    "mahalanobis_distance",
+    "isolation_forest"
+   ],
+   "access_required": "dataset + reference distribution",
+   "known_limitations": [
+    "Requires a clean reference distribution for comparison",
+    "Borderline OOD samples near the decision boundary are hard to classify"
+   ]
+  },
+  {
+   "class": "model_backdoor",
+   "description": "Hidden backdoor behavior triggered by specific input patterns",
+   "detection_methods": [
+    "neural_cleanse (white-box)",
+    "entropy_probe (black-box)",
+    "strip_analysis (black-box)",
+    "weight_analysis (white-box)"
+   ],
+   "access_required": "model (white-box preferred, black-box possible)",
+   "known_limitations": [
+    "Gradient-free Neural Cleanse optimization is less reliable than gradient-based",
+    "Black-box entropy analysis may produce false positives on miscalibrated but clean models",
+    "Clean-label backdoors are harder to detect than patch-based triggers"
+   ]
+  },
+  {
+   "class": "model_substitution",
+   "description": "Entire model replaced with a different one",
+   "detection_methods": [
+    "weight_digest_comparison",
+    "behavioral_fingerprinting"
+   ],
+   "access_required": "model + reference fingerprint or digest",
+   "known_limitations": [
+    "First assessment has no baseline for comparison",
+    "Fine-tuning creates a new digest but may preserve most behavior"
+   ]
+  },
+  {
+   "class": "weight_modification",
+   "description": "Targeted modification of model weights post-training",
+   "detection_methods": [
+    "weight_statistics",
+    "dormant_neuron_analysis"
+   ],
+   "access_required": "white-box (model parameters)",
+   "known_limitations": [
+    "Cannot distinguish malicious modification from legitimate fine-tuning",
+    "Statistical tests have limited power against small, targeted changes"
+   ]
+  },
+  {
+   "class": "inference_replay",
+   "description": "Re-submission of old inference records as new",
+   "detection_methods": [
+    "nonce_verification",
+    "sequence_check",
+    "timestamp_validation"
+   ],
+   "access_required": "inference seal records",
+   "known_limitations": [
+    "Requires the provenance system to have been active during original inference"
+   ]
+  },
+  {
+   "class": "inference_tampering",
+   "description": "Post-hoc modification of inference inputs, outputs, or configuration",
+   "detection_methods": [
+    "cryptographic_seal_verification",
+    "hash_chain_validation"
+   ],
+   "access_required": "inference seal records + original artifacts",
+   "known_limitations": [
+    "Cannot detect tampering of records that were never sealed",
+    "Floating-point non-determinism may cause false positives in output hash verification across different hardware"
+   ]
+  },
+  {
+   "class": "output_substitution",
+   "description": "Replacement of genuine inference outputs with fabricated ones",
+   "detection_methods": [
+    "output_hash_verification",
+    "signature_verification"
+   ],
+   "access_required": "inference seal records",
+   "known_limitations": [
+    "Same as inference tampering limitations"
+   ]
+  },
+  {
+   "class": "covariate_shift",
+   "description": "Change in input feature distribution (terrain, season, sensor, illumination)",
+   "detection_methods": [
+    "mahalanobis_distance",
+    "mmd_test",
+    "ks_test"
+   ],
+   "access_required": "reference distribution + operational data features",
+   "known_limitations": [
+    "Requires representative reference distribution baseline",
+    "MMD kernel bandwidth sensitive to dimensionality"
+   ]
+  },
+  {
+   "class": "concept_drift",
+   "description": "Change in the relationship between features and labels",
+   "detection_methods": [
+    "accuracy_monitoring",
+    "prediction_shift_analysis"
+   ],
+   "access_required": "reference data with labels + operational data with labels",
+   "known_limitations": [
+    "Requires labeled operational data for concept drift detection",
+    "Hard to distinguish from covariate shift without labels"
+   ]
+  },
+  {
+   "class": "adversarial_distribution_shift",
+   "description": "Deliberately crafted distribution shift to degrade model performance",
+   "detection_methods": [
+    "anomaly_pattern_analysis",
+    "multi_signal_fusion"
+   ],
+   "access_required": "reference distribution + operational data",
+   "known_limitations": [
+    "Distinction between natural and adversarial shift is probabilistic, not definitive",
+    "Sophisticated adversarial shifts that mimic natural patterns may evade detection"
+   ]
+  }
+ ],
+ "unsupported_conditions": [
+  "Federated learning poisoning attacks (requires access to distributed training process)",
+  "Hardware-level Trojan injection (physical chip modifications)",
+  "Cryptographic key compromise (key management is out of scope)",
+  "Adversarial examples at inference time (test-time attacks on individual inputs)",
+  "Membership inference attacks (privacy attacks, not integrity)",
+  "Model extraction/stealing attacks (IP theft, not integrity)",
+  "Supply chain attacks on software dependencies",
+  "Side-channel attacks on inference hardware"
+ ],
+ "assumptions": [
+  "The assurance framework itself runs on trusted hardware",
+  "The Python runtime and cryptographic libraries are not compromised",
+  "Reference distributions and fingerprints, when provided, are genuine",
+  "File system integrity is maintained (files are not modified between hash computation and use)",
+  "Clock source for timestamps is not manipulated (relevant for air-gapped timestamp ordering)"
+ ]
+}

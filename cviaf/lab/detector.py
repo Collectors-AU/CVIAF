@@ -608,15 +608,18 @@ class TinyDetector:
         """
         m = self.copy()
         rng = np.random.default_rng(seed)
-        h = m.Wh.shape[0]
+        # ``Wh`` is (c2, hidden): the hidden units are its COLUMNS. Taking shape[0]
+        # (the input width) pruned frac*c2 units instead of frac*hidden, and crashed
+        # outright whenever c2 > hidden (the real-backbone lane, c2=64 > hidden=48).
+        h = m.Wh.shape[1]
         k = int(round(float(frac) * h))
         if k <= 0:
             return m
-        order = np.argsort(np.linalg.norm(m.Wh, axis=1) + 1e-6 * rng.standard_normal(h))
+        order = np.argsort(np.linalg.norm(m.Wh, axis=0) + 1e-6 * rng.standard_normal(h))
         drop = order[:k]
         m.Wh = m.Wh.copy(); m.bh = m.bh.copy()
         m.wo = m.wo.copy(); m.Wc = m.Wc.copy(); m.Wb = m.Wb.copy()
-        m.Wh[drop] = 0.0
+        m.Wh[:, drop] = 0.0
         m.bh[drop] = 0.0
         m.wo[drop] = 0.0
         m.Wc[drop] = 0.0

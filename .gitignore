@@ -66,3 +66,8 @@ _pycache_/
 *.pyc
 .freebuff/
 logs/
+*.priv.json
+
+# Generated drift calibration/assessment data
+drift_calibration.json
+drift_assessment_record.json
